@@ -66,6 +66,12 @@ class CoreDataManager {
         bagEntity.name = "Bag"
         bagEntity.managedObjectClassName = "Bag"
         
+        let bagId = NSAttributeDescription()
+        bagId.name = "id"
+        bagId.type = .uuid
+        bagId.isOptional = false
+        bagId.defaultValue = UUID()
+        
         let bagName = NSAttributeDescription()
         bagName.name = "name"
         bagName.type = .string
@@ -84,7 +90,7 @@ class CoreDataManager {
         bagCurrentWeight.isOptional = false
         bagCurrentWeight.defaultValue = 0.0
         
-        bagEntity.properties = [bagName, bagMaxWeight, bagCurrentWeight]
+        bagEntity.properties = [bagId, bagName, bagMaxWeight, bagCurrentWeight]
         
         // Item Entity
         let itemEntity = NSEntityDescription()
