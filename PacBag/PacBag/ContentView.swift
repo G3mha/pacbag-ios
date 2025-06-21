@@ -12,7 +12,7 @@ struct ContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
 
     @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \Item.timestamp, ascending: true)],
+        sortDescriptors: [NSSortDescriptor(keyPath: \Item.name, ascending: true)],
         animation: .default)
     private var items: FetchedResults<Item>
 
@@ -21,9 +21,21 @@ struct ContentView: View {
             List {
                 ForEach(items) { item in
                     NavigationLink {
-                        Text("Item at \(item.timestamp!, formatter: itemFormatter)")
+                        VStack(alignment: .leading) {
+                            Text("Item: \(item.name)")
+                            Text("Weight: \(item.weight, specifier: "%.1f") kg")
+                            Text("Packed: \(item.isPacked ? "Yes" : "No")")
+                            if let category = item.category {
+                                Text("Category: \(category)")
+                            }
+                        }
                     } label: {
-                        Text(item.timestamp!, formatter: itemFormatter)
+                        HStack {
+                            Text(item.name.isEmpty ? "Unnamed Item" : item.name)
+                            Spacer()
+                            Image(systemName: item.isPacked ? "checkmark.circle.fill" : "circle")
+                                .foregroundColor(item.isPacked ? .green : .gray)
+                        }
                     }
                 }
                 .onDelete(perform: deleteItems)
@@ -38,6 +50,7 @@ struct ContentView: View {
                     }
                 }
             }
+            .navigationTitle("PacBag Items")
             Text("Select an item")
         }
     }
@@ -45,13 +58,15 @@ struct ContentView: View {
     private func addItem() {
         withAnimation {
             let newItem = Item(context: viewContext)
-            newItem.timestamp = Date()
+            newItem.id = UUID()
+            newItem.name = "New Item"
+            newItem.weight = 0.0
+            newItem.isPacked = false
+            newItem.category = "General"
 
             do {
                 try viewContext.save()
             } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
                 let nsError = error as NSError
                 fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
             }
@@ -65,8 +80,6 @@ struct ContentView: View {
             do {
                 try viewContext.save()
             } catch {
-                // Replace this implementation with code to handle the error appropriately.
-                // fatalError() causes the application to generate a crash log and terminate. You should not use this function in a shipping application, although it may be useful during development.
                 let nsError = error as NSError
                 fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
             }
@@ -74,13 +87,6 @@ struct ContentView: View {
     }
 }
 
-private let itemFormatter: DateFormatter = {
-    let formatter = DateFormatter()
-    formatter.dateStyle = .short
-    formatter.timeStyle = .medium
-    return formatter
-}()
-
 #Preview {
-    ContentView().environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
+    ContentView().environment(\.managedObjectContext, CoreDataManager.shared.context)
 }

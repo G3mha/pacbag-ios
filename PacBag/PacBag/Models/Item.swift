@@ -3,7 +3,7 @@ import CoreData
 import CloudKit
 
 @objc(Item)
-public class Item: NSManagedObject {
+public class Item: NSManagedObject, Identifiable {
     
 }
 
@@ -12,6 +12,7 @@ extension Item {
         return NSFetchRequest<Item>(entityName: "Item")
     }
     
+    @NSManaged public var id: UUID
     @NSManaged public var name: String
     @NSManaged public var weight: Double
     @NSManaged public var isPacked: Bool

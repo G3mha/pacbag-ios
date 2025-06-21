@@ -91,6 +91,12 @@ class CoreDataManager {
         itemEntity.name = "Item"
         itemEntity.managedObjectClassName = "Item"
         
+        let itemId = NSAttributeDescription()
+        itemId.name = "id"
+        itemId.type = .uuid
+        itemId.isOptional = false
+        itemId.defaultValue = UUID()
+        
         let itemName = NSAttributeDescription()
         itemName.name = "name"
         itemName.type = .string
@@ -114,19 +120,19 @@ class CoreDataManager {
         itemCategory.type = .string
         itemCategory.isOptional = true
         
-        itemEntity.properties = [itemName, itemWeight, itemIsPacked, itemCategory]
+        itemEntity.properties = [itemId, itemName, itemWeight, itemIsPacked, itemCategory]
         
         // Relationships
         let tripToBags = NSRelationshipDescription()
         tripToBags.name = "bags"
         tripToBags.destinationEntity = bagEntity
-        tripToBags.isToMany = true
+        tripToBags.maxCount = 0  // 0 means to-many
         tripToBags.deleteRule = .cascadeDeleteRule
         
         let bagToTrip = NSRelationshipDescription()
         bagToTrip.name = "trip"
         bagToTrip.destinationEntity = tripEntity
-        bagToTrip.isToMany = false
+        bagToTrip.maxCount = 1  // 1 means to-one
         bagToTrip.deleteRule = .nullifyDeleteRule
         
         tripToBags.inverseRelationship = bagToTrip
@@ -135,13 +141,13 @@ class CoreDataManager {
         let bagToItems = NSRelationshipDescription()
         bagToItems.name = "items"
         bagToItems.destinationEntity = itemEntity
-        bagToItems.isToMany = true
+        bagToItems.maxCount = 0  // 0 means to-many
         bagToItems.deleteRule = .cascadeDeleteRule
         
         let itemToBag = NSRelationshipDescription()
         itemToBag.name = "bag"
         itemToBag.destinationEntity = bagEntity
-        itemToBag.isToMany = false
+        itemToBag.maxCount = 1  // 1 means to-one
         itemToBag.deleteRule = .nullifyDeleteRule
         
         bagToItems.inverseRelationship = itemToBag
