@@ -5,11 +5,17 @@ struct AddBagView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @Environment(\.dismiss) private var dismiss
     
+    let trip: Trip?
+    
     @State private var bagName = ""
     @State private var maxWeight = 20.0
     @State private var selectedBagType = BagType.suitcase
     @State private var showingTemplates = false
     @State private var createdBag: Bag?
+    
+    init(trip: Trip? = nil) {
+        self.trip = trip
+    }
     
     enum BagType: String, CaseIterable {
         case suitcase = "Suitcase"
@@ -119,7 +125,7 @@ struct AddBagView: View {
                     )
                 }
             }
-            .navigationTitle("Add New Bag")
+            .navigationTitle(trip != nil ? "Add Bag to Trip" : "Add New Bag")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -154,6 +160,7 @@ struct AddBagView: View {
         newBag.name = bagName.trimmingCharacters(in: .whitespacesAndNewlines)
         newBag.maxWeight = maxWeight
         newBag.currentWeight = 0.0
+        newBag.trip = trip // Assign to trip if provided
         
         do {
             try viewContext.save()

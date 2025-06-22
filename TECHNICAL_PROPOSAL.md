@@ -10,9 +10,10 @@
 - **Check-off System**: Mark items as packed/unpacked with progress tracking [DONE]
 
 ### Advanced Features
-- **Trip Planning Integration**: Create trips with multiple bags and destinations
+- **Trip Planning Integration**: Create trips with multiple bags and destinations [DONE]
 - **Weather Integration**: Suggest items based on destination weather (using free WeatherKit)
-- **Item History**: Track frequently used items across trips
+- **Item History**: Track frequently used items across tr
+ips
 - **Sharing**: Export packing lists as text or share with travel companions
 - **Reminders**: Push notifications for packing deadlines
 

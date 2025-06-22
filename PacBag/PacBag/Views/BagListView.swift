@@ -6,7 +6,7 @@ struct BagListView: View {
     
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \Bag.name, ascending: true)],
-        predicate: NSPredicate(format: "parentBag == nil"),
+        predicate: NSPredicate(format: "parentBag == nil AND trip == nil"),
         animation: .default)
     private var bags: FetchedResults<Bag>
     
@@ -33,7 +33,7 @@ struct BagListView: View {
                 }
                 .padding()
             }
-            .navigationTitle("My Bags")
+            .navigationTitle("Unassigned Bags")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showingAddBag = true }) {

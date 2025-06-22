@@ -59,7 +59,24 @@ class CoreDataManager {
         tripDestination.isOptional = false
         tripDestination.defaultValue = ""
         
-        tripEntity.properties = [tripName, tripStartDate, tripEndDate, tripDestination]
+        let tripId = NSAttributeDescription()
+        tripId.name = "id"
+        tripId.type = .uuid
+        tripId.isOptional = false
+        tripId.defaultValue = UUID()
+        
+        let tripDescription = NSAttributeDescription()
+        tripDescription.name = "tripDescription"
+        tripDescription.type = .string
+        tripDescription.isOptional = true
+        
+        let tripIsCompleted = NSAttributeDescription()
+        tripIsCompleted.name = "isCompleted"
+        tripIsCompleted.type = .boolean
+        tripIsCompleted.isOptional = false
+        tripIsCompleted.defaultValue = false
+        
+        tripEntity.properties = [tripId, tripName, tripStartDate, tripEndDate, tripDestination, tripDescription, tripIsCompleted]
         
         // Bag Entity
         let bagEntity = NSEntityDescription()
