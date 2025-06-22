@@ -54,6 +54,11 @@ extension Bag {
         return subBagsArray.count
     }
     
+    var packingProgress: Double {
+        guard totalItemsCount > 0 else { return 0.0 }
+        return Double(packedItemsCount) / Double(totalItemsCount)
+    }
+    
     // Total weight including sub-bags
     var totalWeight: Double {
         let directWeight = itemsArray.reduce(0) { $0 + $1.weight }

@@ -8,6 +8,7 @@ struct BagDetailView: View {
     @State private var showingAddItem = false
     @State private var showingEditBag = false
     @State private var showingTemplates = false
+    @State private var showingShareView = false
     
     var body: some View {
         ScrollView {
@@ -46,6 +47,10 @@ struct BagDetailView: View {
                     
                     Button("Use Template", systemImage: "doc.text") {
                         showingTemplates = true
+                    }
+                    
+                    Button("Share Bag", systemImage: "square.and.arrow.up") {
+                        showingShareView = true
                     }
                     
                     Divider()
@@ -90,6 +95,9 @@ struct BagDetailView: View {
         }
         .sheet(isPresented: $showingTemplates) {
             PackingTemplatesView(bag: bag)
+        }
+        .sheet(isPresented: $showingShareView) {
+            ShareView(shareableItem: .bag(bag))
         }
     }
     

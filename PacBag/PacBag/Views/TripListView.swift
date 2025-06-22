@@ -13,6 +13,7 @@ struct TripListView: View {
     
     @State private var showingAddTrip = false
     @State private var selectedFilter: TripFilter = .all
+    @State private var showingNotificationSettings = false
     
     enum TripFilter: String, CaseIterable {
         case all = "All"
@@ -90,6 +91,12 @@ struct TripListView: View {
             }
             .navigationTitle("My Trips")
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: { showingNotificationSettings = true }) {
+                        Image(systemName: "bell")
+                    }
+                }
+                
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(action: { showingAddTrip = true }) {
                         Image(systemName: "plus")
@@ -99,12 +106,16 @@ struct TripListView: View {
             .sheet(isPresented: $showingAddTrip) {
                 AddTripView()
             }
+            .sheet(isPresented: $showingNotificationSettings) {
+                NotificationSettingsView()
+            }
         }
     }
 }
 
 struct TripCardView: View {
     @ObservedObject var trip: Trip
+    @State private var showingShareView = false
     
     var body: some View {
         VStack(spacing: 16) {
@@ -131,7 +142,7 @@ struct TripCardView: View {
                 
                 Spacer()
                 
-                VStack(spacing: 4) {
+                VStack(spacing: 8) {
                     HStack(spacing: 4) {
                         Image(systemName: trip.status.icon)
                             .font(.caption)
@@ -152,6 +163,13 @@ struct TripCardView: View {
                             .font(.caption2)
                             .foregroundColor(.secondary)
                     }
+                    
+                    Button(action: { showingShareView = true }) {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.caption)
+                            .foregroundColor(.blue)
+                    }
+                    .buttonStyle(PlainButtonStyle())
                 }
             }
             
@@ -222,6 +240,9 @@ struct TripCardView: View {
         .background(Color(.systemBackground))
         .cornerRadius(16)
         .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+        .sheet(isPresented: $showingShareView) {
+            ShareView(shareableItem: .trip(trip))
+        }
     }
     
     private var progressColor: Color {

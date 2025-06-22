@@ -20,6 +20,7 @@ extension Trip {
     @NSManaged public var destination: String
     @NSManaged public var tripDescription: String?
     @NSManaged public var isCompleted: Bool
+    @NSManaged public var remindersEnabled: Bool
     @NSManaged public var bags: NSSet?
 }
 

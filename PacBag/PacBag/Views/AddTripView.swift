@@ -11,6 +11,7 @@ struct AddTripView: View {
     @State private var endDate = Date().addingTimeInterval(86400 * 7) // 7 days from now
     @State private var tripDescription = ""
     @State private var createWithBag = false
+    @State private var remindersEnabled = true
     @State private var showingDatePicker = false
     
     var body: some View {
@@ -56,6 +57,14 @@ struct AddTripView: View {
                     
                     if createWithBag {
                         Text("A suitcase will be automatically created for this trip")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Toggle("Enable packing reminders", isOn: $remindersEnabled)
+                    
+                    if remindersEnabled {
+                        Text("Get notified 1 week, 3 days, and 1 day before your trip")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -111,6 +120,7 @@ struct AddTripView: View {
             newTrip.endDate = endDate
             newTrip.tripDescription = tripDescription.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : tripDescription.trimmingCharacters(in: .whitespacesAndNewlines)
             newTrip.isCompleted = false
+            newTrip.remindersEnabled = remindersEnabled
             
             // Create a default bag if requested
             if createWithBag {
@@ -124,6 +134,14 @@ struct AddTripView: View {
             
             do {
                 try viewContext.save()
+                
+                // Schedule notifications if enabled
+                if remindersEnabled {
+                    Task {
+                        await NotificationManager.shared.schedulePackingReminders(for: newTrip)
+                    }
+                }
+                
                 dismiss()
             } catch {
                 let nsError = error as NSError

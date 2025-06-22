@@ -76,7 +76,13 @@ class CoreDataManager {
         tripIsCompleted.isOptional = false
         tripIsCompleted.defaultValue = false
         
-        tripEntity.properties = [tripId, tripName, tripStartDate, tripEndDate, tripDestination, tripDescription, tripIsCompleted]
+        let tripRemindersEnabled = NSAttributeDescription()
+        tripRemindersEnabled.name = "remindersEnabled"
+        tripRemindersEnabled.type = .boolean
+        tripRemindersEnabled.isOptional = false
+        tripRemindersEnabled.defaultValue = true
+        
+        tripEntity.properties = [tripId, tripName, tripStartDate, tripEndDate, tripDestination, tripDescription, tripIsCompleted, tripRemindersEnabled]
         
         // Bag Entity
         let bagEntity = NSEntityDescription()

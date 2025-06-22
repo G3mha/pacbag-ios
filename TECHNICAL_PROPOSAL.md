@@ -14,8 +14,8 @@
 - **Weather Integration**: Suggest items based on destination weather (using free WeatherKit)
 - **Item History**: Track frequently used items across tr
 ips
-- **Sharing**: Export packing lists as text or share with travel companions
-- **Reminders**: Push notifications for packing deadlines
+- **Sharing**: Export packing lists as text or share with travel companions [DONE]
+- **Reminders**: Push notifications for packing deadlines [DONE]
 
 ### Data Storage Strategy (Cost-Free)
 - **Primary**: Core Data for local storage with full offline functionality

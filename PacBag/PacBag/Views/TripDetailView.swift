@@ -7,6 +7,7 @@ struct TripDetailView: View {
     
     @State private var showingAddBag = false
     @State private var showingEditTrip = false
+    @State private var showingShareView = false
     
     var body: some View {
         ScrollView {
@@ -38,6 +39,10 @@ struct TripDetailView: View {
                         showingAddBag = true
                     }
                     
+                    Button("Share Trip", systemImage: "square.and.arrow.up") {
+                        showingShareView = true
+                    }
+                    
                     Divider()
                     
                     Button("Mark as Completed", systemImage: "checkmark.circle") {
@@ -60,6 +65,9 @@ struct TripDetailView: View {
         }
         .sheet(isPresented: $showingEditTrip) {
             EditTripView(trip: trip)
+        }
+        .sheet(isPresented: $showingShareView) {
+            ShareView(shareableItem: .trip(trip))
         }
     }
     
@@ -272,6 +280,7 @@ struct ProgressStatItem: View {
 
 struct TripActionsView: View {
     @ObservedObject var trip: Trip
+    @State private var showingShareView = false
     
     var body: some View {
         VStack(spacing: 12) {
@@ -300,17 +309,20 @@ struct TripActionsView: View {
                 .disabled(trip.packingProgress == 0.0)
                 
                 ActionButton(
-                    title: "View Bags",
-                    icon: "list.bullet",
-                    color: .blue
+                    title: "Share Trip",
+                    icon: "square.and.arrow.up",
+                    color: .purple
                 ) {
-                    // This will be handled by navigation
+                    showingShareView = true
                 }
             }
         }
         .padding()
         .background(Color(.systemGray6))
         .cornerRadius(16)
+        .sheet(isPresented: $showingShareView) {
+            ShareView(shareableItem: .trip(trip))
+        }
     }
     
     private func packAllItems() {
