@@ -2,6 +2,7 @@ import SwiftUI
 import UserNotifications
 
 struct NotificationSettingsView: View {
+    @Environment(\.dismiss) private var dismiss
     @StateObject private var notificationManager = NotificationManager.shared
     @State private var showingSystemSettings = false
     
@@ -99,7 +100,7 @@ struct NotificationSettingsView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {
-                        // Dismiss if presented modally
+                        dismiss()
                     }
                 }
             }

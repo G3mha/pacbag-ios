@@ -11,9 +11,7 @@
 
 ### Advanced Features
 - **Trip Planning Integration**: Create trips with multiple bags and destinations [DONE]
-- **Weather Integration**: Suggest items based on destination weather (using free WeatherKit)
-- **Item History**: Track frequently used items across tr
-ips
+- **Item History**: Track frequently used items across trips
 - **Sharing**: Export packing lists as text or share with travel companions [DONE]
 - **Reminders**: Push notifications for packing deadlines [DONE]
 
