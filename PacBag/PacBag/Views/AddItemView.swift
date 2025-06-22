@@ -15,6 +15,7 @@ struct AddItemView: View {
     @State private var showingCustomCategory = false
     @State private var customCategory = ""
     @State private var customSubcategory = ""
+    @State private var userCategories: [String: [String]] = [:]
     @State private var itemDescription = ""
     @State private var quantity: Int = 1
     @State private var isPacked = false
@@ -33,12 +34,20 @@ struct AddItemView: View {
         "Medication": ["Prescription", "Over-the-counter", "Vitamins", "First Aid"]
     ]
     
+    private var allCategoryStructure: [String: [String]] {
+        var combined = categoryStructure
+        for (key, value) in userCategories {
+            combined[key] = value
+        }
+        return combined
+    }
+    
     private var categories: [String] {
-        return Array(categoryStructure.keys).sorted()
+        return Array(allCategoryStructure.keys).sorted()
     }
     
     private var subcategories: [String] {
-        return categoryStructure[category] ?? []
+        return allCategoryStructure[category] ?? []
     }
     
     var body: some View {
@@ -53,15 +62,24 @@ struct AddItemView: View {
                         .lineLimit(2...4)
                     
                     VStack(alignment: .leading, spacing: 12) {
-                        Picker("Category", selection: $category) {
-                            ForEach(categories, id: \.self) { category in
-                                Text(category).tag(category)
+                        HStack {
+                            Picker("Category", selection: $category) {
+                                ForEach(categories, id: \.self) { category in
+                                    Text(category).tag(category)
+                                }
                             }
-                        }
-                        .pickerStyle(MenuPickerStyle())
-                        .onChange(of: category) { oldValue, newValue in
-                            // Reset subcategory when category changes
-                            subcategory = ""
+                            .pickerStyle(MenuPickerStyle())
+                            .onChange(of: category) { oldValue, newValue in
+                                // Reset subcategory when category changes
+                                subcategory = ""
+                            }
+                            
+                            Button(action: { showingCustomCategory = true }) {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.title2)
+                                    .foregroundColor(.blue)
+                            }
+                            .buttonStyle(PlainButtonStyle())
                         }
                         
                         if !subcategories.isEmpty {
@@ -76,25 +94,32 @@ struct AddItemView: View {
                                     Spacer()
                                 }
                                 
-                                Picker("Subcategory", selection: $subcategory) {
-                                    Text("None").tag("")
-                                    ForEach(subcategories, id: \.self) { subcat in
-                                        Text(subcat).tag(subcat)
+                                HStack {
+                                    Picker("Subcategory", selection: $subcategory) {
+                                        Text("None").tag("")
+                                        ForEach(subcategories, id: \.self) { subcat in
+                                            Text(subcat).tag(subcat)
+                                        }
                                     }
+                                    .pickerStyle(MenuPickerStyle())
+                                    .padding(.vertical, 4)
+                                    .background(Color(.systemGray6))
+                                    .cornerRadius(8)
+                                    
+                                    Button(action: { 
+                                        customCategory = category
+                                        showingCustomCategory = true 
+                                    }) {
+                                        Image(systemName: "plus.circle.fill")
+                                            .font(.title3)
+                                            .foregroundColor(.blue)
+                                    }
+                                    .buttonStyle(PlainButtonStyle())
                                 }
-                                .pickerStyle(MenuPickerStyle())
-                                .padding(.vertical, 4)
-                                .background(Color(.systemGray6))
-                                .cornerRadius(8)
                             }
                             .padding(.top, 8)
                         }
                         
-                        Button("Custom Category") {
-                            showingCustomCategory = true
-                        }
-                        .font(.caption)
-                        .foregroundColor(.blue)
                         
                         // Current selection display
                         if !category.isEmpty {
@@ -192,9 +217,20 @@ struct AddItemView: View {
             CustomCategoryView(
                 category: $customCategory,
                 subcategory: $customSubcategory,
-                onSave: {
-                    category = customCategory
-                    subcategory = customSubcategory
+                onSave: { newCategory, newSubcategory in
+                    // Add to user categories
+                    if !newCategory.isEmpty {
+                        if userCategories[newCategory] == nil {
+                            userCategories[newCategory] = []
+                        }
+                        if !newSubcategory.isEmpty && !userCategories[newCategory]!.contains(newSubcategory) {
+                            userCategories[newCategory]!.append(newSubcategory)
+                        }
+                    }
+                    
+                    // Set as current selection
+                    category = newCategory
+                    subcategory = newSubcategory
                     showingCustomCategory = false
                 }
             )
@@ -413,28 +449,63 @@ struct CustomCategoryView: View {
     @Environment(\.dismiss) private var dismiss
     @Binding var category: String
     @Binding var subcategory: String
-    let onSave: () -> Void
+    let onSave: (String, String) -> Void
+    
+    @State private var isAddingToExisting: Bool = false
     
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("Custom Category")) {
-                    TextField("Category", text: $category)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                    
-                    TextField("Subcategory (optional)", text: $subcategory)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                Section(header: Text("Create Category")) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Category Name")
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                            TextField("e.g., Sports Equipment", text: $category)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Subcategory (optional)")
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                            TextField("e.g., Running Gear", text: $subcategory)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                        }
+                    }
                 }
                 
                 Section(header: Text("Preview")) {
                     if !category.isEmpty {
                         HStack {
-                            Text("Full Category:")
+                            Image(systemName: "folder.fill")
+                                .foregroundColor(.blue)
+                            
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Your new category:")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                
+                                Text(subcategory.isEmpty ? category : "\(category) > \(subcategory)")
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                            }
+                            
                             Spacer()
-                            Text(subcategory.isEmpty ? category : "\(category) > \(subcategory)")
-                                .foregroundColor(.secondary)
                         }
+                        .padding(.vertical, 4)
                     }
+                }
+                
+                Section(header: Text("How it works")) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("• Create new categories that will be saved for future use")
+                        Text("• Add subcategories to organize items even better")
+                        Text("• Your custom categories will appear in the main category picker")
+                    }
+                    .font(.caption)
+                    .foregroundColor(.secondary)
                 }
             }
             .navigationTitle("Custom Category")
@@ -448,7 +519,8 @@ struct CustomCategoryView: View {
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Save") {
-                        onSave()
+                        onSave(category.trimmingCharacters(in: .whitespacesAndNewlines), 
+                               subcategory.trimmingCharacters(in: .whitespacesAndNewlines))
                     }
                     .disabled(category.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
