@@ -160,6 +160,11 @@ class CoreDataManager {
         itemCategory.type = .string
         itemCategory.isOptional = true
         
+        let itemSubcategory = NSAttributeDescription()
+        itemSubcategory.name = "subcategory"
+        itemSubcategory.type = .string
+        itemSubcategory.isOptional = true
+        
         let itemDescription = NSAttributeDescription()
         itemDescription.name = "itemDescription"
         itemDescription.type = .string
@@ -177,7 +182,7 @@ class CoreDataManager {
         itemPhotoData.isOptional = true
         itemPhotoData.allowsExternalBinaryDataStorage = true
         
-        itemEntity.properties = [itemId, itemName, itemWeight, itemIsPacked, itemCategory, itemDescription, itemQuantity, itemPhotoData]
+        itemEntity.properties = [itemId, itemName, itemWeight, itemIsPacked, itemCategory, itemSubcategory, itemDescription, itemQuantity, itemPhotoData]
         
         // Relationships
         let tripToBags = NSRelationshipDescription()
