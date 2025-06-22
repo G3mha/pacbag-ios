@@ -22,6 +22,7 @@ struct PersistenceController {
             newItem.id = UUID()
             newItem.name = "Sample Item \(i + 1)"
             newItem.weight = Double.random(in: 0.1...2.0)
+            newItem.quantity = Int32.random(in: 1...3)
             newItem.isPacked = i % 2 == 0
             newItem.category = ["Clothes", "Electronics", "Toiletries", "Documents"].randomElement()
         }

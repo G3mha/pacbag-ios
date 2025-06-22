@@ -126,7 +126,24 @@ class CoreDataManager {
         itemCategory.type = .string
         itemCategory.isOptional = true
         
-        itemEntity.properties = [itemId, itemName, itemWeight, itemIsPacked, itemCategory]
+        let itemDescription = NSAttributeDescription()
+        itemDescription.name = "itemDescription"
+        itemDescription.type = .string
+        itemDescription.isOptional = true
+        
+        let itemQuantity = NSAttributeDescription()
+        itemQuantity.name = "quantity"
+        itemQuantity.type = .integer32
+        itemQuantity.isOptional = false
+        itemQuantity.defaultValue = 1
+        
+        let itemPhotoData = NSAttributeDescription()
+        itemPhotoData.name = "photoData"
+        itemPhotoData.type = .binaryData
+        itemPhotoData.isOptional = true
+        itemPhotoData.allowsExternalBinaryDataStorage = true
+        
+        itemEntity.properties = [itemId, itemName, itemWeight, itemIsPacked, itemCategory, itemDescription, itemQuantity, itemPhotoData]
         
         // Relationships
         let tripToBags = NSRelationshipDescription()
@@ -159,8 +176,24 @@ class CoreDataManager {
         bagToItems.inverseRelationship = itemToBag
         itemToBag.inverseRelationship = bagToItems
         
+        // Sub-bag relationships (Bag to Bag)
+        let bagToSubBags = NSRelationshipDescription()
+        bagToSubBags.name = "subBags"
+        bagToSubBags.destinationEntity = bagEntity
+        bagToSubBags.maxCount = 0  // 0 means to-many
+        bagToSubBags.deleteRule = .cascadeDeleteRule
+        
+        let subBagToParent = NSRelationshipDescription()
+        subBagToParent.name = "parentBag"
+        subBagToParent.destinationEntity = bagEntity
+        subBagToParent.maxCount = 1  // 1 means to-one
+        subBagToParent.deleteRule = .nullifyDeleteRule
+        
+        bagToSubBags.inverseRelationship = subBagToParent
+        subBagToParent.inverseRelationship = bagToSubBags
+        
         tripEntity.properties.append(tripToBags)
-        bagEntity.properties.append(contentsOf: [bagToTrip, bagToItems])
+        bagEntity.properties.append(contentsOf: [bagToTrip, bagToItems, bagToSubBags, subBagToParent])
         itemEntity.properties.append(itemToBag)
         
         model.entities = [tripEntity, bagEntity, itemEntity]

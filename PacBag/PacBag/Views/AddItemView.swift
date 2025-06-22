@@ -1,5 +1,6 @@
 import SwiftUI
 import CoreData
+import PhotosUI
 
 struct AddItemView: View {
     @Environment(\.managedObjectContext) private var viewContext
@@ -10,7 +11,12 @@ struct AddItemView: View {
     @State private var itemName = ""
     @State private var weight = 0.1
     @State private var category = "General"
+    @State private var itemDescription = ""
+    @State private var quantity: Int = 1
     @State private var isPacked = false
+    @State private var selectedPhoto: PhotosPickerItem?
+    @State private var photoData: Data?
+    @State private var showingCamera = false
     
     private let categories = [
         "General", "Clothes", "Electronics", "Toiletries", 
@@ -24,32 +30,65 @@ struct AddItemView: View {
                     TextField("Item Name", text: $itemName)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                     
+                    TextField("Description (optional)", text: $itemDescription, axis: .vertical)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .lineLimit(2...4)
+                    
                     Picker("Category", selection: $category) {
                         ForEach(categories, id: \.self) { category in
                             Text(category).tag(category)
                         }
                     }
                     .pickerStyle(MenuPickerStyle())
+                }
+                
+                Section(header: Text("Quantity & Weight")) {
+                    HStack {
+                        Text("Quantity")
+                        Spacer()
+                        Stepper("\(quantity)", value: $quantity, in: 1...99)
+                    }
                     
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
-                            Text("Weight")
+                            Text("Weight per item")
                             Spacer()
                             Text("\(weight, specifier: "%.1f") kg")
                                 .foregroundColor(.secondary)
                         }
                         
                         Slider(value: $weight, in: 0.1...10.0, step: 0.1)
+                        
+                        HStack {
+                            Text("Total weight")
+                            Spacer()
+                            Text("\(weight * Double(quantity), specifier: "%.1f") kg")
+                                .foregroundColor(.primary)
+                                .fontWeight(.semibold)
+                        }
                     }
-                    
+                }
+                
+                Section(header: Text("Photo")) {
+                    PhotoSectionView(
+                        photoData: $photoData,
+                        selectedPhoto: $selectedPhoto,
+                        showingCamera: $showingCamera
+                    )
+                }
+                
+                Section(header: Text("Packing")) {
                     Toggle("Already Packed", isOn: $isPacked)
                 }
                 
                 Section(header: Text("Preview")) {
-                    ItemPreview(
+                    EnhancedItemPreview(
                         name: itemName.isEmpty ? "New Item" : itemName,
+                        description: itemDescription,
                         weight: weight,
+                        quantity: quantity,
                         category: category,
+                        photoData: photoData,
                         isPacked: isPacked
                     )
                 }
@@ -71,6 +110,9 @@ struct AddItemView: View {
                 }
             }
         }
+        .onChange(of: selectedPhoto) { newPhoto in
+            loadPhoto(from: newPhoto)
+        }
     }
     
     private func saveItem() {
@@ -78,13 +120,16 @@ struct AddItemView: View {
             let newItem = Item(context: viewContext)
             newItem.id = UUID()
             newItem.name = itemName.trimmingCharacters(in: .whitespacesAndNewlines)
+            newItem.itemDescription = itemDescription.isEmpty ? nil : itemDescription.trimmingCharacters(in: .whitespacesAndNewlines)
             newItem.weight = weight
+            newItem.quantity = Int32(quantity)
             newItem.category = category
             newItem.isPacked = isPacked
+            newItem.photoData = photoData
             newItem.bag = bag
             
-            // Update bag's current weight
-            bag.currentWeight += weight
+            // Update bag's current weight (total weight for all quantities)
+            bag.currentWeight += weight * Double(quantity)
             
             do {
                 try viewContext.save()
@@ -95,8 +140,157 @@ struct AddItemView: View {
             }
         }
     }
+    
+    private func loadPhoto(from item: PhotosPickerItem?) {
+        guard let item = item else { return }
+        
+        Task {
+            if let data = try? await item.loadTransferable(type: Data.self) {
+                DispatchQueue.main.async {
+                    self.photoData = data
+                }
+            }
+        }
+    }
 }
 
+struct PhotoSectionView: View {
+    @Binding var photoData: Data?
+    @Binding var selectedPhoto: PhotosPickerItem?
+    @Binding var showingCamera: Bool
+    
+    var body: some View {
+        VStack(spacing: 12) {
+            if let photoData = photoData, let image = UIImage(data: photoData) {
+                Image(uiImage: image)
+                    .resizable()
+                    .aspectRatio(contentMode: .fill)
+                    .frame(height: 120)
+                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 8)
+                            .stroke(Color(.systemGray4), lineWidth: 1)
+                    )
+            } else {
+                RoundedRectangle(cornerRadius: 8)
+                    .fill(Color(.systemGray6))
+                    .frame(height: 120)
+                    .overlay(
+                        VStack {
+                            Image(systemName: "photo")
+                                .font(.largeTitle)
+                                .foregroundColor(.secondary)
+                            Text("No photo selected")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    )
+            }
+            
+            HStack(spacing: 12) {
+                PhotosPicker("Select Photo", selection: $selectedPhoto, matching: .images)
+                    .buttonStyle(.bordered)
+                
+                if photoData != nil {
+                    Button("Remove Photo") {
+                        photoData = nil
+                        selectedPhoto = nil
+                    }
+                    .buttonStyle(.bordered)
+                    .foregroundColor(.red)
+                }
+            }
+        }
+    }
+}
+
+struct EnhancedItemPreview: View {
+    let name: String
+    let description: String
+    let weight: Double
+    let quantity: Int
+    let category: String
+    let photoData: Data?
+    let isPacked: Bool
+    
+    var body: some View {
+        VStack(spacing: 12) {
+            HStack(spacing: 12) {
+                // Photo thumbnail
+                if let photoData = photoData, let image = UIImage(data: photoData) {
+                    Image(uiImage: image)
+                        .resizable()
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: 50, height: 50)
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                } else {
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(Color(.systemGray5))
+                        .frame(width: 50, height: 50)
+                        .overlay(
+                            Image(systemName: "photo")
+                                .foregroundColor(.secondary)
+                        )
+                }
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Image(systemName: isPacked ? "checkmark.circle.fill" : "circle")
+                            .foregroundColor(isPacked ? .green : .gray)
+                        
+                        Text(name)
+                            .font(.headline)
+                            .strikethrough(isPacked)
+                            .foregroundColor(isPacked ? .secondary : .primary)
+                        
+                        Spacer()
+                        
+                        if quantity > 1 {
+                            Text("×\(quantity)")
+                                .font(.caption)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.orange.opacity(0.2))
+                                .cornerRadius(4)
+                        }
+                    }
+                    
+                    if !description.isEmpty {
+                        Text(description)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .lineLimit(2)
+                    }
+                    
+                    HStack {
+                        Text(category)
+                            .font(.caption)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 2)
+                            .background(Color.blue.opacity(0.2))
+                            .cornerRadius(4)
+                        
+                        Spacer()
+                        
+                        Text("\(weight, specifier: "%.1f")kg")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        
+                        if quantity > 1 {
+                            Text("= \(weight * Double(quantity), specifier: "%.1f")kg")
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                                .foregroundColor(.primary)
+                        }
+                    }
+                }
+            }
+        }
+        .padding(.vertical, 8)
+    }
+}
+
+// Legacy preview for compatibility
 struct ItemPreview: View {
     let name: String
     let weight: Double
@@ -104,34 +298,15 @@ struct ItemPreview: View {
     let isPacked: Bool
     
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: isPacked ? "checkmark.circle.fill" : "circle")
-                .font(.title3)
-                .foregroundColor(isPacked ? .green : .gray)
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(name)
-                    .font(.body)
-                    .strikethrough(isPacked)
-                    .foregroundColor(isPacked ? .secondary : .primary)
-                
-                HStack {
-                    Text(category)
-                        .font(.caption)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 2)
-                        .background(Color.blue.opacity(0.2))
-                        .cornerRadius(4)
-                    
-                    Text("\(weight, specifier: "%.1f")kg")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
-                    Spacer()
-                }
-            }
-        }
-        .padding(.vertical, 8)
+        EnhancedItemPreview(
+            name: name,
+            description: "",
+            weight: weight,
+            quantity: 1,
+            category: category,
+            photoData: nil,
+            isPacked: isPacked
+        )
     }
 }
 
