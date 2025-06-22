@@ -14,13 +14,40 @@ struct ItemDetailView: View {
     @State private var editedWeight: Double
     @State private var editedQuantity: Int
     @State private var editedCategory: String
+    @State private var editedSubcategory: String
     @State private var selectedPhoto: PhotosPickerItem?
+    @State private var showingCustomCategory = false
+    @State private var customCategory = ""
+    @State private var customSubcategory = ""
+    @State private var userCategories: [String: [String]] = [:]
     @State private var showingDeleteAlert = false
     
-    private let categories = [
-        "General", "Clothes", "Electronics", "Toiletries", 
-        "Documents", "Shoes", "Accessories", "Medication"
+    private let categoryStructure: [String: [String]] = [
+        "General": [],
+        "Clothes": ["Tops", "Bottoms", "Underwear", "Outerwear", "Sleepwear", "Socks"],
+        "Electronics": ["Chargers", "Cables", "Devices", "Batteries", "Adapters"],
+        "Toiletries": ["Skincare", "Haircare", "Dental", "Makeup", "Personal Care"],
+        "Documents": ["ID", "Travel", "Insurance", "Medical", "Tickets"],
+        "Shoes": ["Casual", "Formal", "Athletic", "Outdoor", "Special"],
+        "Accessories": ["Jewelry", "Bags", "Belts", "Hats", "Glasses"],
+        "Medication": ["Prescription", "Over-the-counter", "Vitamins", "First Aid"]
     ]
+    
+    private var allCategoryStructure: [String: [String]] {
+        var combined = categoryStructure
+        for (key, value) in userCategories {
+            combined[key] = value
+        }
+        return combined
+    }
+    
+    private var categories: [String] {
+        return Array(allCategoryStructure.keys).sorted()
+    }
+    
+    private var subcategories: [String] {
+        return allCategoryStructure[editedCategory] ?? []
+    }
     
     init(item: Item) {
         self.item = item
@@ -29,6 +56,7 @@ struct ItemDetailView: View {
         self._editedWeight = State(initialValue: item.weight)
         self._editedQuantity = State(initialValue: Int(item.quantity))
         self._editedCategory = State(initialValue: item.category ?? "General")
+        self._editedSubcategory = State(initialValue: item.subcategory ?? "")
     }
     
     var body: some View {
@@ -46,7 +74,10 @@ struct ItemDetailView: View {
                     editedWeight: $editedWeight,
                     editedQuantity: $editedQuantity,
                     editedCategory: $editedCategory,
-                    categories: categories
+                    editedSubcategory: $editedSubcategory,
+                    categories: categories,
+                    subcategories: subcategories,
+                    showingCustomCategory: $showingCustomCategory
                 )
                 
                 // Stats Section
@@ -94,6 +125,28 @@ struct ItemDetailView: View {
                 loadPhoto(from: newValue)
             }
         }
+        .sheet(isPresented: $showingCustomCategory) {
+            CustomCategoryView(
+                category: $customCategory,
+                subcategory: $customSubcategory,
+                onSave: { newCategory, newSubcategory in
+                    // Add to user categories
+                    if !newCategory.isEmpty {
+                        if userCategories[newCategory] == nil {
+                            userCategories[newCategory] = []
+                        }
+                        if !newSubcategory.isEmpty && !userCategories[newCategory]!.contains(newSubcategory) {
+                            userCategories[newCategory]!.append(newSubcategory)
+                        }
+                    }
+                    
+                    // Set as current selection
+                    editedCategory = newCategory
+                    editedSubcategory = newSubcategory
+                    showingCustomCategory = false
+                }
+            )
+        }
     }
     
     private func saveChanges() {
@@ -109,6 +162,7 @@ struct ItemDetailView: View {
             item.weight = editedWeight
             item.quantity = Int32(editedQuantity)
             item.category = editedCategory
+            item.subcategory = editedSubcategory.isEmpty ? nil : editedSubcategory
             
             do {
                 try viewContext.save()
@@ -126,6 +180,7 @@ struct ItemDetailView: View {
         editedWeight = item.weight
         editedQuantity = Int(item.quantity)
         editedCategory = item.category ?? "General"
+        editedSubcategory = item.subcategory ?? ""
         isEditing = false
     }
     
@@ -222,7 +277,10 @@ struct ItemDetailsSection: View {
     @Binding var editedWeight: Double
     @Binding var editedQuantity: Int
     @Binding var editedCategory: String
+    @Binding var editedSubcategory: String
     let categories: [String]
+    let subcategories: [String]
+    @Binding var showingCustomCategory: Bool
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -264,25 +322,76 @@ struct ItemDetailsSection: View {
                 }
                 
                 // Category
-                HStack {
-                    Text("Category")
-                        .fontWeight(.medium)
-                        .frame(width: 80, alignment: .leading)
-                    
+                VStack(alignment: .leading, spacing: 8) {
                     if isEditing {
-                        Picker("Category", selection: $editedCategory) {
-                            ForEach(categories, id: \.self) { category in
-                                Text(category).tag(category)
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack {
+                                Picker("Category", selection: $editedCategory) {
+                                    ForEach(categories, id: \.self) { category in
+                                        Text(category).tag(category)
+                                    }
+                                }
+                                .pickerStyle(MenuPickerStyle())
+                                .onChange(of: editedCategory) { oldValue, newValue in
+                                    // Reset subcategory when category changes
+                                    editedSubcategory = ""
+                                }
+                                
+                                Button(action: { showingCustomCategory = true }) {
+                                    Image(systemName: "plus.circle.fill")
+                                        .font(.title2)
+                                        .foregroundColor(.blue)
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
+                            
+                            if !subcategories.isEmpty {
+                                VStack(alignment: .leading, spacing: 8) {
+                                    HStack {
+                                        Text("Subcategory")
+                                            .font(.subheadline)
+                                            .fontWeight(.medium)
+                                        Text("(optional)")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                        Spacer()
+                                    }
+                                    
+                                    HStack {
+                                        Picker("Subcategory", selection: $editedSubcategory) {
+                                            Text("None").tag("")
+                                            ForEach(subcategories, id: \.self) { subcat in
+                                                Text(subcat).tag(subcat)
+                                            }
+                                        }
+                                        .pickerStyle(MenuPickerStyle())
+                                        .padding(.vertical, 4)
+                                        .background(Color(.systemGray6))
+                                        .cornerRadius(8)
+                                        
+                                        Button(action: { showingCustomCategory = true }) {
+                                            Image(systemName: "plus.circle.fill")
+                                                .font(.title3)
+                                                .foregroundColor(.blue)
+                                        }
+                                        .buttonStyle(PlainButtonStyle())
+                                    }
+                                }
                             }
                         }
-                        .pickerStyle(MenuPickerStyle())
                     } else {
-                        Text(item.category ?? "General")
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.blue.opacity(0.2))
-                            .cornerRadius(6)
-                        Spacer()
+                        HStack {
+                            Text("Category")
+                                .fontWeight(.medium)
+                                .frame(width: 80, alignment: .leading)
+                            
+                            Text(item.fullCategory)
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color.blue.opacity(0.2))
+                                .cornerRadius(6)
+                            Spacer()
+                        }
                     }
                 }
                 
@@ -421,5 +530,78 @@ struct ItemActionsSection: View {
             return item
         }())
     }
+    
+    struct CustomCategoryView: View {
+        @Environment(\.dismiss) private var dismiss
+        @Binding var category: String
+        @Binding var subcategory: String
+        let onSave: (String, String) -> Void
+        
+        var body: some View {
+            NavigationView {
+                Form {
+                    Section(header: Text("Create Category")) {
+                        VStack(alignment: .leading, spacing: 12) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Category Name")
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                TextField("e.g., Sports Equipment", text: $category)
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                            }
+                            
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Subcategory (optional)")
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                TextField("e.g., Running Gear", text: $subcategory)
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                            }
+                        }
+                    }
+                    
+                    Section(header: Text("Preview")) {
+                        if !category.isEmpty {
+                            HStack {
+                                Image(systemName: "folder.fill")
+                                    .foregroundColor(.blue)
+                                
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Your new category:")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                    
+                                    Text(subcategory.isEmpty ? category : "\(category) > \(subcategory)")
+                                        .font(.subheadline)
+                                        .fontWeight(.medium)
+                                }
+                                
+                                Spacer()
+                            }
+                            .padding(.vertical, 4)
+                        }
+                    }
+                }
+                .navigationTitle("Custom Category")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button("Cancel") {
+                            dismiss()
+                        }
+                    }
+                    
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Save") {
+                            onSave(category.trimmingCharacters(in: .whitespacesAndNewlines), 
+                                   subcategory.trimmingCharacters(in: .whitespacesAndNewlines))
+                        }
+                        .disabled(category.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    }
+                }
+            }
+        }
+    }
+}
     .environment(\.managedObjectContext, CoreDataManager.shared.context)
 }
