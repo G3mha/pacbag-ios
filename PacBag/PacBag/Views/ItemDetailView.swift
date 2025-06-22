@@ -89,9 +89,9 @@ struct ItemDetailView: View {
         } message: {
             Text("Are you sure you want to delete this item? This action cannot be undone.")
         }
-        .onChange(of: selectedPhoto) { newPhoto in
+        .onChange(of: selectedPhoto) { oldValue, newValue in
             if isEditing {
-                loadPhoto(from: newPhoto)
+                loadPhoto(from: newValue)
             }
         }
     }

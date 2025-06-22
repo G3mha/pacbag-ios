@@ -110,8 +110,8 @@ struct AddItemView: View {
                 }
             }
         }
-        .onChange(of: selectedPhoto) { newPhoto in
-            loadPhoto(from: newPhoto)
+        .onChange(of: selectedPhoto) { oldValue, newValue in
+            loadPhoto(from: newValue)
         }
     }
     
