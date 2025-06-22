@@ -315,6 +315,63 @@ struct ItemsListView: View {
     @ObservedObject var bag: Bag
     @Binding var showingAddItem: Bool
     @State private var showingTemplates = false
+    @State private var sortOrder: ItemSortOrder = .alphabetical
+    
+    enum ItemSortOrder: String, CaseIterable {
+        case alphabetical = "A-Z"
+        case category = "Category"
+        case weight = "Weight"
+        case packed = "Packed Status"
+        
+        var systemImage: String {
+            switch self {
+            case .alphabetical:
+                return "textformat.abc"
+            case .category:
+                return "folder"
+            case .weight:
+                return "scalemass"
+            case .packed:
+                return "checkmark.circle"
+            }
+        }
+    }
+    
+    var sortedItems: [Item] {
+        switch sortOrder {
+        case .alphabetical:
+            return bag.itemsArray.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        case .category:
+            return bag.itemsArray.sorted { 
+                if let cat1 = $0.category, let cat2 = $1.category {
+                    if cat1 == cat2 {
+                        return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+                    }
+                    return cat1.localizedCaseInsensitiveCompare(cat2) == .orderedAscending
+                } else if $0.category != nil {
+                    return true
+                } else if $1.category != nil {
+                    return false
+                } else {
+                    return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+                }
+            }
+        case .weight:
+            return bag.itemsArray.sorted { 
+                if $0.totalWeight == $1.totalWeight {
+                    return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+                }
+                return $0.totalWeight > $1.totalWeight
+            }
+        case .packed:
+            return bag.itemsArray.sorted { 
+                if $0.isPacked == $1.isPacked {
+                    return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+                }
+                return $0.isPacked && !$1.isPacked
+            }
+        }
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -324,6 +381,25 @@ struct ItemsListView: View {
                     .fontWeight(.bold)
                 
                 Spacer()
+                
+                Menu {
+                    ForEach(ItemSortOrder.allCases, id: \.self) { order in
+                        Button(action: { sortOrder = order }) {
+                            Label(order.rawValue, systemImage: order.systemImage)
+                        }
+                    }
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "arrow.up.arrow.down")
+                            .font(.caption)
+                        Text(sortOrder.rawValue)
+                            .font(.caption)
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color(.systemGray5))
+                    .cornerRadius(6)
+                }
                 
                 Button("Add Item") {
                     showingAddItem = true
@@ -339,34 +415,49 @@ struct ItemsListView: View {
                 )
             } else {
                 LazyVStack(spacing: 8) {
-                    ForEach(bag.itemsArray) { item in
-                        ItemRowView(item: item) {
-                            toggleItemPacked(item)
-                        }
-                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                            Button("Delete", role: .destructive) {
-                                deleteItem(item)
+                    ForEach(Array(zip(sortedItems.indices, sortedItems)), id: \.1.id) { index, item in
+                        Group {
+                            // Category header for category sorting
+                            if sortOrder == .category {
+                                let shouldShowCategoryHeader = index == 0 || 
+                                    sortedItems[index].category != sortedItems[index - 1].category
+                                
+                                if shouldShowCategoryHeader {
+                                    CategoryHeaderView(
+                                        categoryName: item.category ?? "Uncategorized"
+                                    )
+                                    .padding(.top, index == 0 ? 0 : 12)
+                                }
                             }
                             
-                            Button(item.isPacked ? "Unpack" : "Pack") {
+                            ItemRowView(item: item) {
                                 toggleItemPacked(item)
                             }
-                            .tint(item.isPacked ? .orange : .green)
-                        }
-                        .contextMenu {
-                            Button(item.isPacked ? "Mark as Unpacked" : "Mark as Packed", 
-                                   systemImage: item.isPacked ? "circle" : "checkmark.circle") {
-                                toggleItemPacked(item)
+                            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                Button("Delete", role: .destructive) {
+                                    deleteItem(item)
+                                }
+                                
+                                Button(item.isPacked ? "Unpack" : "Pack") {
+                                    toggleItemPacked(item)
+                                }
+                                .tint(item.isPacked ? .orange : .green)
                             }
-                            
-                            Button("Edit Item", systemImage: "pencil") {
-                                // Navigate to item detail
-                            }
-                            
-                            Divider()
-                            
-                            Button("Delete Item", systemImage: "trash", role: .destructive) {
-                                deleteItem(item)
+                            .contextMenu {
+                                Button(item.isPacked ? "Mark as Unpacked" : "Mark as Packed", 
+                                       systemImage: item.isPacked ? "circle" : "checkmark.circle") {
+                                    toggleItemPacked(item)
+                                }
+                                
+                                Button("Edit Item", systemImage: "pencil") {
+                                    // Navigate to item detail
+                                }
+                                
+                                Divider()
+                                
+                                Button("Delete Item", systemImage: "trash", role: .destructive) {
+                                    deleteItem(item)
+                                }
                             }
                         }
                     }
@@ -379,7 +470,7 @@ struct ItemsListView: View {
                         totalCount: bag.totalItemsCount,
                         onPackAll: {
                             withAnimation(.easeInOut(duration: 0.6)) {
-                                for item in bag.itemsArray {
+                                for item in sortedItems {
                                     item.isPacked = true
                                 }
                                 updateBagWeight()
@@ -388,7 +479,7 @@ struct ItemsListView: View {
                         },
                         onUnpackAll: {
                             withAnimation(.easeInOut(duration: 0.6)) {
-                                for item in bag.itemsArray {
+                                for item in sortedItems {
                                     item.isPacked = false
                                 }
                                 saveContext()
@@ -656,6 +747,25 @@ struct QuickPackingActionsView: View {
         .padding()
         .background(Color(.systemGray6))
         .cornerRadius(12)
+    }
+}
+
+struct CategoryHeaderView: View {
+    let categoryName: String
+    
+    var body: some View {
+        HStack {
+            Text(categoryName.uppercased())
+                .font(.caption)
+                .fontWeight(.semibold)
+                .foregroundColor(.secondary)
+            
+            Spacer()
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 4)
+        .background(Color(.systemGray6))
+        .cornerRadius(6)
     }
 }
 
