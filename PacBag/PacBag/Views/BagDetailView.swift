@@ -7,6 +7,7 @@ struct BagDetailView: View {
     
     @State private var showingAddItem = false
     @State private var showingEditBag = false
+    @State private var showingTemplates = false
     
     var body: some View {
         ScrollView {
@@ -41,6 +42,10 @@ struct BagDetailView: View {
                     
                     Button("Add Item", systemImage: "plus") {
                         showingAddItem = true
+                    }
+                    
+                    Button("Use Template", systemImage: "doc.text") {
+                        showingTemplates = true
                     }
                     
                     Divider()
@@ -82,6 +87,9 @@ struct BagDetailView: View {
         }
         .sheet(isPresented: $showingEditBag) {
             EditBagView(bag: bag)
+        }
+        .sheet(isPresented: $showingTemplates) {
+            PackingTemplatesView(bag: bag)
         }
     }
     
@@ -298,6 +306,7 @@ struct StatCard: View {
 struct ItemsListView: View {
     @ObservedObject var bag: Bag
     @Binding var showingAddItem: Bool
+    @State private var showingTemplates = false
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -316,7 +325,10 @@ struct ItemsListView: View {
             }
             
             if bag.itemsArray.isEmpty {
-                EmptyItemsView()
+                EmptyItemsView(
+                    onUseTemplate: { showingTemplates = true },
+                    onAddManually: { showingAddItem = true }
+                )
             } else {
                 LazyVStack(spacing: 8) {
                     ForEach(bag.itemsArray) { item in
@@ -353,6 +365,9 @@ struct ItemsListView: View {
                 }
             }
         }
+        .sheet(isPresented: $showingTemplates) {
+            PackingTemplatesView(bag: bag)
+        }
     }
     
     private func toggleItemPacked(_ item: Item) {
@@ -378,6 +393,9 @@ struct ItemsListView: View {
 }
 
 struct EmptyItemsView: View {
+    let onUseTemplate: () -> Void
+    let onAddManually: () -> Void
+    
     var body: some View {
         VStack(spacing: 12) {
             Image(systemName: "cube.box")
@@ -392,6 +410,21 @@ struct EmptyItemsView: View {
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
+            
+            HStack(spacing: 12) {
+                Button("Use Template") {
+                    onUseTemplate()
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.small)
+                
+                Button("Add Manually") {
+                    onAddManually()
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+            }
+            .padding(.top, 8)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 40)
