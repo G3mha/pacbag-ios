@@ -66,18 +66,28 @@ struct AddItemView: View {
                         
                         if !subcategories.isEmpty {
                             VStack(alignment: .leading, spacing: 8) {
-                                Text("Subcategory (optional)")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
+                                HStack {
+                                    Text("Subcategory")
+                                        .font(.subheadline)
+                                        .fontWeight(.medium)
+                                    Text("(optional)")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                    Spacer()
+                                }
                                 
                                 Picker("Subcategory", selection: $subcategory) {
                                     Text("None").tag("")
-                                    ForEach(subcategories, id: \.self) { subcategory in
-                                        Text(subcategory).tag(subcategory)
+                                    ForEach(subcategories, id: \.self) { subcat in
+                                        Text(subcat).tag(subcat)
                                     }
                                 }
                                 .pickerStyle(MenuPickerStyle())
+                                .padding(.vertical, 4)
+                                .background(Color(.systemGray6))
+                                .cornerRadius(8)
                             }
+                            .padding(.top, 8)
                         }
                         
                         Button("Custom Category") {
@@ -85,6 +95,24 @@ struct AddItemView: View {
                         }
                         .font(.caption)
                         .foregroundColor(.blue)
+                        
+                        // Current selection display
+                        if !category.isEmpty {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Current Selection:")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                
+                                Text(subcategory.isEmpty ? category : "\(category) > \(subcategory)")
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(Color.blue.opacity(0.1))
+                                    .cornerRadius(6)
+                            }
+                            .padding(.top, 8)
+                        }
                     }
                 }
                 
@@ -374,6 +402,7 @@ struct ItemPreview: View {
             weight: weight,
             quantity: 1,
             category: category,
+            subcategory: "",
             photoData: nil,
             isPacked: isPacked
         )
