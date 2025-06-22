@@ -8,6 +8,8 @@ struct AddBagView: View {
     @State private var bagName = ""
     @State private var maxWeight = 20.0
     @State private var selectedBagType = BagType.suitcase
+    @State private var showingTemplates = false
+    @State private var createdBag: Bag?
     
     enum BagType: String, CaseIterable {
         case suitcase = "Suitcase"
@@ -88,6 +90,27 @@ struct AddBagView: View {
                     }
                 }
                 
+                Section(header: Text("Quick Start")) {
+                    VStack(spacing: 12) {
+                        Button("Create with Template") {
+                            // First save the bag, then show templates
+                            createdBag = createBag()
+                            if createdBag != nil {
+                                showingTemplates = true
+                            }
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .frame(maxWidth: .infinity)
+                        .disabled(bagName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                        
+                        Text("Create a bag and populate it with items from a packing template")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding(.vertical, 8)
+                }
+                
                 Section {
                     BagPreview(
                         name: bagName.isEmpty ? selectedBagType.rawValue : bagName,
@@ -112,23 +135,41 @@ struct AddBagView: View {
                     .disabled(bagName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
+            .sheet(isPresented: $showingTemplates, onDismiss: {
+                // When template view is dismissed, close the add bag view too
+                if createdBag != nil {
+                    dismiss()
+                }
+            }) {
+                if let createdBag = createdBag {
+                    PackingTemplatesView(bag: createdBag)
+                }
+            }
+        }
+    }
+    
+    private func createBag() -> Bag? {
+        let newBag = Bag(context: viewContext)
+        newBag.id = UUID()
+        newBag.name = bagName.trimmingCharacters(in: .whitespacesAndNewlines)
+        newBag.maxWeight = maxWeight
+        newBag.currentWeight = 0.0
+        
+        do {
+            try viewContext.save()
+            return newBag
+        } catch {
+            let nsError = error as NSError
+            print("Error creating bag: \(nsError), \(nsError.userInfo)")
+            return nil
         }
     }
     
     private func saveBag() {
         withAnimation {
-            let newBag = Bag(context: viewContext)
-            newBag.id = UUID()
-            newBag.name = bagName.trimmingCharacters(in: .whitespacesAndNewlines)
-            newBag.maxWeight = maxWeight
-            newBag.currentWeight = 0.0
-            
-            do {
-                try viewContext.save()
+            let newBag = createBag()
+            if newBag != nil {
                 dismiss()
-            } catch {
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
             }
         }
     }
