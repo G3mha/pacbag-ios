@@ -3,11 +3,13 @@ import CoreData
 
 struct TripDetailView: View {
     @Environment(\.managedObjectContext) private var viewContext
+    @Environment(\.dismiss) private var dismiss
     @ObservedObject var trip: Trip
     
     @State private var showingAddBag = false
     @State private var showingEditTrip = false
     @State private var showingShareView = false
+    @State private var showingDeleteConfirmation = false
     
     var body: some View {
         ScrollView {
@@ -55,6 +57,12 @@ struct TripDetailView: View {
                             markTripIncomplete()
                         }
                     }
+                    
+                    Divider()
+                    
+                    Button("Delete Trip", systemImage: "trash", role: .destructive) {
+                        showingDeleteConfirmation = true
+                    }
                 } label: {
                     Image(systemName: "ellipsis.circle")
                 }
@@ -69,6 +77,14 @@ struct TripDetailView: View {
         .sheet(isPresented: $showingShareView) {
             ShareView(shareableItem: .trip(trip))
         }
+        .alert("Delete Trip", isPresented: $showingDeleteConfirmation) {
+            Button("Delete", role: .destructive) {
+                deleteTrip()
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("Are you sure you want to delete \"\(trip.name)\"? This will also delete all bags and items in this trip. This action cannot be undone.")
+        }
     }
     
     private func markTripCompleted() {
@@ -82,6 +98,26 @@ struct TripDetailView: View {
         withAnimation {
             trip.isCompleted = false
             saveContext()
+        }
+    }
+    
+    private func deleteTrip() {
+        withAnimation {
+            // Clear any notifications for this trip
+            Task {
+                await NotificationManager.shared.clearReminders(for: trip)
+            }
+            
+            // Delete the trip (Core Data will cascade delete bags and items)
+            viewContext.delete(trip)
+            
+            do {
+                try viewContext.save()
+                dismiss() // Navigate back after deletion
+            } catch {
+                let nsError = error as NSError
+                print("Error deleting trip: \(nsError), \(nsError.userInfo)")
+            }
         }
     }
     
@@ -385,6 +421,7 @@ struct ActionButton: View {
 }
 
 struct BagsForTripView: View {
+    @Environment(\.managedObjectContext) private var viewContext
     @ObservedObject var trip: Trip
     @Binding var showingAddBag: Bool
     
@@ -415,8 +452,46 @@ struct BagsForTripView: View {
                             TripBagCardView(bag: bag)
                         }
                         .buttonStyle(PlainButtonStyle())
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            Button("Delete", role: .destructive) {
+                                deleteBag(bag)
+                            }
+                            
+                            Button("Share") {
+                                // Share bag functionality
+                            }
+                            .tint(.blue)
+                        }
+                        .contextMenu {
+                            Button("Share Bag", systemImage: "square.and.arrow.up") {
+                                // Share action
+                            }
+                            
+                            Button("Edit Bag", systemImage: "pencil") {
+                                // Edit action
+                            }
+                            
+                            Divider()
+                            
+                            Button("Delete Bag", systemImage: "trash", role: .destructive) {
+                                deleteBag(bag)
+                            }
+                        }
                     }
                 }
+            }
+        }
+    }
+    
+    private func deleteBag(_ bag: Bag) {
+        withAnimation {
+            viewContext.delete(bag)
+            
+            do {
+                try viewContext.save()
+            } catch {
+                let nsError = error as NSError
+                print("Error deleting bag: \(nsError), \(nsError.userInfo)")
             }
         }
     }

@@ -343,6 +343,32 @@ struct ItemsListView: View {
                         ItemRowView(item: item) {
                             toggleItemPacked(item)
                         }
+                        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                            Button("Delete", role: .destructive) {
+                                deleteItem(item)
+                            }
+                            
+                            Button(item.isPacked ? "Unpack" : "Pack") {
+                                toggleItemPacked(item)
+                            }
+                            .tint(item.isPacked ? .orange : .green)
+                        }
+                        .contextMenu {
+                            Button(item.isPacked ? "Mark as Unpacked" : "Mark as Packed", 
+                                   systemImage: item.isPacked ? "circle" : "checkmark.circle") {
+                                toggleItemPacked(item)
+                            }
+                            
+                            Button("Edit Item", systemImage: "pencil") {
+                                // Navigate to item detail
+                            }
+                            
+                            Divider()
+                            
+                            Button("Delete Item", systemImage: "trash", role: .destructive) {
+                                deleteItem(item)
+                            }
+                        }
                     }
                 }
                 
@@ -388,6 +414,14 @@ struct ItemsListView: View {
     
     private func updateBagWeight() {
         bag.currentWeight = bag.itemsArray.reduce(0) { $0 + $1.totalWeight }
+    }
+    
+    private func deleteItem(_ item: Item) {
+        withAnimation {
+            bag.managedObjectContext?.delete(item)
+            updateBagWeight()
+            saveContext()
+        }
     }
     
     private func saveContext() {

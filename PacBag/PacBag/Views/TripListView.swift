@@ -83,6 +83,31 @@ struct TripListView: View {
                                     TripCardView(trip: trip)
                                 }
                                 .buttonStyle(PlainButtonStyle())
+                                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                                    Button("Delete", role: .destructive) {
+                                        deleteTrip(trip)
+                                    }
+                                    
+                                    Button("Share") {
+                                        // We'll implement this
+                                    }
+                                    .tint(.blue)
+                                }
+                                .contextMenu {
+                                    Button("Share Trip", systemImage: "square.and.arrow.up") {
+                                        // Share action
+                                    }
+                                    
+                                    Button("Edit Trip", systemImage: "pencil") {
+                                        // Edit action - navigate to edit
+                                    }
+                                    
+                                    Divider()
+                                    
+                                    Button("Delete Trip", systemImage: "trash", role: .destructive) {
+                                        deleteTrip(trip)
+                                    }
+                                }
                             }
                         }
                         .padding()
@@ -108,6 +133,25 @@ struct TripListView: View {
             }
             .sheet(isPresented: $showingNotificationSettings) {
                 NotificationSettingsView()
+            }
+        }
+    }
+    
+    private func deleteTrip(_ trip: Trip) {
+        withAnimation {
+            // Clear any notifications for this trip
+            Task {
+                await NotificationManager.shared.clearReminders(for: trip)
+            }
+            
+            // Delete the trip (Core Data will cascade delete bags and items)
+            viewContext.delete(trip)
+            
+            do {
+                try viewContext.save()
+            } catch {
+                let nsError = error as NSError
+                print("Error deleting trip: \(nsError), \(nsError.userInfo)")
             }
         }
     }
