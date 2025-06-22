@@ -343,18 +343,13 @@ struct ItemsListView: View {
             return bag.itemsArray.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
         case .category:
             return bag.itemsArray.sorted { 
-                if let cat1 = $0.category, let cat2 = $1.category {
-                    if cat1 == cat2 {
-                        return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
-                    }
-                    return cat1.localizedCaseInsensitiveCompare(cat2) == .orderedAscending
-                } else if $0.category != nil {
-                    return true
-                } else if $1.category != nil {
-                    return false
-                } else {
+                let fullCat1 = $0.fullCategory
+                let fullCat2 = $1.fullCategory
+                
+                if fullCat1 == fullCat2 {
                     return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
                 }
+                return fullCat1.localizedCaseInsensitiveCompare(fullCat2) == .orderedAscending
             }
         case .weight:
             return bag.itemsArray.sorted { 
@@ -420,11 +415,11 @@ struct ItemsListView: View {
                             // Category header for category sorting
                             if sortOrder == .category {
                                 let shouldShowCategoryHeader = index == 0 || 
-                                    sortedItems[index].category != sortedItems[index - 1].category
+                                    sortedItems[index].fullCategory != sortedItems[index - 1].fullCategory
                                 
                                 if shouldShowCategoryHeader {
                                     CategoryHeaderView(
-                                        categoryName: item.category ?? "Uncategorized"
+                                        categoryName: item.fullCategory
                                     )
                                     .padding(.top, index == 0 ? 0 : 12)
                                 }
@@ -638,7 +633,7 @@ struct ItemRowView: View {
                     
                     HStack {
                         if let category = item.category, !category.isEmpty {
-                            Text(category)
+                            Text(item.fullCategory)
                                 .font(.caption)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)

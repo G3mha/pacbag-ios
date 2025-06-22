@@ -11,6 +11,10 @@ struct AddItemView: View {
     @State private var itemName = ""
     @State private var weight = 0.1
     @State private var category = "General"
+    @State private var subcategory = ""
+    @State private var showingCustomCategory = false
+    @State private var customCategory = ""
+    @State private var customSubcategory = ""
     @State private var itemDescription = ""
     @State private var quantity: Int = 1
     @State private var isPacked = false
@@ -18,10 +22,24 @@ struct AddItemView: View {
     @State private var photoData: Data?
     @State private var showingCamera = false
     
-    private let categories = [
-        "General", "Clothes", "Electronics", "Toiletries", 
-        "Documents", "Shoes", "Accessories", "Medication"
+    private let categoryStructure: [String: [String]] = [
+        "General": [],
+        "Clothes": ["Tops", "Bottoms", "Underwear", "Outerwear", "Sleepwear", "Socks"],
+        "Electronics": ["Chargers", "Cables", "Devices", "Batteries", "Adapters"],
+        "Toiletries": ["Skincare", "Haircare", "Dental", "Makeup", "Personal Care"],
+        "Documents": ["ID", "Travel", "Insurance", "Medical", "Tickets"],
+        "Shoes": ["Casual", "Formal", "Athletic", "Outdoor", "Special"],
+        "Accessories": ["Jewelry", "Bags", "Belts", "Hats", "Glasses"],
+        "Medication": ["Prescription", "Over-the-counter", "Vitamins", "First Aid"]
     ]
+    
+    private var categories: [String] {
+        return Array(categoryStructure.keys).sorted()
+    }
+    
+    private var subcategories: [String] {
+        return categoryStructure[category] ?? []
+    }
     
     var body: some View {
         NavigationView {
@@ -34,12 +52,40 @@ struct AddItemView: View {
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .lineLimit(2...4)
                     
-                    Picker("Category", selection: $category) {
-                        ForEach(categories, id: \.self) { category in
-                            Text(category).tag(category)
+                    VStack(alignment: .leading, spacing: 12) {
+                        Picker("Category", selection: $category) {
+                            ForEach(categories, id: \.self) { category in
+                                Text(category).tag(category)
+                            }
                         }
+                        .pickerStyle(MenuPickerStyle())
+                        .onChange(of: category) { oldValue, newValue in
+                            // Reset subcategory when category changes
+                            subcategory = ""
+                        }
+                        
+                        if !subcategories.isEmpty {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Subcategory (optional)")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                
+                                Picker("Subcategory", selection: $subcategory) {
+                                    Text("None").tag("")
+                                    ForEach(subcategories, id: \.self) { subcategory in
+                                        Text(subcategory).tag(subcategory)
+                                    }
+                                }
+                                .pickerStyle(MenuPickerStyle())
+                            }
+                        }
+                        
+                        Button("Custom Category") {
+                            showingCustomCategory = true
+                        }
+                        .font(.caption)
+                        .foregroundColor(.blue)
                     }
-                    .pickerStyle(MenuPickerStyle())
                 }
                 
                 Section(header: Text("Quantity & Weight")) {
@@ -88,6 +134,7 @@ struct AddItemView: View {
                         weight: weight,
                         quantity: quantity,
                         category: category,
+                        subcategory: subcategory,
                         photoData: photoData,
                         isPacked: isPacked
                     )
@@ -113,6 +160,17 @@ struct AddItemView: View {
         .onChange(of: selectedPhoto) { oldValue, newValue in
             loadPhoto(from: newValue)
         }
+        .sheet(isPresented: $showingCustomCategory) {
+            CustomCategoryView(
+                category: $customCategory,
+                subcategory: $customSubcategory,
+                onSave: {
+                    category = customCategory
+                    subcategory = customSubcategory
+                    showingCustomCategory = false
+                }
+            )
+        }
     }
     
     private func saveItem() {
@@ -124,6 +182,7 @@ struct AddItemView: View {
             newItem.weight = weight
             newItem.quantity = Int32(quantity)
             newItem.category = category
+            newItem.subcategory = subcategory.isEmpty ? nil : subcategory
             newItem.isPacked = isPacked
             newItem.photoData = photoData
             newItem.bag = bag
@@ -210,8 +269,19 @@ struct EnhancedItemPreview: View {
     let weight: Double
     let quantity: Int
     let category: String
+    let subcategory: String
     let photoData: Data?
     let isPacked: Bool
+    
+    private var fullCategory: String {
+        if !category.isEmpty {
+            if !subcategory.isEmpty {
+                return "\(category) > \(subcategory)"
+            }
+            return category
+        }
+        return "General"
+    }
     
     var body: some View {
         VStack(spacing: 12) {
@@ -263,7 +333,7 @@ struct EnhancedItemPreview: View {
                     }
                     
                     HStack {
-                        Text(category)
+                        Text(fullCategory)
                             .font(.caption)
                             .padding(.horizontal, 8)
                             .padding(.vertical, 2)
@@ -307,6 +377,54 @@ struct ItemPreview: View {
             photoData: nil,
             isPacked: isPacked
         )
+    }
+}
+
+struct CustomCategoryView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Binding var category: String
+    @Binding var subcategory: String
+    let onSave: () -> Void
+    
+    var body: some View {
+        NavigationView {
+            Form {
+                Section(header: Text("Custom Category")) {
+                    TextField("Category", text: $category)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                    
+                    TextField("Subcategory (optional)", text: $subcategory)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                }
+                
+                Section(header: Text("Preview")) {
+                    if !category.isEmpty {
+                        HStack {
+                            Text("Full Category:")
+                            Spacer()
+                            Text(subcategory.isEmpty ? category : "\(category) > \(subcategory)")
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Custom Category")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Save") {
+                        onSave()
+                    }
+                    .disabled(category.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+            }
+        }
     }
 }
 
