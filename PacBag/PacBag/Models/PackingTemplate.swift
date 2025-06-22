@@ -5,7 +5,7 @@ import CoreData
 // MARK: - Packing Template Models
 
 struct PackingTemplate: Identifiable, Codable {
-    let id = UUID()
+    let id: UUID
     let name: String
     let description: String
     let tripType: TripType
@@ -17,6 +17,7 @@ struct PackingTemplate: Identifiable, Codable {
     let isDefault: Bool
     
     init(name: String, description: String, tripType: TripType, duration: TripDuration, season: Season, items: [TemplateItem], icon: String, color: String, isDefault: Bool = true) {
+        self.id = UUID()
         self.name = name
         self.description = description
         self.tripType = tripType
@@ -30,7 +31,7 @@ struct PackingTemplate: Identifiable, Codable {
 }
 
 struct TemplateItem: Identifiable, Codable {
-    let id = UUID()
+    let id: UUID
     let name: String
     let category: String
     let weight: Double
@@ -39,6 +40,7 @@ struct TemplateItem: Identifiable, Codable {
     let description: String?
     
     init(name: String, category: String, weight: Double = 0.1, quantity: Int = 1, isEssential: Bool = false, description: String? = nil) {
+        self.id = UUID()
         self.name = name
         self.category = category
         self.weight = weight

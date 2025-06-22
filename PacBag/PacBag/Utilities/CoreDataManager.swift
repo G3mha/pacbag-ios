@@ -14,11 +14,22 @@ class CoreDataManager {
         storeDescription?.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
         storeDescription?.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
         
-        container.loadPersistentStores { _, error in
+        // Explicitly set CloudKit container
+        storeDescription?.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(
+            containerIdentifier: "iCloud.enriccogemha.PacBag"
+        )
+        
+        container.loadPersistentStores { storeDescription, error in
             if let error = error {
                 fatalError("Core Data error: \(error)")
             }
+            print("✅ Core Data loaded successfully")
+            print("📱 Store URL: \(storeDescription.url?.absoluteString ?? "Unknown")")
+            print("☁️ CloudKit enabled: \(storeDescription.cloudKitContainerOptions != nil)")
         }
+        
+        // Enable CloudKit sync debugging
+        container.viewContext.automaticallyMergesChangesFromParent = true
         
         return container
     }()
