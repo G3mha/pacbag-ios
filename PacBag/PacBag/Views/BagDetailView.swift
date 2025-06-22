@@ -14,8 +14,16 @@ struct BagDetailView: View {
                 // Bag Header with visual representation
                 BagHeaderView(bag: bag)
                 
+                // Packing Progress
+                PackingProgressView(bag: bag, showDetails: true)
+                
                 // Quick Stats
                 BagStatsView(bag: bag)
+                
+                // Sub-bags Section (only for main bags)
+                if bag.isMainBag {
+                    SubBagView(parentBag: bag)
+                }
                 
                 // Items Section
                 ItemsListView(bag: bag, showingAddItem: $showingAddItem)
@@ -43,6 +51,26 @@ struct BagDetailView: View {
                     
                     Button("Mark All Unpacked", systemImage: "circle") {
                         markAllUnpacked()
+                    }
+                    
+                    Divider()
+                    
+                    Menu("Bulk Actions", systemImage: "checklist") {
+                        Button("Pack by Category", systemImage: "folder") {
+                            // Will implement category-based packing
+                        }
+                        
+                        Button("Pack Essentials Only", systemImage: "star") {
+                            // Will implement essential items packing
+                        }
+                        
+                        Button("Pack Lightest Items", systemImage: "feather") {
+                            packLightestItems()
+                        }
+                        
+                        Button("Unpack Everything", systemImage: "arrow.counterclockwise") {
+                            markAllUnpacked()
+                        }
                     }
                 } label: {
                     Image(systemName: "ellipsis.circle")
@@ -76,8 +104,28 @@ struct BagDetailView: View {
         }
     }
     
+    private func packLightestItems() {
+        withAnimation {
+            let sortedItems = bag.itemsArray.sorted { $0.totalWeight < $1.totalWeight }
+            let halfCount = max(1, sortedItems.count / 2)
+            
+            // First unpack all
+            for item in bag.itemsArray {
+                item.isPacked = false
+            }
+            
+            // Then pack the lightest half
+            for item in sortedItems.prefix(halfCount) {
+                item.isPacked = true
+            }
+            
+            updateBagWeight()
+            saveContext()
+        }
+    }
+    
     private func updateBagWeight() {
-        bag.currentWeight = bag.itemsArray.reduce(0) { $0 + $1.weight }
+        bag.currentWeight = bag.itemsArray.reduce(0) { $0 + $1.totalWeight }
     }
     
     private func saveContext() {
@@ -113,7 +161,7 @@ struct BagHeaderView: View {
                         .foregroundColor(bagColor)
                     
                     VStack(spacing: 4) {
-                        Text("\(bag.currentWeight, specifier: "%.1f") / \(bag.maxWeight, specifier: "%.1f") kg")
+                        Text("\(bag.totalWeight, specifier: "%.1f") / \(bag.maxWeight, specifier: "%.1f") kg")
                             .font(.title2)
                             .fontWeight(.semibold)
                         
@@ -166,27 +214,56 @@ struct BagStatsView: View {
     @ObservedObject var bag: Bag
     
     var body: some View {
-        HStack(spacing: 20) {
-            StatCard(
-                title: "Items",
-                value: "\(bag.totalItemsCount)",
-                icon: "cube.box",
-                color: .blue
-            )
+        VStack(spacing: 12) {
+            // Main stats row
+            HStack(spacing: 16) {
+                StatCard(
+                    title: "Items",
+                    value: "\(bag.totalItemsCount)",
+                    icon: "cube.box",
+                    color: .blue
+                )
+                
+                StatCard(
+                    title: "Packed",
+                    value: "\(bag.packedItemsCount)",
+                    icon: "checkmark.circle.fill",
+                    color: .green
+                )
+                
+                StatCard(
+                    title: "Remaining",
+                    value: "\(bag.totalItemsCount - bag.packedItemsCount)",
+                    icon: "circle",
+                    color: .orange
+                )
+            }
             
-            StatCard(
-                title: "Packed",
-                value: "\(bag.packedItemsCount)",
-                icon: "checkmark.circle.fill",
-                color: .green
-            )
-            
-            StatCard(
-                title: "Remaining",
-                value: "\(bag.totalItemsCount - bag.packedItemsCount)",
-                icon: "circle",
-                color: .orange
-            )
+            // Sub-bags stats row (only for main bags with sub-bags)
+            if bag.isMainBag && bag.totalSubBagsCount > 0 {
+                HStack(spacing: 16) {
+                    StatCard(
+                        title: "Sub-bags",
+                        value: "\(bag.totalSubBagsCount)",
+                        icon: "bag.fill",
+                        color: .purple
+                    )
+                    
+                    StatCard(
+                        title: "Direct Items",
+                        value: "\(bag.itemsArray.count)",
+                        icon: "cube",
+                        color: .indigo
+                    )
+                    
+                    StatCard(
+                        title: "Total Weight",
+                        value: String(format: "%.1fkg", bag.totalWeight),
+                        icon: "scalemass.fill",
+                        color: .brown
+                    )
+                }
+            }
         }
     }
 }
@@ -248,6 +325,32 @@ struct ItemsListView: View {
                         }
                     }
                 }
+                
+                // Quick Actions Footer
+                if bag.itemsArray.count > 3 {
+                    QuickPackingActionsView(
+                        packedCount: bag.packedItemsCount,
+                        totalCount: bag.totalItemsCount,
+                        onPackAll: {
+                            withAnimation(.easeInOut(duration: 0.6)) {
+                                for item in bag.itemsArray {
+                                    item.isPacked = true
+                                }
+                                updateBagWeight()
+                                saveContext()
+                            }
+                        },
+                        onUnpackAll: {
+                            withAnimation(.easeInOut(duration: 0.6)) {
+                                for item in bag.itemsArray {
+                                    item.isPacked = false
+                                }
+                                saveContext()
+                            }
+                        }
+                    )
+                    .padding(.top, 16)
+                }
             }
         }
     }
@@ -261,7 +364,7 @@ struct ItemsListView: View {
     }
     
     private func updateBagWeight() {
-        bag.currentWeight = bag.itemsArray.reduce(0) { $0 + $1.weight }
+        bag.currentWeight = bag.itemsArray.reduce(0) { $0 + $1.totalWeight }
     }
     
     private func saveContext() {
@@ -302,38 +405,106 @@ struct ItemRowView: View {
     let onToggle: () -> Void
     
     var body: some View {
-        HStack(spacing: 12) {
-            Button(action: onToggle) {
-                Image(systemName: item.isPacked ? "checkmark.circle.fill" : "circle")
-                    .font(.title3)
-                    .foregroundColor(item.isPacked ? .green : .gray)
-            }
-            .buttonStyle(PlainButtonStyle())
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(item.name.isEmpty ? "Unnamed Item" : item.name)
-                    .font(.body)
-                    .strikethrough(item.isPacked)
-                    .foregroundColor(item.isPacked ? .secondary : .primary)
+        NavigationLink(destination: ItemDetailView(item: item)) {
+            HStack(spacing: 12) {
+                Button(action: onToggle) {
+                    ZStack {
+                        Circle()
+                            .fill(item.isPacked ? Color.green.opacity(0.2) : Color.clear)
+                            .frame(width: 30, height: 30)
+                            .scaleEffect(item.isPacked ? 1.2 : 1.0)
+                            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: item.isPacked)
+                        
+                        Image(systemName: item.isPacked ? "checkmark.circle.fill" : "circle")
+                            .font(.title3)
+                            .foregroundColor(item.isPacked ? .green : .gray)
+                            .scaleEffect(item.isPacked ? 1.1 : 1.0)
+                            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: item.isPacked)
+                    }
+                }
+                .buttonStyle(PlainButtonStyle())
                 
-                HStack {
-                    if let category = item.category, !category.isEmpty {
-                        Text(category)
-                            .font(.caption)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 2)
-                            .background(Color.blue.opacity(0.2))
-                            .cornerRadius(4)
+                // Photo thumbnail
+                Group {
+                    if let photo = item.photo {
+                        Image(uiImage: photo)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 40, height: 40)
+                            .clipShape(RoundedRectangle(cornerRadius: 6))
+                    } else {
+                        RoundedRectangle(cornerRadius: 6)
+                            .fill(Color(.systemGray5))
+                            .frame(width: 40, height: 40)
+                            .overlay(
+                                Image(systemName: "photo")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            )
+                    }
+                }
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text(item.name.isEmpty ? "Unnamed Item" : item.name)
+                            .font(.body)
+                            .strikethrough(item.isPacked)
+                            .foregroundColor(item.isPacked ? .secondary : .primary)
+                        
+                        Spacer()
+                        
+                        if item.quantity > 1 {
+                            Text("×\(item.quantity)")
+                                .font(.caption)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.orange.opacity(0.3))
+                                .cornerRadius(4)
+                        }
                     }
                     
-                    Text("\(item.weight, specifier: "%.1f")kg")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    if let description = item.itemDescription, !description.isEmpty {
+                        Text(description)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                            .lineLimit(1)
+                    }
                     
-                    Spacer()
+                    HStack {
+                        if let category = item.category, !category.isEmpty {
+                            Text(category)
+                                .font(.caption)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.blue.opacity(0.2))
+                                .cornerRadius(4)
+                        }
+                        
+                        Spacer()
+                        
+                        if item.quantity > 1 {
+                            Text("\(item.weight, specifier: "%.1f")kg each")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                            
+                            Text("= \(item.totalWeight, specifier: "%.1f")kg")
+                                .font(.caption)
+                                .fontWeight(.medium)
+                                .foregroundColor(.primary)
+                        } else {
+                            Text("\(item.weight, specifier: "%.1f")kg")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
                 }
+                
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
         }
+        .buttonStyle(PlainButtonStyle())
         .padding(.vertical, 8)
         .padding(.horizontal, 12)
         .background(item.isPacked ? Color(.systemGray6) : Color(.systemBackground))
@@ -342,6 +513,74 @@ struct ItemRowView: View {
             RoundedRectangle(cornerRadius: 8)
                 .stroke(Color(.systemGray4), lineWidth: 0.5)
         )
+    }
+}
+
+struct QuickPackingActionsView: View {
+    let packedCount: Int
+    let totalCount: Int
+    let onPackAll: () -> Void
+    let onUnpackAll: () -> Void
+    
+    private var progressPercentage: Int {
+        guard totalCount > 0 else { return 0 }
+        return Int((Double(packedCount) / Double(totalCount)) * 100)
+    }
+    
+    var body: some View {
+        VStack(spacing: 12) {
+            // Progress Summary
+            HStack {
+                Text("Progress: \(packedCount)/\(totalCount) items (\(progressPercentage)%)")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                
+                Spacer()
+                
+                if progressPercentage == 100 {
+                    HStack(spacing: 4) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.green)
+                        Text("Complete!")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.green)
+                    }
+                }
+            }
+            
+            // Quick Action Buttons
+            HStack(spacing: 12) {
+                Button(action: onPackAll) {
+                    HStack {
+                        Image(systemName: "checkmark.circle.fill")
+                        Text("Pack All")
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+                    .background(Color.green.opacity(0.1))
+                    .foregroundColor(.green)
+                    .cornerRadius(8)
+                }
+                .disabled(progressPercentage == 100)
+                
+                Button(action: onUnpackAll) {
+                    HStack {
+                        Image(systemName: "circle")
+                        Text("Unpack All")
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 8)
+                    .background(Color.orange.opacity(0.1))
+                    .foregroundColor(.orange)
+                    .cornerRadius(8)
+                }
+                .disabled(progressPercentage == 0)
+            }
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(12)
     }
 }
 

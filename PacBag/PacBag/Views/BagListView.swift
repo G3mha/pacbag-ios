@@ -6,6 +6,7 @@ struct BagListView: View {
     
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \Bag.name, ascending: true)],
+        predicate: NSPredicate(format: "parentBag == nil"),
         animation: .default)
     private var bags: FetchedResults<Bag>
     
@@ -50,6 +51,28 @@ struct BagListView: View {
 struct BagCardView: View {
     let bag: Bag
     
+    private var packingProgress: Double {
+        guard bag.totalItemsCount > 0 else { return 0 }
+        return Double(bag.packedItemsCount) / Double(bag.totalItemsCount)
+    }
+    
+    private var packingProgressColor: Color {
+        switch packingProgress {
+        case 0.0:
+            return .gray
+        case 0.0..<0.5:
+            return .red
+        case 0.5..<0.8:
+            return .orange
+        case 0.8..<1.0:
+            return .blue
+        case 1.0:
+            return .green
+        default:
+            return .gray
+        }
+    }
+    
     var body: some View {
         VStack(spacing: 12) {
             // Bag Icon and Visual Representation
@@ -58,15 +81,22 @@ struct BagCardView: View {
                     .fill(bagColor.opacity(0.2))
                     .frame(height: 100)
                 
-                VStack {
+                VStack(spacing: 8) {
                     Image(systemName: bagIcon)
                         .font(.largeTitle)
                         .foregroundColor(bagColor)
                     
-                    // Weight utilization bar
-                    ProgressView(value: bag.weightUtilization)
-                        .progressViewStyle(LinearProgressViewStyle(tint: progressColor))
-                        .frame(width: 80)
+                    // Simple progress indicator
+                    VStack(spacing: 4) {
+                        Text("\(Int(packingProgress * 100))%")
+                            .font(.caption)
+                            .fontWeight(.semibold)
+                            .foregroundColor(packingProgressColor)
+                        
+                        ProgressView(value: packingProgress)
+                            .progressViewStyle(LinearProgressViewStyle(tint: packingProgressColor))
+                            .frame(width: 80)
+                    }
                 }
             }
             
@@ -81,8 +111,14 @@ struct BagCardView: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                     
-                    Label("\(bag.currentWeight, specifier: "%.1f")kg", systemImage: "scalemass")
+                    Label("\(bag.totalWeight, specifier: "%.1f")kg", systemImage: "scalemass")
                         .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                
+                if bag.totalSubBagsCount > 0 {
+                    Text("\(bag.totalSubBagsCount) sub-bags")
+                        .font(.caption2)
                         .foregroundColor(.secondary)
                 }
             }
