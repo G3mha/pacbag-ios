@@ -15,7 +15,7 @@ struct AddItemView: View {
     @State private var showingCustomCategory = false
     @State private var customCategory = ""
     @State private var customSubcategory = ""
-    @State private var userCategories: [String: [String]] = [:]
+    @StateObject private var categoryManager = CategoryManager.shared
     @State private var itemDescription = ""
     @State private var quantity: Int = 1
     @State private var isPacked = false
@@ -23,31 +23,12 @@ struct AddItemView: View {
     @State private var photoData: Data?
     @State private var showingCamera = false
     
-    private let categoryStructure: [String: [String]] = [
-        "General": [],
-        "Clothes": ["Tops", "Bottoms", "Underwear", "Outerwear", "Sleepwear", "Socks"],
-        "Electronics": ["Chargers", "Cables", "Devices", "Batteries", "Adapters"],
-        "Toiletries": ["Skincare", "Haircare", "Dental", "Makeup", "Personal Care"],
-        "Documents": ["ID", "Travel", "Insurance", "Medical", "Tickets"],
-        "Shoes": ["Casual", "Formal", "Athletic", "Outdoor", "Special"],
-        "Accessories": ["Jewelry", "Bags", "Belts", "Hats", "Glasses"],
-        "Medication": ["Prescription", "Over-the-counter", "Vitamins", "First Aid"]
-    ]
-    
-    private var allCategoryStructure: [String: [String]] {
-        var combined = categoryStructure
-        for (key, value) in userCategories {
-            combined[key] = value
-        }
-        return combined
-    }
-    
     private var categories: [String] {
-        return Array(allCategoryStructure.keys).sorted()
+        return categoryManager.sortedCategoryNames
     }
     
     private var subcategories: [String] {
-        return allCategoryStructure[category] ?? []
+        return categoryManager.subcategories(for: category)
     }
     
     var body: some View {
@@ -218,14 +199,9 @@ struct AddItemView: View {
                 category: $customCategory,
                 subcategory: $customSubcategory,
                 onSave: { newCategory, newSubcategory in
-                    // Add to user categories
+                    // Save to CategoryManager
                     if !newCategory.isEmpty {
-                        if userCategories[newCategory] == nil {
-                            userCategories[newCategory] = []
-                        }
-                        if !newSubcategory.isEmpty && !userCategories[newCategory]!.contains(newSubcategory) {
-                            userCategories[newCategory]!.append(newSubcategory)
-                        }
+                        categoryManager.addCategory(newCategory, subcategory: newSubcategory)
                     }
                     
                     // Set as current selection
@@ -445,89 +421,6 @@ struct ItemPreview: View {
     }
 }
 
-struct CustomCategoryView: View {
-    @Environment(\.dismiss) private var dismiss
-    @Binding var category: String
-    @Binding var subcategory: String
-    let onSave: (String, String) -> Void
-    
-    @State private var isAddingToExisting: Bool = false
-    
-    var body: some View {
-        NavigationView {
-            Form {
-                Section(header: Text("Create Category")) {
-                    VStack(alignment: .leading, spacing: 12) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Category Name")
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-                            TextField("e.g., Sports Equipment", text: $category)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                        }
-                        
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Subcategory (optional)")
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-                            TextField("e.g., Running Gear", text: $subcategory)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                        }
-                    }
-                }
-                
-                Section(header: Text("Preview")) {
-                    if !category.isEmpty {
-                        HStack {
-                            Image(systemName: "folder.fill")
-                                .foregroundColor(.blue)
-                            
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Your new category:")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                
-                                Text(subcategory.isEmpty ? category : "\(category) > \(subcategory)")
-                                    .font(.subheadline)
-                                    .fontWeight(.medium)
-                            }
-                            
-                            Spacer()
-                        }
-                        .padding(.vertical, 4)
-                    }
-                }
-                
-                Section(header: Text("How it works")) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("• Create new categories that will be saved for future use")
-                        Text("• Add subcategories to organize items even better")
-                        Text("• Your custom categories will appear in the main category picker")
-                    }
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                }
-            }
-            .navigationTitle("Custom Category")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
-                }
-                
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
-                        onSave(category.trimmingCharacters(in: .whitespacesAndNewlines), 
-                               subcategory.trimmingCharacters(in: .whitespacesAndNewlines))
-                    }
-                    .disabled(category.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                }
-            }
-        }
-    }
-}
 
 #Preview {
     AddItemView(bag: {
