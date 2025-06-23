@@ -396,27 +396,52 @@ struct ItemDetailsSection: View {
                 }
                 
                 // Bag Selection
-                if isEditing && availableBags.count > 1 {
+                if isEditing {
                     VStack(alignment: .leading, spacing: 8) {
                         HStack {
-                            Text("Move to Bag")
+                            Text("Current Bag")
                                 .fontWeight(.medium)
                                 .frame(width: 80, alignment: .leading)
                             
-                            Picker("Bag", selection: $selectedBag) {
-                                ForEach(availableBags, id: \.id) { bag in
-                                    VStack(alignment: .leading) {
-                                        Text(bag.name.isEmpty ? "Unnamed Bag" : bag.name)
-                                        if bag.isSubBag {
-                                            Text("(Sub-bag)")
-                                                .font(.caption)
-                                                .foregroundColor(.secondary)
+                            if availableBags.count > 1 {
+                                Picker("Bag", selection: $selectedBag) {
+                                    ForEach(availableBags, id: \.id) { bag in
+                                        VStack(alignment: .leading) {
+                                            Text(bag.name.isEmpty ? "Unnamed Bag" : bag.name)
+                                            if bag.isSubBag {
+                                                Text("(Sub-bag)")
+                                                    .font(.caption)
+                                                    .foregroundColor(.secondary)
+                                            }
                                         }
+                                        .tag(bag)
                                     }
-                                    .tag(bag)
                                 }
+                                .pickerStyle(MenuPickerStyle())
+                            } else {
+                                Text(selectedBag.name.isEmpty ? "Unnamed Bag" : selectedBag.name)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(Color.gray.opacity(0.2))
+                                    .cornerRadius(6)
+                                Spacer()
                             }
-                            .pickerStyle(MenuPickerStyle())
+                        }
+                        
+                        // Debug info
+                        if availableBags.count <= 1 {
+                            HStack {
+                                Image(systemName: "info.circle")
+                                    .foregroundColor(.gray)
+                                Text("Add more bags to this trip to enable transfers")
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
+                                Spacer()
+                            }
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.gray.opacity(0.1))
+                            .cornerRadius(6)
                         }
                         
                         if selectedBag != item.bag {
