@@ -15,6 +15,7 @@ struct ItemDetailView: View {
     @State private var editedQuantity: Int
     @State private var editedCategory: String
     @State private var editedSubcategory: String
+    @State private var selectedBag: Bag
     @State private var selectedPhoto: PhotosPickerItem?
     @State private var showingCustomCategory = false
     @State private var customCategory = ""
@@ -30,6 +31,11 @@ struct ItemDetailView: View {
         return categoryManager.subcategories(for: editedCategory)
     }
     
+    private var availableBags: [Bag] {
+        guard let currentTrip = item.bag?.trip else { return [] }
+        return currentTrip.bagsArray
+    }
+    
     init(item: Item) {
         self.item = item
         self._editedName = State(initialValue: item.name)
@@ -38,6 +44,7 @@ struct ItemDetailView: View {
         self._editedQuantity = State(initialValue: Int(item.quantity))
         self._editedCategory = State(initialValue: item.category ?? "General")
         self._editedSubcategory = State(initialValue: item.subcategory ?? "")
+        self._selectedBag = State(initialValue: item.bag!)
     }
     
     var body: some View {
@@ -56,8 +63,10 @@ struct ItemDetailView: View {
                     editedQuantity: $editedQuantity,
                     editedCategory: $editedCategory,
                     editedSubcategory: $editedSubcategory,
+                    selectedBag: $selectedBag,
                     categories: categories,
                     subcategories: subcategories,
+                    availableBags: availableBags,
                     showingCustomCategory: $showingCustomCategory
                 )
                 
@@ -127,10 +136,22 @@ struct ItemDetailView: View {
     
     private func saveChanges() {
         withAnimation {
-            // Update bag weight (remove old, add new)
-            if let bag = item.bag {
+            let newTotalWeight = editedWeight * Double(editedQuantity)
+            
+            // Handle bag transfer
+            if let oldBag = item.bag, selectedBag != oldBag {
+                // Remove weight from old bag
+                oldBag.currentWeight -= item.totalWeight
+                
+                // Add weight to new bag
+                selectedBag.currentWeight += newTotalWeight
+                
+                // Transfer item to new bag
+                item.bag = selectedBag
+            } else if let bag = item.bag {
+                // Same bag, just update weight difference
                 bag.currentWeight -= item.totalWeight
-                bag.currentWeight += editedWeight * Double(editedQuantity)
+                bag.currentWeight += newTotalWeight
             }
             
             item.name = editedName.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -157,6 +178,7 @@ struct ItemDetailView: View {
         editedQuantity = Int(item.quantity)
         editedCategory = item.category ?? "General"
         editedSubcategory = item.subcategory ?? ""
+        selectedBag = item.bag!
         isEditing = false
     }
     
@@ -254,8 +276,10 @@ struct ItemDetailsSection: View {
     @Binding var editedQuantity: Int
     @Binding var editedCategory: String
     @Binding var editedSubcategory: String
+    @Binding var selectedBag: Bag
     let categories: [String]
     let subcategories: [String]
+    let availableBags: [Bag]
     @Binding var showingCustomCategory: Bool
     
     var body: some View {
@@ -367,6 +391,47 @@ struct ItemDetailsSection: View {
                                 .background(Color.blue.opacity(0.2))
                                 .cornerRadius(6)
                             Spacer()
+                        }
+                    }
+                }
+                
+                // Bag Selection
+                if isEditing && availableBags.count > 1 {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("Move to Bag")
+                                .fontWeight(.medium)
+                                .frame(width: 80, alignment: .leading)
+                            
+                            Picker("Bag", selection: $selectedBag) {
+                                ForEach(availableBags, id: \.id) { bag in
+                                    VStack(alignment: .leading) {
+                                        Text(bag.name.isEmpty ? "Unnamed Bag" : bag.name)
+                                        if bag.isSubBag {
+                                            Text("(Sub-bag)")
+                                                .font(.caption)
+                                                .foregroundColor(.secondary)
+                                        }
+                                    }
+                                    .tag(bag)
+                                }
+                            }
+                            .pickerStyle(MenuPickerStyle())
+                        }
+                        
+                        if selectedBag != item.bag {
+                            HStack {
+                                Image(systemName: "arrow.right.circle.fill")
+                                    .foregroundColor(.blue)
+                                Text("Item will be moved to \"\(selectedBag.name.isEmpty ? "Unnamed Bag" : selectedBag.name)\"")
+                                    .font(.caption)
+                                    .foregroundColor(.blue)
+                                Spacer()
+                            }
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.blue.opacity(0.1))
+                            .cornerRadius(6)
                         }
                     }
                 }
