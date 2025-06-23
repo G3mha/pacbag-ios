@@ -74,7 +74,7 @@ struct BagDetailView: View {
                             // Will implement essential items packing
                         }
                         
-                        Button("Pack Lightest Items", systemImage: "feather") {
+                        Button("Pack Lightest Items", systemImage: "arrow.up.circle") {
                             packLightestItems()
                         }
                         
