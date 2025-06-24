@@ -1,14 +1,19 @@
 import Foundation
+import CoreData
+import SwiftUI
 
 class CategoryManager: ObservableObject {
     static let shared = CategoryManager()
     
-    @Published var customCategories: [String: [String]] = [:]
+    @Published var categories: [Category] = []
+    @Published var recentCategories: [Category] = []
+    @Published var popularCategories: [Category] = []
     
+    private let context = CoreDataManager.shared.context
     private let userDefaultsKey = "CustomPackingCategories"
     
-    // Default categories
-    let defaultCategories: [String: [String]] = [
+    // Default categories structure for seeding
+    private let defaultCategoryData: [String: [String]] = [
         "General": [],
         "Clothes": ["Tops", "Bottoms", "Underwear", "Outerwear", "Sleepwear", "Socks"],
         "Electronics": ["Chargers", "Cables", "Devices", "Batteries", "Adapters"],
@@ -19,99 +24,329 @@ class CategoryManager: ObservableObject {
         "Medication": ["Prescription", "Over-the-counter", "Vitamins", "First Aid"]
     ]
     
-    var allCategories: [String: [String]] {
-        var combined = defaultCategories
-        for (key, value) in customCategories {
-            if combined[key] != nil {
-                // Merge subcategories for existing categories
-                combined[key] = (combined[key] ?? []) + value
-            } else {
-                // Add new category
-                combined[key] = value
-            }
-        }
-        return combined
-    }
+    private let categoryIcons: [String: String] = [
+        "General": "folder.fill",
+        "Clothes": "tshirt.fill",
+        "Electronics": "iphone",
+        "Toiletries": "drop.fill",
+        "Documents": "doc.fill",
+        "Shoes": "shoe.fill",
+        "Accessories": "eyeglasses",
+        "Medication": "cross.fill"
+    ]
     
-    var sortedCategoryNames: [String] {
-        return Array(allCategories.keys).sorted()
-    }
+    private let categoryColors: [String: String] = [
+        "General": "808080",
+        "Clothes": "FF6B6B",
+        "Electronics": "4ECDC4",
+        "Toiletries": "45B7D1",
+        "Documents": "96CEB4",
+        "Shoes": "FFEAA7",
+        "Accessories": "DDA0DD",
+        "Medication": "FF7675"
+    ]
     
     init() {
-        loadCustomCategories()
+        setupCategories()
     }
     
-    func subcategories(for category: String) -> [String] {
-        return allCategories[category] ?? []
-    }
+    // MARK: - Setup and Migration
     
-    func addCategory(_ category: String, subcategory: String = "") {
-        var updatedCategories = customCategories
+    private func setupCategories() {
+        loadCategories()
         
-        if updatedCategories[category] == nil {
-            updatedCategories[category] = []
-        }
-        
-        if !subcategory.isEmpty && !updatedCategories[category]!.contains(subcategory) {
-            updatedCategories[category]!.append(subcategory)
-        }
-        
-        customCategories = updatedCategories
-        saveCustomCategories()
-    }
-    
-    func addSubcategory(_ subcategory: String, to category: String) {
-        guard !subcategory.isEmpty else { return }
-        
-        var updatedCategories = customCategories
-        
-        // Check if this is a default category
-        if defaultCategories[category] != nil {
-            // For default categories, we need to store only the new subcategories
-            if updatedCategories[category] == nil {
-                updatedCategories[category] = []
+        // Check if we need to seed default categories
+        if categories.isEmpty {
+            migrateFromUserDefaults()
+            
+            // If still empty, seed defaults
+            if categories.isEmpty {
+                seedDefaultCategories()
             }
-            if !updatedCategories[category]!.contains(subcategory) && 
-               !(defaultCategories[category] ?? []).contains(subcategory) {
-                updatedCategories[category]!.append(subcategory)
+        }
+        
+        updatePublishedArrays()
+    }
+    
+    func seedDefaultCategories() {
+        for (categoryName, subcategoryNames) in defaultCategoryData {
+            let category = createCategory(
+                categoryName,
+                icon: categoryIcons[categoryName],
+                color: categoryColors[categoryName],
+                isDefault: true
+            )
+            
+            for subcategoryName in subcategoryNames {
+                createSubcategory(subcategoryName, in: category, isDefault: true)
+            }
+        }
+        
+        saveContext()
+        loadCategories()
+    }
+    
+    func migrateFromUserDefaults() {
+        // Migrate from old UserDefaults system
+        if let data = UserDefaults.standard.data(forKey: userDefaultsKey),
+           let oldCategories = try? JSONDecoder().decode([String: [String]].self, from: data) {
+            
+            for (categoryName, subcategoryNames) in oldCategories {
+                // Skip if this category already exists (default or custom)
+                if !categories.contains(where: { $0.name == categoryName }) {
+                    let category = createCategory(categoryName, isDefault: false)
+                    
+                    for subcategoryName in subcategoryNames {
+                        createSubcategory(subcategoryName, in: category, isDefault: false)
+                    }
+                }
+            }
+            
+            saveContext()
+            
+            // Remove old UserDefaults data after successful migration
+            UserDefaults.standard.removeObject(forKey: userDefaultsKey)
+        }
+    }
+    
+    // MARK: - Core Data Operations
+    
+    private func loadCategories() {
+        let request: NSFetchRequest<Category> = Category.fetchRequest()
+        request.predicate = NSPredicate(format: "isArchived == NO")
+        request.sortDescriptors = [
+            NSSortDescriptor(keyPath: \Category.isDefault, ascending: false),
+            NSSortDescriptor(keyPath: \Category.usageCount, ascending: false),
+            NSSortDescriptor(keyPath: \Category.name, ascending: true)
+        ]
+        
+        do {
+            categories = try context.fetch(request)
+        } catch {
+            print("Error loading categories: \(error)")
+            categories = []
+        }
+    }
+    
+    private func updatePublishedArrays() {
+        // Update recent categories (used in last 7 days)
+        recentCategories = categories
+            .filter { $0.isRecentlyUsed }
+            .sorted { $0.lastUsedDate ?? Date.distantPast > $1.lastUsedDate ?? Date.distantPast }
+            .prefix(5)
+            .map { $0 }
+        
+        // Update popular categories (usage count >= 5)
+        popularCategories = categories
+            .filter { $0.isPopular }
+            .sorted { $0.usageCount > $1.usageCount }
+            .prefix(10)
+            .map { $0 }
+    }
+    
+    private func saveContext() {
+        do {
+            try context.save()
+        } catch {
+            print("Error saving category context: \(error)")
+        }
+    }
+    
+    // MARK: - Category CRUD Operations
+    
+    @discardableResult
+    func createCategory(_ name: String, icon: String? = nil, color: String? = nil, isDefault: Bool = false) -> Category {
+        let category = Category(context: context)
+        category.id = UUID()
+        category.name = name
+        category.isDefault = isDefault
+        category.usageCount = 0
+        category.iconName = icon
+        category.colorHex = color
+        category.isArchived = false
+        category.createdDate = Date()
+        category.lastUsedDate = nil
+        
+        return category
+    }
+    
+    @discardableResult
+    func createSubcategory(_ name: String, in category: Category, isDefault: Bool = false) -> SubCategory {
+        let subcategory = SubCategory(context: context)
+        subcategory.id = UUID()
+        subcategory.name = name
+        subcategory.isDefault = isDefault
+        subcategory.usageCount = 0
+        subcategory.isArchived = false
+        subcategory.createdDate = Date()
+        subcategory.lastUsedDate = nil
+        subcategory.category = category
+        
+        return subcategory
+    }
+    
+    func updateCategory(_ category: Category, name: String, icon: String? = nil, color: String? = nil) {
+        category.name = name
+        category.iconName = icon
+        category.colorHex = color
+        saveContext()
+        loadCategories()
+    }
+    
+    func deleteCategory(_ category: Category, moveItemsTo newCategory: Category? = nil) {
+        // Move items to new category if specified
+        if let newCategory = newCategory {
+            for item in category.itemsArray {
+                item.categoryEntity = newCategory
             }
         } else {
-            // For custom categories
-            if updatedCategories[category] == nil {
-                updatedCategories[category] = []
-            }
-            if !updatedCategories[category]!.contains(subcategory) {
-                updatedCategories[category]!.append(subcategory)
+            // Clear category from items
+            for item in category.itemsArray {
+                item.categoryEntity = nil
             }
         }
         
-        customCategories = updatedCategories
-        saveCustomCategories()
+        context.delete(category)
+        saveContext()
+        loadCategories()
     }
     
-    private func loadCustomCategories() {
-        if let data = UserDefaults.standard.data(forKey: userDefaultsKey),
-           let decoded = try? JSONDecoder().decode([String: [String]].self, from: data) {
-            customCategories = decoded
+    func archiveCategory(_ category: Category) {
+        category.isArchived = true
+        saveContext()
+        loadCategories()
+    }
+    
+    // MARK: - Usage Tracking
+    
+    func incrementUsage(for category: Category) {
+        category.usageCount += 1
+        category.lastUsedDate = Date()
+        saveContext()
+        updatePublishedArrays()
+    }
+    
+    func incrementUsage(for subcategory: SubCategory) {
+        subcategory.usageCount += 1
+        subcategory.lastUsedDate = Date()
+        
+        // Also increment parent category usage
+        incrementUsage(for: subcategory.category)
+    }
+    
+    // MARK: - Convenience Methods
+    
+    var sortedCategoryNames: [String] {
+        return categories.map { $0.name }.sorted()
+    }
+    
+    func category(named name: String) -> Category? {
+        return categories.first { $0.name == name }
+    }
+    
+    func subcategories(for categoryName: String) -> [SubCategory] {
+        guard let category = category(named: categoryName) else { return [] }
+        return category.subcategoriesArray
+    }
+    
+    func subcategories(for category: Category) -> [SubCategory] {
+        return category.subcategoriesArray
+    }
+    
+    // Legacy compatibility methods
+    func addCategory(_ categoryName: String, subcategory: String = "") {
+        let category: Category
+        
+        if let existingCategory = self.category(named: categoryName) {
+            category = existingCategory
+        } else {
+            category = createCategory(categoryName)
+        }
+        
+        if !subcategory.isEmpty {
+            // Check if subcategory already exists
+            if !category.subcategoriesArray.contains(where: { $0.name == subcategory }) {
+                createSubcategory(subcategory, in: category)
+            }
+        }
+        
+        saveContext()
+        loadCategories()
+    }
+    
+    // MARK: - Search and Suggestions
+    
+    func searchCategories(_ query: String) -> [Category] {
+        let lowercaseQuery = query.lowercased()
+        return categories.filter { 
+            $0.name.lowercased().contains(lowercaseQuery) ||
+            $0.subcategoriesArray.contains { $0.name.lowercased().contains(lowercaseQuery) }
         }
     }
     
-    private func saveCustomCategories() {
-        if let encoded = try? JSONEncoder().encode(customCategories) {
-            UserDefaults.standard.set(encoded, forKey: userDefaultsKey)
+    func suggestCategory(for itemName: String) -> Category? {
+        let lowercaseItemName = itemName.lowercased()
+        
+        // Simple keyword matching for suggestions
+        let categoryKeywords: [String: [String]] = [
+            "Clothes": ["shirt", "pants", "dress", "jacket", "sweater", "jeans", "top"],
+            "Electronics": ["charger", "cable", "phone", "laptop", "tablet", "battery", "adapter"],
+            "Toiletries": ["toothbrush", "shampoo", "soap", "lotion", "perfume", "cream"],
+            "Documents": ["passport", "ticket", "license", "id", "card", "document"],
+            "Shoes": ["shoes", "sneakers", "boots", "sandals", "heels"],
+            "Accessories": ["watch", "jewelry", "belt", "hat", "glasses", "bag"],
+            "Medication": ["medicine", "pills", "vitamin", "tablet", "capsule"]
+        ]
+        
+        for (categoryName, keywords) in categoryKeywords {
+            if keywords.contains(where: { lowercaseItemName.contains($0) }) {
+                return category(named: categoryName)
+            }
         }
+        
+        return nil
     }
     
-    // Check if a category is custom (not in defaults)
-    func isCustomCategory(_ category: String) -> Bool {
-        return defaultCategories[category] == nil && customCategories[category] != nil
+    // MARK: - Data Export/Import
+    
+    func exportCategories() -> Data? {
+        let exportData = categories.map { category in
+            [
+                "name": category.name,
+                "icon": category.iconName ?? "",
+                "color": category.colorHex ?? "",
+                "subcategories": category.subcategoriesArray.map { $0.name }
+            ]
+        }
+        
+        return try? JSONSerialization.data(withJSONObject: exportData, options: .prettyPrinted)
     }
     
-    // Check if a subcategory is custom
-    func isCustomSubcategory(_ subcategory: String, in category: String) -> Bool {
-        if let defaultSubs = defaultCategories[category] {
-            return !defaultSubs.contains(subcategory)
+    func importCategories(from data: Data) throws {
+        let importData = try JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]]
+        
+        guard let categoriesData = importData else {
+            throw NSError(domain: "CategoryManager", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid category data format"])
         }
-        return true
+        
+        for categoryData in categoriesData {
+            guard let name = categoryData["name"] as? String else { continue }
+            
+            // Skip if category already exists
+            if category(named: name) != nil { continue }
+            
+            let icon = categoryData["icon"] as? String
+            let color = categoryData["color"] as? String
+            let subcategoryNames = categoryData["subcategories"] as? [String] ?? []
+            
+            let category = createCategory(name, icon: icon, color: color)
+            
+            for subcategoryName in subcategoryNames {
+                createSubcategory(subcategoryName, in: category)
+            }
+        }
+        
+        saveContext()
+        loadCategories()
     }
 }

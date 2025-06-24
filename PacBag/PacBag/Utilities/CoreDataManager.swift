@@ -231,11 +231,167 @@ class CoreDataManager {
         bagToSubBags.inverseRelationship = subBagToParent
         subBagToParent.inverseRelationship = bagToSubBags
         
+        // Category Entity
+        let categoryEntity = NSEntityDescription()
+        categoryEntity.name = "Category"
+        categoryEntity.managedObjectClassName = "Category"
+        
+        let categoryId = NSAttributeDescription()
+        categoryId.name = "id"
+        categoryId.type = .uuid
+        categoryId.isOptional = false
+        categoryId.defaultValue = UUID()
+        
+        let categoryName = NSAttributeDescription()
+        categoryName.name = "name"
+        categoryName.type = .string
+        categoryName.isOptional = false
+        categoryName.defaultValue = ""
+        
+        let categoryIsDefault = NSAttributeDescription()
+        categoryIsDefault.name = "isDefault"
+        categoryIsDefault.type = .boolean
+        categoryIsDefault.isOptional = false
+        categoryIsDefault.defaultValue = false
+        
+        let categoryUsageCount = NSAttributeDescription()
+        categoryUsageCount.name = "usageCount"
+        categoryUsageCount.type = .integer32
+        categoryUsageCount.isOptional = false
+        categoryUsageCount.defaultValue = 0
+        
+        let categoryIconName = NSAttributeDescription()
+        categoryIconName.name = "iconName"
+        categoryIconName.type = .string
+        categoryIconName.isOptional = true
+        
+        let categoryColorHex = NSAttributeDescription()
+        categoryColorHex.name = "colorHex"
+        categoryColorHex.type = .string
+        categoryColorHex.isOptional = true
+        
+        let categoryIsArchived = NSAttributeDescription()
+        categoryIsArchived.name = "isArchived"
+        categoryIsArchived.type = .boolean
+        categoryIsArchived.isOptional = false
+        categoryIsArchived.defaultValue = false
+        
+        let categoryCreatedDate = NSAttributeDescription()
+        categoryCreatedDate.name = "createdDate"
+        categoryCreatedDate.type = .date
+        categoryCreatedDate.isOptional = false
+        categoryCreatedDate.defaultValue = Date()
+        
+        let categoryLastUsedDate = NSAttributeDescription()
+        categoryLastUsedDate.name = "lastUsedDate"
+        categoryLastUsedDate.type = .date
+        categoryLastUsedDate.isOptional = true
+        
+        categoryEntity.properties = [categoryId, categoryName, categoryIsDefault, categoryUsageCount, categoryIconName, categoryColorHex, categoryIsArchived, categoryCreatedDate, categoryLastUsedDate]
+        
+        // SubCategory Entity
+        let subCategoryEntity = NSEntityDescription()
+        subCategoryEntity.name = "SubCategory"
+        subCategoryEntity.managedObjectClassName = "SubCategory"
+        
+        let subCategoryId = NSAttributeDescription()
+        subCategoryId.name = "id"
+        subCategoryId.type = .uuid
+        subCategoryId.isOptional = false
+        subCategoryId.defaultValue = UUID()
+        
+        let subCategoryName = NSAttributeDescription()
+        subCategoryName.name = "name"
+        subCategoryName.type = .string
+        subCategoryName.isOptional = false
+        subCategoryName.defaultValue = ""
+        
+        let subCategoryIsDefault = NSAttributeDescription()
+        subCategoryIsDefault.name = "isDefault"
+        subCategoryIsDefault.type = .boolean
+        subCategoryIsDefault.isOptional = false
+        subCategoryIsDefault.defaultValue = false
+        
+        let subCategoryUsageCount = NSAttributeDescription()
+        subCategoryUsageCount.name = "usageCount"
+        subCategoryUsageCount.type = .integer32
+        subCategoryUsageCount.isOptional = false
+        subCategoryUsageCount.defaultValue = 0
+        
+        let subCategoryIsArchived = NSAttributeDescription()
+        subCategoryIsArchived.name = "isArchived"
+        subCategoryIsArchived.type = .boolean
+        subCategoryIsArchived.isOptional = false
+        subCategoryIsArchived.defaultValue = false
+        
+        let subCategoryCreatedDate = NSAttributeDescription()
+        subCategoryCreatedDate.name = "createdDate"
+        subCategoryCreatedDate.type = .date
+        subCategoryCreatedDate.isOptional = false
+        subCategoryCreatedDate.defaultValue = Date()
+        
+        let subCategoryLastUsedDate = NSAttributeDescription()
+        subCategoryLastUsedDate.name = "lastUsedDate"
+        subCategoryLastUsedDate.type = .date
+        subCategoryLastUsedDate.isOptional = true
+        
+        subCategoryEntity.properties = [subCategoryId, subCategoryName, subCategoryIsDefault, subCategoryUsageCount, subCategoryIsArchived, subCategoryCreatedDate, subCategoryLastUsedDate]
+        
+        // Category to SubCategory relationships
+        let categoryToSubCategories = NSRelationshipDescription()
+        categoryToSubCategories.name = "subcategories"
+        categoryToSubCategories.destinationEntity = subCategoryEntity
+        categoryToSubCategories.maxCount = 0  // to-many
+        categoryToSubCategories.deleteRule = .cascadeDeleteRule
+        
+        let subCategoryToCategory = NSRelationshipDescription()
+        subCategoryToCategory.name = "category"
+        subCategoryToCategory.destinationEntity = categoryEntity
+        subCategoryToCategory.maxCount = 1  // to-one
+        subCategoryToCategory.deleteRule = .nullifyDeleteRule
+        
+        categoryToSubCategories.inverseRelationship = subCategoryToCategory
+        subCategoryToCategory.inverseRelationship = categoryToSubCategories
+        
+        // Category to Items relationships
+        let categoryToItems = NSRelationshipDescription()
+        categoryToItems.name = "items"
+        categoryToItems.destinationEntity = itemEntity
+        categoryToItems.maxCount = 0  // to-many
+        categoryToItems.deleteRule = .nullifyDeleteRule
+        
+        let itemToCategory = NSRelationshipDescription()
+        itemToCategory.name = "categoryEntity"
+        itemToCategory.destinationEntity = categoryEntity
+        itemToCategory.maxCount = 1  // to-one
+        itemToCategory.deleteRule = .nullifyDeleteRule
+        
+        categoryToItems.inverseRelationship = itemToCategory
+        itemToCategory.inverseRelationship = categoryToItems
+        
+        // SubCategory to Items relationships
+        let subCategoryToItems = NSRelationshipDescription()
+        subCategoryToItems.name = "items"
+        subCategoryToItems.destinationEntity = itemEntity
+        subCategoryToItems.maxCount = 0  // to-many
+        subCategoryToItems.deleteRule = .nullifyDeleteRule
+        
+        let itemToSubCategory = NSRelationshipDescription()
+        itemToSubCategory.name = "subcategoryEntity"
+        itemToSubCategory.destinationEntity = subCategoryEntity
+        itemToSubCategory.maxCount = 1  // to-one
+        itemToSubCategory.deleteRule = .nullifyDeleteRule
+        
+        subCategoryToItems.inverseRelationship = itemToSubCategory
+        itemToSubCategory.inverseRelationship = subCategoryToItems
+        
         tripEntity.properties.append(tripToBags)
         bagEntity.properties.append(contentsOf: [bagToTrip, bagToItems, bagToSubBags, subBagToParent])
-        itemEntity.properties.append(itemToBag)
+        itemEntity.properties.append(contentsOf: [itemToBag, itemToCategory, itemToSubCategory])
+        categoryEntity.properties.append(contentsOf: [categoryToSubCategories, categoryToItems])
+        subCategoryEntity.properties.append(contentsOf: [subCategoryToCategory, subCategoryToItems])
         
-        model.entities = [tripEntity, bagEntity, itemEntity]
+        model.entities = [tripEntity, bagEntity, itemEntity, categoryEntity, subCategoryEntity]
         
         return model
     }()
