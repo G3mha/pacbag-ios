@@ -23,6 +23,8 @@ extension Item {
     @NSManaged public var quantity: Int32
     @NSManaged public var photoData: Data?
     @NSManaged public var bag: Bag?
+    @NSManaged public var categoryEntity: Category?
+    @NSManaged public var subcategoryEntity: SubCategory?
     
     // Computed properties for convenience
     var totalWeight: Double {
@@ -40,16 +42,34 @@ extension Item {
     
     // Hierarchical category helpers
     var fullCategory: String {
+        // Use entity relationships if available (new system)
+        if let categoryEntity = categoryEntity {
+            if let subcategoryEntity = subcategoryEntity {
+                return "\(categoryEntity.name) > \(subcategoryEntity.name)"
+            }
+            return categoryEntity.name
+        }
+        
+        // Fallback to string properties (legacy system)
         if let category = category {
             if let subcategory = subcategory, !subcategory.isEmpty {
                 return "\(category) > \(subcategory)"
             }
             return category
         }
+        
         return "Uncategorized"
     }
     
     var hasSubcategory: Bool {
-        return subcategory != nil && !subcategory!.isEmpty
+        return subcategoryEntity != nil || (subcategory != nil && !subcategory!.isEmpty)
+    }
+    
+    var effectiveCategoryName: String {
+        return categoryEntity?.name ?? category ?? "General"
+    }
+    
+    var effectiveSubcategoryName: String? {
+        return subcategoryEntity?.name ?? subcategory
     }
 }
