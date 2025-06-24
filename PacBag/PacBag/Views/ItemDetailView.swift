@@ -33,7 +33,33 @@ struct ItemDetailView: View {
     
     private var availableBags: [Bag] {
         guard let currentTrip = item.bag?.trip else { return [] }
-        return currentTrip.bagsArray
+        return getAllBagsInTrip(currentTrip)
+    }
+    
+    private func getAllBagsInTrip(_ trip: Trip) -> [Bag] {
+        var allBags: [Bag] = []
+        
+        // Get all main bags from the trip
+        for bag in trip.bagsArray {
+            allBags.append(bag)
+            
+            // Get all sub-bags recursively
+            allBags.append(contentsOf: getAllSubBags(bag))
+        }
+        
+        return allBags
+    }
+    
+    private func getAllSubBags(_ parentBag: Bag) -> [Bag] {
+        var subBags: [Bag] = []
+        
+        for subBag in parentBag.subBagsArray {
+            subBags.append(subBag)
+            // Recursively get nested sub-bags
+            subBags.append(contentsOf: getAllSubBags(subBag))
+        }
+        
+        return subBags
     }
     
     init(item: Item) {
@@ -406,12 +432,19 @@ struct ItemDetailsSection: View {
                             if availableBags.count > 1 {
                                 Picker("Bag", selection: $selectedBag) {
                                     ForEach(availableBags, id: \.id) { bag in
-                                        VStack(alignment: .leading) {
-                                            Text(bag.name.isEmpty ? "Unnamed Bag" : bag.name)
+                                        HStack {
                                             if bag.isSubBag {
-                                                Text("(Sub-bag)")
-                                                    .font(.caption)
+                                                Text("↳ ")
                                                     .foregroundColor(.secondary)
+                                            }
+                                            VStack(alignment: .leading, spacing: 2) {
+                                                Text(bag.name.isEmpty ? "Unnamed \(bag.isSubBag ? "Sub-bag" : "Bag")" : bag.name)
+                                                    .lineLimit(1)
+                                                if bag.isSubBag && !bag.name.isEmpty {
+                                                    Text("(Sub-bag)")
+                                                        .font(.caption2)
+                                                        .foregroundColor(.secondary)
+                                                }
                                             }
                                         }
                                         .tag(bag)
@@ -444,17 +477,57 @@ struct ItemDetailsSection: View {
                             .cornerRadius(6)
                         }
                         
+                        // Temporary debug - show all available bags
+                        if availableBags.count > 1 {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Available bags (\(availableBags.count)):")
+                                    .font(.caption2)
+                                    .foregroundColor(.gray)
+                                ForEach(availableBags, id: \.id) { bag in
+                                    HStack {
+                                        Text("•")
+                                        Text("\(bag.isSubBag ? "Sub: " : "Main: ")")
+                                        Text("'\(bag.name)'")
+                                        Text("(isEmpty: \(bag.name.isEmpty))")
+                                    }
+                                    .font(.caption2)
+                                    .foregroundColor(.gray)
+                                }
+                            }
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.yellow.opacity(0.1))
+                            .cornerRadius(6)
+                        }
+                        
                         if selectedBag != item.bag {
                             HStack {
                                 Image(systemName: "arrow.right.circle.fill")
                                     .foregroundColor(.blue)
-                                Text("Item will be moved to \"\(selectedBag.name.isEmpty ? "Unnamed Bag" : selectedBag.name)\"")
-                                    .font(.caption)
-                                    .foregroundColor(.blue)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text("Item will be moved to:")
+                                        .font(.caption2)
+                                        .foregroundColor(.blue)
+                                    HStack {
+                                        if selectedBag.isSubBag {
+                                            Text("↳ ")
+                                                .foregroundColor(.blue)
+                                        }
+                                        Text("\(selectedBag.name.isEmpty ? "Unnamed Bag" : selectedBag.name)")
+                                            .font(.caption)
+                                            .fontWeight(.medium)
+                                            .foregroundColor(.blue)
+                                        if selectedBag.isSubBag {
+                                            Text("(Sub-bag)")
+                                                .font(.caption2)
+                                                .foregroundColor(.blue.opacity(0.7))
+                                        }
+                                    }
+                                }
                                 Spacer()
                             }
                             .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
+                            .padding(.vertical, 6)
                             .background(Color.blue.opacity(0.1))
                             .cornerRadius(6)
                         }
