@@ -85,7 +85,7 @@ const Footer: React.FC = () => {
               </p>
               <div className="flex items-center space-x-2 text-gray-400">
                 <MapPin className="w-4 h-4" />
-                <span>San Francisco, CA</span>
+                <span>Sao Paulo, Brazil</span>
               </div>
             </motion.div>
 
@@ -244,7 +244,7 @@ const Footer: React.FC = () => {
             >
               <Heart className="w-4 h-4 text-red-400" fill="currentColor" />
             </motion.div>
-            <span>in San Francisco</span>
+            <span>in Sao Paulo</span>
           </div>
         </motion.div>
       </div>
