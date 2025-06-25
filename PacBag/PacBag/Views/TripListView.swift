@@ -15,6 +15,8 @@ struct TripListView: View {
     @State private var selectedFilter: TripFilter = .all
     @State private var showingNotificationSettings = false
     @State private var showingCategoryManagement = false
+    @State private var showingLandingPage = false
+    @StateObject private var onboardingManager = OnboardingManager.shared
     
     enum TripFilter: String, CaseIterable {
         case all = "All"
@@ -126,6 +128,18 @@ struct TripListView: View {
                         Button(action: { showingCategoryManagement = true }) {
                             Image(systemName: "folder.badge.gearshape")
                         }
+                        
+                        Menu {
+                            Button("View Landing Page", systemImage: "star.fill") {
+                                showingLandingPage = true
+                            }
+                            
+                            Button("Reset App", systemImage: "arrow.clockwise", role: .destructive) {
+                                onboardingManager.resetOnboarding()
+                            }
+                        } label: {
+                            Image(systemName: "ellipsis.circle")
+                        }
                     }
                 }
                 
@@ -143,6 +157,9 @@ struct TripListView: View {
             }
             .sheet(isPresented: $showingCategoryManagement) {
                 CategoryManagementView()
+            }
+            .sheet(isPresented: $showingLandingPage) {
+                LandingPageView()
             }
         }
     }
