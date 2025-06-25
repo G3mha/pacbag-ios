@@ -13,8 +13,8 @@ struct ItemDetailView: View {
     @State private var editedDescription: String
     @State private var editedWeight: Double
     @State private var editedQuantity: Int
-    @State private var editedCategory: String
-    @State private var editedSubcategory: String
+    @State private var editedCategory: Category?
+    @State private var editedSubcategory: SubCategory?
     @State private var selectedBag: Bag
     @State private var selectedPhoto: PhotosPickerItem?
     @State private var showingCustomCategory = false
@@ -23,12 +23,13 @@ struct ItemDetailView: View {
     @StateObject private var categoryManager = CategoryManager.shared
     @State private var showingDeleteAlert = false
     
-    private var categories: [String] {
-        return categoryManager.sortedCategoryNames
+    private var availableCategories: [Category] {
+        return categoryManager.categories
     }
     
-    private var subcategories: [String] {
-        return categoryManager.subcategories(for: editedCategory)
+    private var availableSubcategories: [SubCategory] {
+        guard let category = editedCategory else { return [] }
+        return categoryManager.subcategories(for: category)
     }
     
     private var availableBags: [Bag] {
@@ -68,8 +69,8 @@ struct ItemDetailView: View {
         self._editedDescription = State(initialValue: item.itemDescription ?? "")
         self._editedWeight = State(initialValue: item.weight)
         self._editedQuantity = State(initialValue: Int(item.quantity))
-        self._editedCategory = State(initialValue: item.category ?? "General")
-        self._editedSubcategory = State(initialValue: item.subcategory ?? "")
+        self._editedCategory = State(initialValue: item.categoryEntity ?? CategoryManager.shared.category(named: item.category ?? "General"))
+        self._editedSubcategory = State(initialValue: item.subcategoryEntity ?? (item.subcategory != nil ? CategoryManager.shared.category(named: item.category ?? "")?.subcategoriesArray.first { $0.name == item.subcategory } : nil))
         self._selectedBag = State(initialValue: item.bag!)
     }
     
@@ -90,8 +91,8 @@ struct ItemDetailView: View {
                     editedCategory: $editedCategory,
                     editedSubcategory: $editedSubcategory,
                     selectedBag: $selectedBag,
-                    categories: categories,
-                    subcategories: subcategories,
+                    availableCategories: availableCategories,
+                    availableSubcategories: availableSubcategories,
                     availableBags: availableBags,
                     showingCustomCategory: $showingCustomCategory
                 )
@@ -152,8 +153,12 @@ struct ItemDetailView: View {
                     }
                     
                     // Set as current selection
-                    editedCategory = newCategory
-                    editedSubcategory = newSubcategory
+                    if let category = categoryManager.category(named: newCategory) {
+                        editedCategory = category
+                        if !newSubcategory.isEmpty {
+                            editedSubcategory = category.subcategoriesArray.first { $0.name == newSubcategory }
+                        }
+                    }
                     showingCustomCategory = false
                 }
             )
@@ -184,8 +189,19 @@ struct ItemDetailView: View {
             item.itemDescription = editedDescription.isEmpty ? nil : editedDescription.trimmingCharacters(in: .whitespacesAndNewlines)
             item.weight = editedWeight
             item.quantity = Int32(editedQuantity)
-            item.category = editedCategory
-            item.subcategory = editedSubcategory.isEmpty ? nil : editedSubcategory
+            // Set both legacy and new category relationships for compatibility
+            item.category = editedCategory?.name
+            item.subcategory = editedSubcategory?.name
+            item.categoryEntity = editedCategory
+            item.subcategoryEntity = editedSubcategory
+            
+            // Track usage
+            if let category = editedCategory {
+                categoryManager.incrementUsage(for: category)
+            }
+            if let subcategory = editedSubcategory {
+                categoryManager.incrementUsage(for: subcategory)
+            }
             
             do {
                 try viewContext.save()
@@ -202,8 +218,8 @@ struct ItemDetailView: View {
         editedDescription = item.itemDescription ?? ""
         editedWeight = item.weight
         editedQuantity = Int(item.quantity)
-        editedCategory = item.category ?? "General"
-        editedSubcategory = item.subcategory ?? ""
+        editedCategory = item.categoryEntity ?? categoryManager.category(named: item.category ?? "General")
+        editedSubcategory = item.subcategoryEntity ?? (item.subcategory != nil ? categoryManager.category(named: item.category ?? "")?.subcategoriesArray.first { $0.name == item.subcategory! } : nil)
         selectedBag = item.bag!
         isEditing = false
     }
@@ -300,11 +316,11 @@ struct ItemDetailsSection: View {
     @Binding var editedDescription: String
     @Binding var editedWeight: Double
     @Binding var editedQuantity: Int
-    @Binding var editedCategory: String
-    @Binding var editedSubcategory: String
+    @Binding var editedCategory: Category?
+    @Binding var editedSubcategory: SubCategory?
     @Binding var selectedBag: Bag
-    let categories: [String]
-    let subcategories: [String]
+    let availableCategories: [Category]
+    let availableSubcategories: [SubCategory]
     let availableBags: [Bag]
     @Binding var showingCustomCategory: Bool
     
@@ -353,14 +369,20 @@ struct ItemDetailsSection: View {
                         VStack(alignment: .leading, spacing: 12) {
                             HStack {
                                 Picker("Category", selection: $editedCategory) {
-                                    ForEach(categories, id: \.self) { category in
-                                        Text(category).tag(category)
+                                    Text("Select Category").tag(nil as Category?)
+                                    ForEach(availableCategories, id: \.id) { category in
+                                        HStack {
+                                            Image(systemName: category.icon)
+                                                .foregroundColor(category.color)
+                                            Text(category.name)
+                                        }
+                                        .tag(category as Category?)
                                     }
                                 }
                                 .pickerStyle(MenuPickerStyle())
                                 .onChange(of: editedCategory) { oldValue, newValue in
                                     // Reset subcategory when category changes
-                                    editedSubcategory = ""
+                                    editedSubcategory = nil
                                 }
                                 
                                 Button(action: { showingCustomCategory = true }) {
@@ -371,7 +393,7 @@ struct ItemDetailsSection: View {
                                 .buttonStyle(PlainButtonStyle())
                             }
                             
-                            if !subcategories.isEmpty {
+                            if !availableSubcategories.isEmpty {
                                 VStack(alignment: .leading, spacing: 8) {
                                     HStack {
                                         Text("Subcategory")
@@ -385,9 +407,9 @@ struct ItemDetailsSection: View {
                                     
                                     HStack {
                                         Picker("Subcategory", selection: $editedSubcategory) {
-                                            Text("None").tag("")
-                                            ForEach(subcategories, id: \.self) { subcat in
-                                                Text(subcat).tag(subcat)
+                                            Text("None").tag(nil as SubCategory?)
+                                            ForEach(availableSubcategories, id: \.id) { subcategory in
+                                                Text(subcategory.name).tag(subcategory as SubCategory?)
                                             }
                                         }
                                         .pickerStyle(MenuPickerStyle())

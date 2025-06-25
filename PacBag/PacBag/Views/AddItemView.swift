@@ -10,8 +10,8 @@ struct AddItemView: View {
     
     @State private var itemName = ""
     @State private var weight = 0.1
-    @State private var category = "General"
-    @State private var subcategory = ""
+    @State private var selectedCategory: Category?
+    @State private var selectedSubcategory: SubCategory?
     @State private var showingCustomCategory = false
     @State private var customCategory = ""
     @State private var customSubcategory = ""
@@ -23,11 +23,12 @@ struct AddItemView: View {
     @State private var photoData: Data?
     @State private var showingCamera = false
     
-    private var categories: [String] {
-        return categoryManager.sortedCategoryNames
+    private var availableCategories: [Category] {
+        return categoryManager.categories
     }
     
-    private var subcategories: [String] {
+    private var availableSubcategories: [SubCategory] {
+        guard let category = selectedCategory else { return [] }
         return categoryManager.subcategories(for: category)
     }
     
@@ -44,15 +45,21 @@ struct AddItemView: View {
                     
                     VStack(alignment: .leading, spacing: 12) {
                         HStack {
-                            Picker("Category", selection: $category) {
-                                ForEach(categories, id: \.self) { category in
-                                    Text(category).tag(category)
+                            Picker("Category", selection: $selectedCategory) {
+                                Text("Select Category").tag(nil as Category?)
+                                ForEach(availableCategories, id: \.id) { category in
+                                    HStack {
+                                        Image(systemName: category.icon)
+                                            .foregroundColor(category.color)
+                                        Text(category.name)
+                                    }
+                                    .tag(category as Category?)
                                 }
                             }
                             .pickerStyle(MenuPickerStyle())
-                            .onChange(of: category) { oldValue, newValue in
+                            .onChange(of: selectedCategory) { oldValue, newValue in
                                 // Reset subcategory when category changes
-                                subcategory = ""
+                                selectedSubcategory = nil
                             }
                             
                             Button(action: { showingCustomCategory = true }) {
@@ -63,7 +70,7 @@ struct AddItemView: View {
                             .buttonStyle(PlainButtonStyle())
                         }
                         
-                        if !subcategories.isEmpty {
+                        if !availableSubcategories.isEmpty {
                             VStack(alignment: .leading, spacing: 8) {
                                 HStack {
                                     Text("Subcategory")
@@ -76,10 +83,10 @@ struct AddItemView: View {
                                 }
                                 
                                 HStack {
-                                    Picker("Subcategory", selection: $subcategory) {
-                                        Text("None").tag("")
-                                        ForEach(subcategories, id: \.self) { subcat in
-                                            Text(subcat).tag(subcat)
+                                    Picker("Subcategory", selection: $selectedSubcategory) {
+                                        Text("None").tag(nil as SubCategory?)
+                                        ForEach(availableSubcategories, id: \.id) { subcategory in
+                                            Text(subcategory.name).tag(subcategory as SubCategory?)
                                         }
                                     }
                                     .pickerStyle(MenuPickerStyle())
@@ -88,7 +95,7 @@ struct AddItemView: View {
                                     .cornerRadius(8)
                                     
                                     Button(action: { 
-                                        customCategory = category
+                                        customCategory = selectedCategory?.name ?? ""
                                         showingCustomCategory = true 
                                     }) {
                                         Image(systemName: "plus.circle.fill")
@@ -103,19 +110,23 @@ struct AddItemView: View {
                         
                         
                         // Current selection display
-                        if !category.isEmpty {
+                        if let category = selectedCategory {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text("Current Selection:")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                                 
-                                Text(subcategory.isEmpty ? category : "\(category) > \(subcategory)")
-                                    .font(.subheadline)
-                                    .fontWeight(.medium)
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(Color.blue.opacity(0.1))
-                                    .cornerRadius(6)
+                                HStack {
+                                    Image(systemName: category.icon)
+                                        .foregroundColor(category.color)
+                                    Text(selectedSubcategory == nil ? category.name : "\(category.name) > \(selectedSubcategory!.name)")
+                                        .font(.subheadline)
+                                        .fontWeight(.medium)
+                                }
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(category.color.opacity(0.1))
+                                .cornerRadius(6)
                             }
                             .padding(.top, 8)
                         }
@@ -167,8 +178,8 @@ struct AddItemView: View {
                         description: itemDescription,
                         weight: weight,
                         quantity: quantity,
-                        category: category,
-                        subcategory: subcategory,
+                        category: selectedCategory?.name ?? "General",
+                        subcategory: selectedSubcategory?.name ?? "",
                         photoData: photoData,
                         isPacked: isPacked
                     )
@@ -194,6 +205,12 @@ struct AddItemView: View {
         .onChange(of: selectedPhoto) { oldValue, newValue in
             loadPhoto(from: newValue)
         }
+        .onAppear {
+            // Set default category if none selected
+            if selectedCategory == nil && !availableCategories.isEmpty {
+                selectedCategory = categoryManager.category(named: "General") ?? availableCategories.first
+            }
+        }
         .sheet(isPresented: $showingCustomCategory) {
             CustomCategoryView(
                 category: $customCategory,
@@ -205,8 +222,12 @@ struct AddItemView: View {
                     }
                     
                     // Set as current selection
-                    category = newCategory
-                    subcategory = newSubcategory
+                    if let category = categoryManager.category(named: newCategory) {
+                        selectedCategory = category
+                        if !newSubcategory.isEmpty {
+                            selectedSubcategory = category.subcategoriesArray.first { $0.name == newSubcategory }
+                        }
+                    }
                     showingCustomCategory = false
                 }
             )
@@ -221,8 +242,19 @@ struct AddItemView: View {
             newItem.itemDescription = itemDescription.isEmpty ? nil : itemDescription.trimmingCharacters(in: .whitespacesAndNewlines)
             newItem.weight = weight
             newItem.quantity = Int32(quantity)
-            newItem.category = category
-            newItem.subcategory = subcategory.isEmpty ? nil : subcategory
+            // Set both legacy and new category relationships for compatibility
+            newItem.category = selectedCategory?.name
+            newItem.subcategory = selectedSubcategory?.name
+            newItem.categoryEntity = selectedCategory
+            newItem.subcategoryEntity = selectedSubcategory
+            
+            // Track usage
+            if let category = selectedCategory {
+                categoryManager.incrementUsage(for: category)
+            }
+            if let subcategory = selectedSubcategory {
+                categoryManager.incrementUsage(for: subcategory)
+            }
             newItem.isPacked = isPacked
             newItem.photoData = photoData
             newItem.bag = bag
