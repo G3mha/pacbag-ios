@@ -14,6 +14,7 @@ struct TripListView: View {
     @State private var showingAddTrip = false
     @State private var selectedFilter: TripFilter = .all
     @State private var showingNotificationSettings = false
+    @State private var showingCategoryManagement = false
     
     enum TripFilter: String, CaseIterable {
         case all = "All"
@@ -117,8 +118,14 @@ struct TripListView: View {
             .navigationTitle("My Trips")
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: { showingNotificationSettings = true }) {
-                        Image(systemName: "bell")
+                    HStack(spacing: 16) {
+                        Button(action: { showingNotificationSettings = true }) {
+                            Image(systemName: "bell")
+                        }
+                        
+                        Button(action: { showingCategoryManagement = true }) {
+                            Image(systemName: "folder.badge.gearshape")
+                        }
                     }
                 }
                 
@@ -133,6 +140,9 @@ struct TripListView: View {
             }
             .sheet(isPresented: $showingNotificationSettings) {
                 NotificationSettingsView()
+            }
+            .sheet(isPresented: $showingCategoryManagement) {
+                CategoryManagementView()
             }
         }
     }
