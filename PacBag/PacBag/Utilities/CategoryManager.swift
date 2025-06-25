@@ -111,7 +111,7 @@ class CategoryManager: ObservableObject {
     
     // MARK: - Core Data Operations
     
-    private func loadCategories() {
+    func loadCategories() {
         let request: NSFetchRequest<Category> = Category.fetchRequest()
         request.predicate = NSPredicate(format: "isArchived == NO")
         request.sortDescriptors = [
@@ -144,7 +144,7 @@ class CategoryManager: ObservableObject {
             .map { $0 }
     }
     
-    private func saveContext() {
+    func saveContext() {
         do {
             try context.save()
         } catch {
@@ -305,6 +305,93 @@ class CategoryManager: ObservableObject {
         }
         
         return nil
+    }
+    
+    // MARK: - Analytics Methods
+    
+    func getCategoryUsageAnalytics() -> CategoryUsageAnalytics {
+        let totalCategories = categories.count
+        let totalSubcategories = categories.reduce(0) { $0 + $1.subcategoriesArray.count }
+        let totalUsage = categories.reduce(0) { $0 + $1.usageCount }
+        let totalItems = categories.reduce(0) { $0 + $1.itemsArray.count }
+        
+        let mostUsedCategory = categories.max { $0.usageCount < $1.usageCount }
+        let leastUsedCategory = categories.filter { $0.usageCount > 0 }.min { $0.usageCount < $1.usageCount }
+        let unusedCategories = categories.filter { $0.usageCount == 0 && !$0.isDefault }
+        
+        let categoryUsageDistribution = categories.map { category in
+            CategoryUsageData(
+                category: category,
+                usagePercentage: totalUsage > 0 ? Double(category.usageCount) / Double(totalUsage) * 100 : 0,
+                itemCount: category.itemsArray.count
+            )
+        }.sorted { $0.usagePercentage > $1.usagePercentage }
+        
+        return CategoryUsageAnalytics(
+            totalCategories: totalCategories,
+            totalSubcategories: totalSubcategories,
+            totalUsage: Int(totalUsage),
+            totalItems: totalItems,
+            mostUsedCategory: mostUsedCategory,
+            leastUsedCategory: leastUsedCategory,
+            unusedCategories: unusedCategories,
+            categoryUsageDistribution: categoryUsageDistribution,
+            averageUsagePerCategory: totalCategories > 0 ? Double(totalUsage) / Double(totalCategories) : 0
+        )
+    }
+    
+    func getCategoryTrends() -> CategoryTrends {
+        let now = Date()
+        let thirtyDaysAgo = Calendar.current.date(byAdding: .day, value: -30, to: now) ?? now
+        let sevenDaysAgo = Calendar.current.date(byAdding: .day, value: -7, to: now) ?? now
+        
+        let recentlyCreated = categories.filter { $0.createdDate >= sevenDaysAgo }
+        let recentlyUsed = categories.filter { 
+            guard let lastUsed = $0.lastUsedDate else { return false }
+            return lastUsed >= sevenDaysAgo
+        }
+        
+        let emergingCategories = categories.filter { category in
+            guard let lastUsed = category.lastUsedDate else { return false }
+            return lastUsed >= thirtyDaysAgo && category.usageCount >= 3 && !category.isDefault
+        }.sorted { $0.usageCount > $1.usageCount }
+        
+        return CategoryTrends(
+            recentlyCreated: recentlyCreated,
+            recentlyUsed: recentlyUsed,
+            emergingCategories: Array(emergingCategories.prefix(5))
+        )
+    }
+    
+    func getPackingInsights() -> PackingInsights {
+        var categoryItemDistribution: [String: Int] = [:]
+        var categoryWeightDistribution: [String: Double] = [:]
+        
+        for category in categories {
+            let items = category.itemsArray
+            categoryItemDistribution[category.name] = items.count
+            categoryWeightDistribution[category.name] = items.reduce(0) { $0 + $1.totalWeight }
+        }
+        
+        let heaviestCategory = categoryWeightDistribution.max { $0.value < $1.value }
+        let mostItemsCategory = categoryItemDistribution.max { $0.value < $1.value }
+        
+        // Calculate packing efficiency (packed vs unpacked items by category)
+        var packingEfficiency: [String: Double] = [:]
+        for category in categories {
+            let items = category.itemsArray
+            guard !items.isEmpty else { continue }
+            let packedItems = items.filter { $0.isPacked }.count
+            packingEfficiency[category.name] = Double(packedItems) / Double(items.count) * 100
+        }
+        
+        return PackingInsights(
+            categoryItemDistribution: categoryItemDistribution,
+            categoryWeightDistribution: categoryWeightDistribution,
+            heaviestCategory: heaviestCategory,
+            mostItemsCategory: mostItemsCategory,
+            packingEfficiency: packingEfficiency
+        )
     }
     
     // MARK: - Data Export/Import
