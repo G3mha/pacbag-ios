@@ -9,8 +9,16 @@ import SwiftUI
 import CoreData
 
 struct ContentView: View {
+    @StateObject private var onboardingManager = OnboardingManager.shared
+    
     var body: some View {
-        TripListView()
+        Group {
+            if onboardingManager.hasCompletedOnboarding {
+                TripListView()
+            } else {
+                LandingPageView()
+            }
+        }
     }
 }
 
