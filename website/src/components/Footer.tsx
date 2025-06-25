@@ -3,6 +3,7 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
+import Image from 'next/image'
 import { 
   Mail, 
   Twitter, 
@@ -75,9 +76,13 @@ const Footer: React.FC = () => {
               transition={{ duration: 0.6, delay: 0.2 }}
             >
               <div className="flex items-center space-x-3 mb-6">
-                <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-                  <span className="text-white font-bold">P</span>
-                </div>
+                <Image
+                  src="/icon-raw.png"
+                  alt="PacBag"
+                  width={40}
+                  height={40}
+                  className="rounded-xl"
+                />
                 <span className="text-2xl font-bold text-white">PacBag</span>
               </div>
               <p className="text-gray-400 leading-relaxed mb-6">
@@ -195,12 +200,17 @@ const Footer: React.FC = () => {
           <div className="flex flex-col lg:flex-row items-center justify-between space-y-6 lg:space-y-0">
             <div className="flex items-center space-x-4">
               <motion.button
-                className="bg-white text-black px-6 py-3 rounded-xl font-medium flex items-center space-x-2 hover:bg-gray-100 transition-colors duration-300"
+                className="hover:scale-105 transition-transform duration-300"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Apple className="w-5 h-5" />
-                <span>Download on the App Store</span>
+                <Image
+                  src="/appstore.png"
+                  alt="Download on the App Store"
+                  width={150}
+                  height={45}
+                  className="rounded-lg"
+                />
               </motion.button>
               <div className="text-gray-400 text-sm">
                 <div className="flex items-center space-x-1">
@@ -244,7 +254,7 @@ const Footer: React.FC = () => {
             >
               <Heart className="w-4 h-4 text-red-400" fill="currentColor" />
             </motion.div>
-            <span>in Sao Paulo</span>
+            <span>by Enricco Gemha in Sao Paulo</span>
           </div>
         </motion.div>
       </div>

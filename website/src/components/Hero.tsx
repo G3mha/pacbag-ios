@@ -3,6 +3,7 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { ArrowRight, Download, Star, Users } from 'lucide-react'
+import Image from 'next/image'
 
 const Hero: React.FC = () => {
   return (
@@ -56,13 +57,17 @@ const Hero: React.FC = () => {
             transition={{ duration: 0.7, delay: 0.6 }}
           >
             <motion.button
-              className="group bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-2xl font-semibold text-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-300 flex items-center space-x-2 shadow-2xl shadow-purple-500/25"
+              className="group"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <Download className="w-5 h-5" />
-              <span>Download Free</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              <Image
+                src="/appstore.png"
+                alt="Download on the App Store"
+                width={180}
+                height={54}
+                className="rounded-2xl shadow-2xl shadow-purple-500/25"
+              />
             </motion.button>
             
             <motion.button
