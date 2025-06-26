@@ -102,7 +102,7 @@ const CTA: React.FC = () => {
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.8, delay: 0.5 }}
           >
-            Join over 100,000 travelers who never forget essential items. Download PacBag now and get your first AI-powered packing list in minutes.
+            Join over 100,000 travelers who never leave items behind. Download PacBag and create a digital twin of your luggage in minutes.
           </motion.p>
 
           {/* CTA Buttons */}

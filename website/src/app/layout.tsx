@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     template: "%s | PacBag",
   },
   description:
-    "The intelligent packing companion that learns from your travel habits. AI-powered suggestions, smart templates, and seamless sync across all your devices.",
+    "The digital twin of your travel luggage. PacBag helps you keep track of every item in your bag, ensuring you never leave anything behind.",
   keywords: [
     "travel packing",
     "packing list",
@@ -49,7 +49,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "PacBag - Smart Travel Packing Lists",
     description:
-      "Never forget essential items again. AI-powered packing lists that learn from your travel habits.",
+      "Your luggage's digital twin. Track every item in your bag and never leave anything behind.",
     url: "https://pacbag.app",
     siteName: "PacBag",
     images: [
@@ -67,7 +67,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "PacBag - Smart Travel Packing Lists",
     description:
-      "Never forget essential items again. AI-powered packing lists that learn from your travel habits.",
+      "Your luggage's digital twin. Track every item in your bag and never leave anything behind.",
     images: ["/twitter-image.png"],
     creator: "@pacbagapp",
   },
@@ -142,7 +142,7 @@ export default function RootLayout({
               applicationCategory: "TravelApplication",
               operatingSystem: "iOS",
               description:
-                "The intelligent packing companion that learns from your travel habits. AI-powered suggestions, smart templates, and seamless sync across all your devices.",
+                "The digital twin of your travel luggage. PacBag helps you keep track of every item in your bag, ensuring you never leave anything behind.",
               offers: {
                 "@type": "Offer",
                 price: "0",

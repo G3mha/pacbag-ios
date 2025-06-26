@@ -85,7 +85,7 @@ const Footer: React.FC = () => {
                 <span className="text-2xl font-bold text-white">PacBag</span>
               </div>
               <p className="text-gray-400 leading-relaxed mb-6">
-                The intelligent packing companion that learns from your travel habits and suggests personalized packing lists for every journey.
+                The digital twin of your travel luggage. Track every item in your bag and never leave anything behind.
               </p>
               <div className="flex items-center space-x-2 text-gray-400">
                 <MapPin className="w-4 h-4" />

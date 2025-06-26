@@ -46,7 +46,7 @@ const Hero: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.4 }}
           >
-            The intelligent packing companion that learns from your travel habits and suggests personalized packing lists for every journey.
+            Your luggage&apos;s digital twin. Track every item in your bag, get smart reminders, and never leave anything behind on your travels.
           </motion.p>
 
           {/* CTA Buttons */}
