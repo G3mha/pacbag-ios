@@ -12,8 +12,7 @@ import {
   MapPin, 
   Send,
   ArrowRight,
-  Heart,
-  Apple
+  Heart
 } from 'lucide-react'
 
 const Footer: React.FC = () => {

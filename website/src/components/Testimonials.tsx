@@ -12,7 +12,7 @@ const testimonials: Testimonial[] = [
     name: 'Sarah Chen',
     role: 'Digital Nomad',
     company: 'Remote Tech',
-    content: 'PacBag has completely transformed how I prepare for my travels. The AI suggestions are incredibly accurate, and I never forget important items anymore. It\'s like having a personal packing assistant.',
+    content: 'PacBag has completely transformed how I prepare for my travels. The AI suggestions are incredibly accurate, and I never forget important items anymore. It&apos;s like having a personal packing assistant.',
     rating: 5,
     avatar: '👩‍💻'
   },
@@ -21,7 +21,7 @@ const testimonials: Testimonial[] = [
     name: 'Marcus Rodriguez',
     role: 'Travel Blogger',
     company: 'Wanderlust Weekly',
-    content: 'As someone who travels 200+ days a year, I need efficiency. PacBag\'s smart categorization and sync across devices saves me hours of preparation time. Absolutely essential for frequent travelers.',
+    content: 'As someone who travels 200+ days a year, I need efficiency. PacBag&apos;s smart categorization and sync across devices saves me hours of preparation time. Absolutely essential for frequent travelers.',
     rating: 5,
     avatar: '🧑‍✈️'
   },
@@ -39,7 +39,7 @@ const testimonials: Testimonial[] = [
     name: 'James Kim',
     role: 'Business Executive',
     company: 'Global Enterprises',
-    content: 'The business trip templates are spot-on. PacBag understands the difference between a 2-day conference and a week-long client visit. It\'s professional, intuitive, and incredibly reliable.',
+    content: 'The business trip templates are spot-on. PacBag understands the difference between a 2-day conference and a week-long client visit. It&apos;s professional, intuitive, and incredibly reliable.',
     rating: 5,
     avatar: '👨‍💼'
   },
@@ -48,7 +48,7 @@ const testimonials: Testimonial[] = [
     name: 'Priya Patel',
     role: 'Adventure Photographer',
     company: 'Wild Lens Studio',
-    content: 'From camera gear to hiking equipment, PacBag\'s specialized categories cover everything. The weather integration is perfect for planning shoots in remote locations. Love this app!',
+    content: 'From camera gear to hiking equipment, PacBag&apos;s specialized categories cover everything. The weather integration is perfect for planning shoots in remote locations. Love this app!',
     rating: 5,
     avatar: '📸'
   }
@@ -124,7 +124,7 @@ const Testimonials: React.FC = () => {
           </h2>
           
           <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-            Don't just take our word for it. Here's what our community of travelers has to say about PacBag.
+            Don&apos;t just take our word for it. Here&apos;s what our community of travelers has to say about PacBag.
           </p>
         </motion.div>
 
@@ -164,7 +164,7 @@ const Testimonials: React.FC = () => {
 
                   {/* Testimonial Content */}
                   <blockquote className="text-xl md:text-2xl text-white text-center leading-relaxed mb-8 font-medium">
-                    "{testimonials[currentIndex].content}"
+                    &ldquo;{testimonials[currentIndex].content}&rdquo;
                   </blockquote>
 
                   {/* Author */}

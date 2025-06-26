@@ -10,7 +10,7 @@ const faqs: FAQType[] = [
   {
     id: 1,
     question: 'How does the AI-powered packing suggestion work?',
-    answer: 'Our AI analyzes your destination\'s weather forecast, planned activities, trip duration, and your personal packing history to suggest relevant items. The more you use PacBag, the better it becomes at understanding your preferences and travel style.'
+    answer: 'Our AI analyzes your destination&apos;s weather forecast, planned activities, trip duration, and your personal packing history to suggest relevant items. The more you use PacBag, the better it becomes at understanding your preferences and travel style.'
   },
   {
     id: 2,
@@ -102,7 +102,7 @@ const FAQ: React.FC = () => {
             Questions?
             <br />
             <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-              We've got answers
+              We&apos;ve got answers
             </span>
           </h2>
           

@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
-import { ArrowRight, Download, Star, Users } from 'lucide-react'
+import { ArrowRight, Star, Users } from 'lucide-react'
 import Image from 'next/image'
 
 const Hero: React.FC = () => {
