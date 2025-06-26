@@ -1,7 +1,7 @@
 {
   "name": "PacBag - Smart Travel Packing Lists",
   "short_name": "PacBag",
-  "description": "The intelligent packing companion that learns from your travel habits",
+  "description": "The digital twin of your travel luggage - track every item and never leave anything behind",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",
