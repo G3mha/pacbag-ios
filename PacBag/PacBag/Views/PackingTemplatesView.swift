@@ -13,6 +13,8 @@ struct PackingTemplatesView: View {
     @State private var selectedSeason: Season? = nil
     @State private var searchText = ""
     @State private var showingTemplateDetail: PackingTemplate? = nil
+    @State private var showingCreateTemplate = false
+    @State private var showingCustomTemplateManagement = false
     
     var filteredTemplates: [PackingTemplate] {
         var templates = templateManager.getTemplates(
@@ -29,6 +31,14 @@ struct PackingTemplatesView: View {
         }
         
         return templates
+    }
+    
+    var defaultTemplates: [PackingTemplate] {
+        return filteredTemplates.filter { $0.isDefault }
+    }
+    
+    var customTemplates: [PackingTemplate] {
+        return filteredTemplates.filter { !$0.isDefault }
     }
     
     var body: some View {
@@ -103,16 +113,81 @@ struct PackingTemplatesView: View {
                 
                 // Templates Grid
                 ScrollView {
-                    LazyVGrid(columns: [
-                        GridItem(.adaptive(minimum: 160), spacing: 16)
-                    ], spacing: 16) {
-                        ForEach(filteredTemplates) { template in
-                            TemplateCard(template: template) {
-                                showingTemplateDetail = template
+                    LazyVStack(spacing: 24) {
+                        // Custom Templates Section
+                        if !customTemplates.isEmpty {
+                            VStack(alignment: .leading, spacing: 16) {
+                                HStack {
+                                    Text("My Templates")
+                                        .font(.title2)
+                                        .fontWeight(.bold)
+                                        .foregroundColor(.primary)
+                                    
+                                    Spacer()
+                                    
+                                    Button("Manage") {
+                                        showingCustomTemplateManagement = true
+                                    }
+                                    .font(.caption)
+                                    .foregroundColor(.blue)
+                                }
+                                .padding(.horizontal)
+                                
+                                LazyVGrid(columns: [
+                                    GridItem(.adaptive(minimum: 160), spacing: 16)
+                                ], spacing: 16) {
+                                    ForEach(customTemplates) { template in
+                                        TemplateCard(template: template) {
+                                            showingTemplateDetail = template
+                                        }
+                                    }
+                                }
+                                .padding(.horizontal)
+                            }
+                        }
+                        
+                        // Default Templates Section
+                        if !defaultTemplates.isEmpty {
+                            VStack(alignment: .leading, spacing: 16) {
+                                HStack {
+                                    Text(customTemplates.isEmpty ? "Templates" : "Default Templates")
+                                        .font(.title2)
+                                        .fontWeight(.bold)
+                                        .foregroundColor(.primary)
+                                    
+                                    Spacer()
+                                }
+                                .padding(.horizontal)
+                                
+                                LazyVGrid(columns: [
+                                    GridItem(.adaptive(minimum: 160), spacing: 16)
+                                ], spacing: 16) {
+                                    ForEach(defaultTemplates) { template in
+                                        TemplateCard(template: template) {
+                                            showingTemplateDetail = template
+                                        }
+                                    }
+                                }
+                                .padding(.horizontal)
+                            }
+                        }
+                        
+                        // Create Template Button
+                        if !customTemplates.isEmpty || !defaultTemplates.isEmpty {
+                            VStack(spacing: 16) {
+                                Divider()
+                                    .padding(.horizontal)
+                                
+                                Button("Create Custom Template") {
+                                    showingCreateTemplate = true
+                                }
+                                .font(.body)
+                                .foregroundColor(.blue)
+                                .padding()
                             }
                         }
                     }
-                    .padding()
+                    .padding(.vertical)
                 }
                 
                 if filteredTemplates.isEmpty {
@@ -132,6 +207,12 @@ struct PackingTemplatesView: View {
             }
             .sheet(item: $showingTemplateDetail) { template in
                 TemplateDetailView(template: template, bag: bag)
+            }
+            .sheet(isPresented: $showingCreateTemplate) {
+                CustomTemplateCreationView(sourceTrip: bag.trip, sourceBag: bag)
+            }
+            .sheet(isPresented: $showingCustomTemplateManagement) {
+                CustomTemplateManagementView()
             }
         }
     }
