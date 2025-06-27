@@ -13,9 +13,7 @@ struct TripListView: View {
     
     @State private var showingAddTrip = false
     @State private var selectedFilter: TripFilter = .all
-    @State private var showingNotificationSettings = false
-    @State private var showingCategoryManagement = false
-    @State private var showingLandingPage = false
+    @State private var showingSettings = false
     @StateObject private var onboardingManager = OnboardingManager.shared
     
     enum TripFilter: String, CaseIterable {
@@ -120,26 +118,8 @@ struct TripListView: View {
             .navigationTitle("My Trips")
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    HStack(spacing: 16) {
-                        Button(action: { showingNotificationSettings = true }) {
-                            Image(systemName: "bell")
-                        }
-                        
-                        Button(action: { showingCategoryManagement = true }) {
-                            Image(systemName: "folder.badge.gearshape")
-                        }
-                        
-                        Menu {
-                            Button("View Landing Page", systemImage: "star.fill") {
-                                showingLandingPage = true
-                            }
-                            
-                            Button("Reset App", systemImage: "arrow.clockwise", role: .destructive) {
-                                onboardingManager.resetOnboarding()
-                            }
-                        } label: {
-                            Image(systemName: "ellipsis.circle")
-                        }
+                    Button(action: { showingSettings = true }) {
+                        Image(systemName: "gearshape")
                     }
                 }
                 
@@ -152,14 +132,8 @@ struct TripListView: View {
             .sheet(isPresented: $showingAddTrip) {
                 AddTripView()
             }
-            .sheet(isPresented: $showingNotificationSettings) {
-                NotificationSettingsView()
-            }
-            .sheet(isPresented: $showingCategoryManagement) {
-                CategoryManagementView()
-            }
-            .sheet(isPresented: $showingLandingPage) {
-                LandingPageView()
+            .sheet(isPresented: $showingSettings) {
+                SettingsView()
             }
         }
     }
