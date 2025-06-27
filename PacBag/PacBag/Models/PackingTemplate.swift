@@ -170,9 +170,14 @@ class PackingTemplateManager: ObservableObject {
     static let shared = PackingTemplateManager()
     
     @Published var templates: [PackingTemplate] = []
+    @Published var customTemplates: [PackingTemplate] = []
+    
+    private let userDefaults = UserDefaults.standard
+    private let customTemplatesKey = "CustomPackingTemplates"
     
     private init() {
         loadDefaultTemplates()
+        loadCustomTemplates()
     }
     
     private func loadDefaultTemplates() {
@@ -193,13 +198,194 @@ class PackingTemplateManager: ObservableObject {
         ]
     }
     
+    // MARK: - Custom Template Management
+    
+    private func loadCustomTemplates() {
+        if let data = userDefaults.data(forKey: customTemplatesKey),
+           let decoded = try? JSONDecoder().decode([PackingTemplate].self, from: data) {
+            customTemplates = decoded
+        }
+    }
+    
+    private func saveCustomTemplates() {
+        if let encoded = try? JSONEncoder().encode(customTemplates) {
+            userDefaults.set(encoded, forKey: customTemplatesKey)
+        }
+    }
+    
+    func createCustomTemplate(from trip: Trip) -> PackingTemplate? {
+        guard !trip.bagsArray.isEmpty else { return nil }
+        
+        var allItems: [TemplateItem] = []
+        
+        // Collect all items from all bags in the trip
+        for bag in trip.bagsArray {
+            let bagItems = collectItemsRecursively(from: bag)
+            allItems.append(contentsOf: bagItems)
+        }
+        
+        guard !allItems.isEmpty else { return nil }
+        
+        // Determine trip characteristics
+        let tripType = determineTripType(from: trip)
+        let duration = determineDuration(from: trip)
+        let season = determineSeason(from: trip)
+        
+        return PackingTemplate(
+            name: "\(trip.name) Template",
+            description: "Custom template based on \(trip.name)",
+            tripType: tripType,
+            duration: duration,
+            season: season,
+            items: allItems,
+            icon: tripType.icon,
+            color: tripType.color.description,
+            isDefault: false
+        )
+    }
+    
+    func createCustomTemplate(from bag: Bag, name: String, description: String, tripType: TripType, duration: TripDuration, season: Season) -> PackingTemplate {
+        let items = collectItemsRecursively(from: bag)
+        
+        return PackingTemplate(
+            name: name,
+            description: description,
+            tripType: tripType,
+            duration: duration,
+            season: season,
+            items: items,
+            icon: tripType.icon,
+            color: tripType.color.description,
+            isDefault: false
+        )
+    }
+    
+    private func collectItemsRecursively(from bag: Bag) -> [TemplateItem] {
+        var items: [TemplateItem] = []
+        
+        // Add items from this bag
+        for item in bag.itemsArray {
+            let templateItem = TemplateItem(
+                name: item.name,
+                category: item.fullCategory,
+                weight: item.weight,
+                quantity: Int(item.quantity),
+                isEssential: item.isPacked, // Use packed status as "essential" indicator
+                description: item.itemDescription
+            )
+            items.append(templateItem)
+        }
+        
+        // Recursively add items from sub-bags
+        for subBag in bag.subBagsArray {
+            items.append(contentsOf: collectItemsRecursively(from: subBag))
+        }
+        
+        return items
+    }
+    
+    private func determineTripType(from trip: Trip) -> TripType {
+        // Simple heuristic based on trip name and destination
+        let tripName = trip.name.lowercased()
+        let destination = trip.destination?.lowercased() ?? ""
+        
+        if tripName.contains("business") || tripName.contains("work") || tripName.contains("conference") {
+            return .business
+        } else if tripName.contains("camping") || destination.contains("camp") {
+            return .camping
+        } else if tripName.contains("beach") || destination.contains("beach") || destination.contains("hawaii") {
+            return .beach
+        } else if tripName.contains("city") || destination.contains("city") {
+            return .city
+        } else if tripName.contains("adventure") || tripName.contains("hiking") || tripName.contains("climb") {
+            return .adventure
+        } else if tripName.contains("backpack") {
+            return .backpacking
+        } else {
+            return .vacation
+        }
+    }
+    
+    private func determineDuration(from trip: Trip) -> TripDuration {
+        guard let startDate = trip.startDate, let endDate = trip.endDate else {
+            return .weekend
+        }
+        
+        let calendar = Calendar.current
+        let days = calendar.dateComponents([.day], from: startDate, to: endDate).day ?? 1
+        
+        switch days {
+        case 1:
+            return .oneDay
+        case 2...3:
+            return .weekend
+        case 4...7:
+            return .shortTrip
+        case 8...14:
+            return .longTrip
+        default:
+            return .extended
+        }
+    }
+    
+    private func determineSeason(from trip: Trip) -> Season {
+        guard let startDate = trip.startDate else {
+            return .allSeason
+        }
+        
+        let calendar = Calendar.current
+        let month = calendar.component(.month, from: startDate)
+        
+        switch month {
+        case 3...5:
+            return .spring
+        case 6...8:
+            return .summer
+        case 9...11:
+            return .autumn
+        case 12, 1, 2:
+            return .winter
+        default:
+            return .allSeason
+        }
+    }
+    
+    func saveCustomTemplate(_ template: PackingTemplate) {
+        customTemplates.append(template)
+        saveCustomTemplates()
+    }
+    
+    func updateCustomTemplate(_ template: PackingTemplate) {
+        if let index = customTemplates.firstIndex(where: { $0.id == template.id }) {
+            customTemplates[index] = template
+            saveCustomTemplates()
+        }
+    }
+    
+    func deleteCustomTemplate(_ template: PackingTemplate) {
+        customTemplates.removeAll { $0.id == template.id }
+        saveCustomTemplates()
+    }
+    
+    func getAllTemplates() -> [PackingTemplate] {
+        return templates + customTemplates
+    }
+    
     func getTemplates(for tripType: TripType? = nil, duration: TripDuration? = nil, season: Season? = nil) -> [PackingTemplate] {
-        return templates.filter { template in
+        return getAllTemplates().filter { template in
             if let tripType = tripType, template.tripType != tripType { return false }
             if let duration = duration, template.duration != duration { return false }
             if let season = season, template.season != season && template.season != .allSeason { return false }
             return true
         }
+    }
+    
+    func exportTemplate(_ template: PackingTemplate) -> Data? {
+        return try? JSONEncoder().encode(template)
+    }
+    
+    func importTemplate(from data: Data) -> PackingTemplate? {
+        return try? JSONDecoder().decode(PackingTemplate.self, from: data)
     }
     
     func applyTemplate(_ template: PackingTemplate, to bag: Bag, context: NSManagedObjectContext) {
