@@ -4,6 +4,7 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import { useInView } from 'react-intersection-observer'
 import Image from 'next/image'
+import { useTilt } from '@/hooks/useTilt'
 import { 
   Mail, 
   Twitter, 
@@ -19,6 +20,15 @@ const Footer: React.FC = () => {
   const [ref, inView] = useInView({
     triggerOnce: true,
     threshold: 0.1,
+  })
+
+  const footerAppStoreTiltRef = useTilt({
+    max: 15,
+    perspective: 800,
+    scale: 1.05,
+    speed: 300,
+    glare: true,
+    'max-glare': 0.2,
   })
 
   const footerLinks = {
@@ -198,10 +208,11 @@ const Footer: React.FC = () => {
         >
           <div className="flex flex-col lg:flex-row items-center justify-between space-y-6 lg:space-y-0">
             <div className="flex items-center space-x-4">
-              <motion.button
-                className="hover:scale-105 transition-transform duration-300"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              <motion.div
+                className="cursor-pointer"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                ref={footerAppStoreTiltRef}
               >
                 <Image
                   src="/appstore.png"
@@ -210,7 +221,7 @@ const Footer: React.FC = () => {
                   height={45}
                   className="rounded-lg"
                 />
-              </motion.button>
+              </motion.div>
               <div className="text-gray-400 text-sm">
                 <div className="flex items-center space-x-1">
                   <span>4.9</span>

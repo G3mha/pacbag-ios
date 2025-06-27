@@ -4,8 +4,27 @@ import React from 'react'
 import { motion } from 'framer-motion'
 import { ArrowRight, Star, Users } from 'lucide-react'
 import Image from 'next/image'
+import { useTilt } from '@/hooks/useTilt'
 
 const Hero: React.FC = () => {
+  const appStoreTiltRef = useTilt({
+    max: 20,
+    perspective: 1000,
+    scale: 1.08,
+    speed: 400,
+    glare: true,
+    'max-glare': 0.3,
+  })
+
+  const phoneTiltRef = useTilt({
+    max: 10,
+    perspective: 1500,
+    scale: 1.02,
+    speed: 500,
+    glare: true,
+    'max-glare': 0.1,
+  })
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-black via-purple-900/20 to-black">
       {/* Background Effects */}
@@ -16,17 +35,6 @@ const Hero: React.FC = () => {
 
       <div className="container mx-auto px-6 py-32 relative z-10">
         <div className="text-center max-w-4xl mx-auto">
-          {/* Badge */}
-          <motion.div
-            className="inline-flex items-center space-x-2 bg-white/5 backdrop-blur-sm border border-white/10 rounded-full px-4 py-2 mb-8"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <Star className="w-4 h-4 text-yellow-400" fill="currentColor" />
-            <span className="text-sm text-gray-300">Featured App of the Week</span>
-          </motion.div>
-
           {/* Headline */}
           <motion.h1
             className="text-6xl md:text-7xl lg:text-8xl font-bold mb-6 bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent leading-tight"
@@ -56,10 +64,11 @@ const Hero: React.FC = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.6 }}
           >
-            <motion.button
-              className="group"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <motion.div
+              className="group cursor-pointer"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              ref={appStoreTiltRef}
             >
               <Image
                 src="/appstore.png"
@@ -68,7 +77,7 @@ const Hero: React.FC = () => {
                 height={54}
                 className="rounded-2xl shadow-2xl shadow-purple-500/25"
               />
-            </motion.button>
+            </motion.div>
             
             <motion.button
               className="group border border-white/20 text-white px-8 py-4 rounded-2xl font-semibold text-lg hover:bg-white/5 transition-all duration-300 flex items-center space-x-2"
@@ -108,6 +117,7 @@ const Hero: React.FC = () => {
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1, delay: 1 }}
+          ref={phoneTiltRef}
         >
           <div className="relative">
             {/* Phone Frame */}
