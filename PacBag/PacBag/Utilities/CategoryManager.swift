@@ -436,4 +436,30 @@ class CategoryManager: ObservableObject {
         saveContext()
         loadCategories()
     }
+    
+    // MARK: - Reset
+    
+    func resetToDefaults() {
+        // Delete all existing categories
+        let fetchRequest: NSFetchRequest<Category> = Category.fetchRequest()
+        if let existingCategories = try? context.fetch(fetchRequest) {
+            for category in existingCategories {
+                context.delete(category)
+            }
+        }
+        
+        // Save to clear the database
+        saveContext()
+        
+        // Clear in-memory arrays
+        categories = []
+        recentCategories = []
+        popularCategories = []
+        
+        // Seed default categories
+        seedDefaultCategories()
+        
+        // Reload categories
+        loadCategories()
+    }
 }
