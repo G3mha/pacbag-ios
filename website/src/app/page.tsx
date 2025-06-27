@@ -3,7 +3,7 @@ import Navbar from '@/components/Navbar'
 import Features from '@/components/Features'
 import ProductDemo from '@/components/ProductDemo'
 import Stats from '@/components/Stats'
-import Testimonials from '@/components/Testimonials'
+// import Testimonials from '@/components/Testimonials'
 import Pricing from '@/components/Pricing'
 import FAQ from '@/components/FAQ'
 import CTA from '@/components/CTA'
@@ -17,7 +17,7 @@ export default function Home() {
       <Features />
       <ProductDemo />
       <Stats />
-      <Testimonials />
+      {/* <Testimonials /> */}
       <Pricing />
       <FAQ />
       <CTA />
