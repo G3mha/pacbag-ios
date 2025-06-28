@@ -417,15 +417,22 @@ struct ItemsListView: View {
                     HStack(spacing: 4) {
                         Image(systemName: sortOrder.systemImage)
                             .font(.caption)
-                        Text(sortOrder.displayName)
+                            .foregroundColor(.secondary)
+                        
+                        Text(sortOrder.shortDisplayName)
                             .font(.caption)
-                        Image(systemName: sortAscending ? "arrow.up" : "arrow.down")
+                            .foregroundColor(.primary)
+                            .lineLimit(1)
+                            .fixedSize(horizontal: false, vertical: true)
+                        
+                        Image(systemName: sortAscending ? "chevron.up" : "chevron.down")
                             .font(.caption2)
+                            .foregroundColor(.secondary)
                     }
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 3)
                     .background(Color(.systemGray5))
-                    .cornerRadius(6)
+                    .cornerRadius(4)
                 }
                 
                 Button("Add Item") {
