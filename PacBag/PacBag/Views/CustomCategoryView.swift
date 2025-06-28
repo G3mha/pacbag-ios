@@ -5,6 +5,9 @@ struct CustomCategoryView: View {
     @Binding var category: String
     @Binding var subcategory: String
     let onSave: (String, String) -> Void
+    @StateObject private var categoryManager = CategoryManager.shared
+    @State private var showingDuplicateAlert = false
+    @State private var duplicateMessage = ""
     
     var body: some View {
         NavigationView {
@@ -89,13 +92,51 @@ struct CustomCategoryView: View {
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Save") {
-                        onSave(category.trimmingCharacters(in: .whitespacesAndNewlines), 
-                               subcategory.trimmingCharacters(in: .whitespacesAndNewlines))
+                        let trimmedCategory = category.trimmingCharacters(in: .whitespacesAndNewlines)
+                        let trimmedSubcategory = subcategory.trimmingCharacters(in: .whitespacesAndNewlines)
+                        
+                        // Check for duplicates
+                        if let validationError = validateCategoryAndSubcategory(category: trimmedCategory, subcategory: trimmedSubcategory) {
+                            duplicateMessage = validationError
+                            showingDuplicateAlert = true
+                        } else {
+                            onSave(trimmedCategory, trimmedSubcategory)
+                        }
                     }
                     .disabled(category.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
+            .alert("Duplicate Entry", isPresented: $showingDuplicateAlert) {
+                Button("OK") { }
+            } message: {
+                Text(duplicateMessage)
+            }
         }
+    }
+    
+    private func validateCategoryAndSubcategory(category: String, subcategory: String) -> String? {
+        // Check if we're creating a new category
+        if category.isEmpty {
+            return nil
+        }
+        
+        // Check for duplicate category (case-insensitive)
+        if subcategory.isEmpty {
+            // Creating a new category without subcategory
+            if categoryManager.categories.contains(where: { $0.name.lowercased() == category.lowercased() }) {
+                return "A category named '\(category)' already exists. Please use a different name."
+            }
+        } else {
+            // Creating a subcategory
+            if let existingCategory = categoryManager.category(named: category) {
+                // Check if subcategory already exists in this category (case-insensitive)
+                if existingCategory.subcategoriesArray.contains(where: { $0.name.lowercased() == subcategory.lowercased() }) {
+                    return "The subcategory '\(subcategory)' already exists in '\(category)'. Please use a different name."
+                }
+            }
+        }
+        
+        return nil
     }
 }
 
