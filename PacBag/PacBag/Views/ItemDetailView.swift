@@ -94,7 +94,8 @@ struct ItemDetailView: View {
                     availableCategories: availableCategories,
                     availableSubcategories: availableSubcategories,
                     availableBags: availableBags,
-                    showingCustomCategory: $showingCustomCategory
+                    showingCustomCategory: $showingCustomCategory,
+                    customCategory: $customCategory
                 )
                 
                 // Stats Section
@@ -327,6 +328,7 @@ struct ItemDetailsSection: View {
     let availableSubcategories: [SubCategory]
     let availableBags: [Bag]
     @Binding var showingCustomCategory: Bool
+    @Binding var customCategory: String
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -421,7 +423,13 @@ struct ItemDetailsSection: View {
                                         .background(Color(.systemGray6))
                                         .cornerRadius(8)
                                         
-                                        Button(action: { showingCustomCategory = true }) {
+                                        Button(action: { 
+                                            // Pre-fill with current category when adding subcategory
+                                            if let currentCategory = editedCategory {
+                                                customCategory = currentCategory.name
+                                            }
+                                            showingCustomCategory = true 
+                                        }) {
                                             Image(systemName: "plus.circle.fill")
                                                 .font(.title3)
                                                 .foregroundColor(.blue)
