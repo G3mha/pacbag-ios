@@ -15,7 +15,7 @@ struct ItemDetailView: View {
     @State private var editedQuantity: Int
     @State private var editedCategory: Category?
     @State private var editedSubcategory: SubCategory?
-    @State private var selectedBag: Bag
+    @State private var selectedBag: Bag?
     @State private var selectedPhoto: PhotosPickerItem?
     @State private var showingCustomCategory = false
     @State private var customCategory = ""
@@ -71,7 +71,7 @@ struct ItemDetailView: View {
         self._editedQuantity = State(initialValue: Int(item.quantity))
         self._editedCategory = State(initialValue: item.categoryEntity ?? CategoryManager.shared.category(named: item.category ?? "General"))
         self._editedSubcategory = State(initialValue: item.subcategoryEntity ?? (item.subcategory != nil ? CategoryManager.shared.category(named: item.category ?? "")?.subcategoriesArray.first { $0.name == item.subcategory } : nil))
-        self._selectedBag = State(initialValue: item.bag!)
+        self._selectedBag = State(initialValue: item.bag)
     }
     
     var body: some View {
@@ -170,15 +170,15 @@ struct ItemDetailView: View {
             let newTotalWeight = editedWeight * Double(editedQuantity)
             
             // Handle bag transfer
-            if let oldBag = item.bag, selectedBag != oldBag {
+            if let oldBag = item.bag, let newBag = selectedBag, newBag != oldBag {
                 // Remove weight from old bag
                 oldBag.currentWeight -= item.totalWeight
                 
                 // Add weight to new bag
-                selectedBag.currentWeight += newTotalWeight
+                newBag.currentWeight += newTotalWeight
                 
                 // Transfer item to new bag
-                item.bag = selectedBag
+                item.bag = newBag
             } else if let bag = item.bag {
                 // Same bag, just update weight difference
                 bag.currentWeight -= item.totalWeight
@@ -220,7 +220,7 @@ struct ItemDetailView: View {
         editedQuantity = Int(item.quantity)
         editedCategory = item.categoryEntity ?? categoryManager.category(named: item.category ?? "General")
         editedSubcategory = item.subcategoryEntity ?? (item.subcategory != nil ? categoryManager.category(named: item.category ?? "")?.subcategoriesArray.first { $0.name == item.subcategory! } : nil)
-        selectedBag = item.bag!
+        selectedBag = item.bag
         isEditing = false
     }
     
@@ -228,7 +228,9 @@ struct ItemDetailView: View {
         withAnimation {
             // Update bag weight
             if let bag = item.bag {
-                bag.currentWeight -= item.totalWeight
+                // Ensure we don't go negative
+                let weightToSubtract = item.totalWeight
+                bag.currentWeight = max(0, bag.currentWeight - weightToSubtract)
             }
             
             viewContext.delete(item)
@@ -238,7 +240,9 @@ struct ItemDetailView: View {
                 dismiss()
             } catch {
                 let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+                print("Unresolved error \(nsError), \(nsError.userInfo)")
+                // Still try to dismiss even if save failed
+                dismiss()
             }
         }
     }
@@ -318,7 +322,7 @@ struct ItemDetailsSection: View {
     @Binding var editedQuantity: Int
     @Binding var editedCategory: Category?
     @Binding var editedSubcategory: SubCategory?
-    @Binding var selectedBag: Bag
+    @Binding var selectedBag: Bag?
     let availableCategories: [Category]
     let availableSubcategories: [SubCategory]
     let availableBags: [Bag]
@@ -474,7 +478,7 @@ struct ItemDetailsSection: View {
                                 }
                                 .pickerStyle(MenuPickerStyle())
                             } else {
-                                Text(selectedBag.name.isEmpty ? "Unnamed Bag" : selectedBag.name)
+                                Text(selectedBag?.name.isEmpty == false ? selectedBag?.name ?? "No Bag" : "No Bag")
                                     .padding(.horizontal, 8)
                                     .padding(.vertical, 4)
                                     .background(Color.gray.opacity(0.2))
@@ -522,7 +526,7 @@ struct ItemDetailsSection: View {
                             .cornerRadius(6)
                         }
                         
-                        if selectedBag != item.bag {
+                        if let selectedBag = selectedBag, selectedBag != item.bag {
                             HStack {
                                 Image(systemName: "arrow.right.circle.fill")
                                     .foregroundColor(.blue)

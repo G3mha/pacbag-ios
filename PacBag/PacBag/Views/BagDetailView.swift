@@ -512,9 +512,22 @@ struct ItemsListView: View {
     
     private func deleteItem(_ item: Item) {
         withAnimation {
-            bag.managedObjectContext?.delete(item)
-            updateBagWeight()
-            saveContext()
+            // Update bag weight before deleting the item
+            if let itemBag = item.bag {
+                // Ensure we don't go negative
+                let weightToSubtract = item.totalWeight
+                itemBag.currentWeight = max(0, itemBag.currentWeight - weightToSubtract)
+            }
+            
+            // Now delete the item
+            item.managedObjectContext?.delete(item)
+            
+            // Save changes
+            do {
+                try item.managedObjectContext?.save()
+            } catch {
+                print("Error deleting item: \(error)")
+            }
         }
     }
     
@@ -523,7 +536,7 @@ struct ItemsListView: View {
             try bag.managedObjectContext?.save()
         } catch {
             let nsError = error as NSError
-            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+            print("Unresolved error \(nsError), \(nsError.userInfo)")
         }
     }
 }

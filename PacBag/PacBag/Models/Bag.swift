@@ -61,7 +61,7 @@ extension Bag {
     
     // Total weight including sub-bags
     var totalWeight: Double {
-        let directWeight = itemsArray.reduce(0) { $0 + $1.weight }
+        let directWeight = itemsArray.reduce(0) { $0 + $1.totalWeight }
         let subBagsWeight = subBagsArray.reduce(0) { $0 + $1.totalWeight }
         return directWeight + subBagsWeight
     }
