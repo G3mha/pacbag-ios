@@ -104,23 +104,29 @@ struct CategoryManagementView: View {
             Button("Delete", role: .destructive) {
                 if let category = showingDeleteAlert {
                     deleteCategory(category)
+                    showingDeleteAlert = nil
                 }
-                showingDeleteAlert = nil
             }
             Button("Cancel", role: .cancel) {
                 showingDeleteAlert = nil
             }
         } message: {
             if let category = showingDeleteAlert {
-                Text("Are you sure you want to delete '\(category.name)'? This will remove the category from \(category.itemsArray.count) items.")
+                let itemCount = category.itemsArray.count
+                let categoryName = category.name
+                return Text("Are you sure you want to delete '\(categoryName)'? This will remove the category from \(itemCount) items.")
+            } else {
+                return Text("")
             }
         }
     }
     
     private func deleteCategory(_ category: Category) {
         withAnimation {
-            // Move items to General category
-            let generalCategory = categoryManager.category(named: "General")
+            // Ensure General category exists and get it
+            let generalCategory = categoryManager.ensureGeneralCategoryExists()
+            
+            // Delete the category and move items to General
             categoryManager.deleteCategory(category, moveItemsTo: generalCategory)
         }
     }
