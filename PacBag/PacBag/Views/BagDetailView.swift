@@ -322,56 +322,59 @@ struct StatCard: View {
 struct ItemsListView: View {
     @ObservedObject var bag: Bag
     @Binding var showingAddItem: Bool
+    @StateObject private var settingsManager = SettingsManager.shared
     @State private var showingTemplates = false
-    @State private var sortOrder: ItemSortOrder = .alphabetical
     
-    enum ItemSortOrder: String, CaseIterable {
-        case alphabetical = "A-Z"
-        case category = "Category"
-        case weight = "Weight"
-        case packed = "Packed Status"
-        
-        var systemImage: String {
-            switch self {
-            case .alphabetical:
-                return "textformat.abc"
-            case .category:
-                return "folder"
-            case .weight:
-                return "scalemass"
-            case .packed:
-                return "checkmark.circle"
-            }
-        }
+    private var sortOrder: ItemSortOrder {
+        settingsManager.defaultItemSortOrder
+    }
+    
+    private var sortAscending: Bool {
+        settingsManager.sortAscending
     }
     
     var sortedItems: [Item] {
+        let items = bag.itemsArray
+        
         switch sortOrder {
-        case .alphabetical:
-            return bag.itemsArray.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        case .name:
+            return items.sorted { 
+                let comparison = $0.name.localizedCaseInsensitiveCompare($1.name)
+                return sortAscending ? comparison == .orderedAscending : comparison == .orderedDescending
+            }
         case .category:
-            return bag.itemsArray.sorted { 
+            return items.sorted { 
                 let fullCat1 = $0.fullCategory
                 let fullCat2 = $1.fullCategory
                 
                 if fullCat1 == fullCat2 {
-                    return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+                    let comparison = $0.name.localizedCaseInsensitiveCompare($1.name)
+                    return sortAscending ? comparison == .orderedAscending : comparison == .orderedDescending
                 }
-                return fullCat1.localizedCaseInsensitiveCompare(fullCat2) == .orderedAscending
+                let comparison = fullCat1.localizedCaseInsensitiveCompare(fullCat2)
+                return sortAscending ? comparison == .orderedAscending : comparison == .orderedDescending
             }
         case .weight:
-            return bag.itemsArray.sorted { 
+            return items.sorted { 
                 if $0.totalWeight == $1.totalWeight {
-                    return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+                    let comparison = $0.name.localizedCaseInsensitiveCompare($1.name)
+                    return sortAscending ? comparison == .orderedAscending : comparison == .orderedDescending
                 }
-                return $0.totalWeight > $1.totalWeight
+                return sortAscending ? $0.totalWeight < $1.totalWeight : $0.totalWeight > $1.totalWeight
             }
         case .packed:
-            return bag.itemsArray.sorted { 
+            return items.sorted { 
                 if $0.isPacked == $1.isPacked {
-                    return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+                    let comparison = $0.name.localizedCaseInsensitiveCompare($1.name)
+                    return sortAscending ? comparison == .orderedAscending : comparison == .orderedDescending
                 }
-                return $0.isPacked && !$1.isPacked
+                return sortAscending ? (!$0.isPacked && $1.isPacked) : ($0.isPacked && !$1.isPacked)
+            }
+        case .dateAdded:
+            return items.sorted {
+                // Use the item's UUID creation time as a proxy for date added
+                let comparison = $0.id.uuidString.compare($1.id.uuidString)
+                return sortAscending ? comparison == .orderedAscending : comparison == .orderedDescending
             }
         }
     }
@@ -386,17 +389,38 @@ struct ItemsListView: View {
                 Spacer()
                 
                 Menu {
+                    // Sort Order Options
                     ForEach(ItemSortOrder.allCases, id: \.self) { order in
-                        Button(action: { sortOrder = order }) {
-                            Label(order.rawValue, systemImage: order.systemImage)
+                        Button(action: { settingsManager.defaultItemSortOrder = order }) {
+                            HStack {
+                                Label(order.displayName, systemImage: order.systemImage)
+                                Spacer()
+                                if order == sortOrder {
+                                    Image(systemName: "checkmark")
+                                }
+                            }
+                        }
+                    }
+                    
+                    Divider()
+                    
+                    // Sort Direction Toggle
+                    Button(action: { settingsManager.sortAscending.toggle() }) {
+                        HStack {
+                            Label(sortAscending ? "Ascending" : "Descending", 
+                                  systemImage: sortAscending ? "arrow.up" : "arrow.down")
+                            Spacer()
+                            Image(systemName: "checkmark")
                         }
                     }
                 } label: {
                     HStack(spacing: 4) {
-                        Image(systemName: "arrow.up.arrow.down")
+                        Image(systemName: sortOrder.systemImage)
                             .font(.caption)
-                        Text(sortOrder.rawValue)
+                        Text(sortOrder.displayName)
                             .font(.caption)
+                        Image(systemName: sortAscending ? "arrow.up" : "arrow.down")
+                            .font(.caption2)
                     }
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
