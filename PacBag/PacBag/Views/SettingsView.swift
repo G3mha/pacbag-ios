@@ -79,6 +79,49 @@ struct SettingsView: View {
                         .pickerStyle(SegmentedPickerStyle())
                         .frame(width: 160)
                     }
+                    
+                    // Item Sort Order
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Image(systemName: "arrow.up.arrow.down")
+                                .foregroundColor(.blue)
+                                .frame(width: 24)
+                            
+                            Text("Default Item Sorting")
+                            
+                            Spacer()
+                        }
+                        
+                        HStack {
+                            Text("Sort by:")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                            
+                            Spacer()
+                            
+                            Picker("Sort Order", selection: $settingsManager.defaultItemSortOrder) {
+                                ForEach(ItemSortOrder.allCases, id: \.self) { order in
+                                    Text(order.displayName).tag(order)
+                                }
+                            }
+                            .pickerStyle(MenuPickerStyle())
+                        }
+                        
+                        HStack {
+                            Text("Direction:")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                            
+                            Spacer()
+                            
+                            Picker("Sort Direction", selection: $settingsManager.sortAscending) {
+                                Text("Ascending (A→Z)").tag(true)
+                                Text("Descending (Z→A)").tag(false)
+                            }
+                            .pickerStyle(SegmentedPickerStyle())
+                            .frame(width: 180)
+                        }
+                    }
                 }
                 
                 // Notifications Section
