@@ -458,22 +458,8 @@ struct ItemDetailsSection: View {
                             if availableBags.count > 1 {
                                 Picker("Bag", selection: $selectedBag) {
                                     ForEach(availableBags, id: \.id) { bag in
-                                        HStack {
-                                            if bag.isSubBag {
-                                                Text("↳ ")
-                                                    .foregroundColor(.secondary)
-                                            }
-                                            VStack(alignment: .leading, spacing: 2) {
-                                                Text(bag.name.isEmpty ? "Unnamed \(bag.isSubBag ? "Sub-bag" : "Bag")" : bag.name)
-                                                    .lineLimit(1)
-                                                if bag.isSubBag && !bag.name.isEmpty {
-                                                    Text("(Sub-bag)")
-                                                        .font(.caption2)
-                                                        .foregroundColor(.secondary)
-                                                }
-                                            }
-                                        }
-                                        .tag(bag)
+                                        Text("\(bag.isSubBag ? "↳ " : "")\(bag.name.isEmpty ? "Unnamed \(bag.isSubBag ? "Sub-bag" : "Bag")" : bag.name)\(bag.isSubBag ? " (Sub-bag)" : "")")
+                                            .tag(bag)
                                     }
                                 }
                                 .pickerStyle(MenuPickerStyle())
@@ -487,7 +473,7 @@ struct ItemDetailsSection: View {
                             }
                         }
                         
-                        // Debug info
+                        // Info message when only one bag is available
                         if availableBags.count <= 1 {
                             HStack {
                                 Image(systemName: "info.circle")
@@ -500,29 +486,6 @@ struct ItemDetailsSection: View {
                             .padding(.horizontal, 8)
                             .padding(.vertical, 4)
                             .background(Color.gray.opacity(0.1))
-                            .cornerRadius(6)
-                        }
-                        
-                        // Temporary debug - show all available bags
-                        if availableBags.count > 1 {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Available bags (\(availableBags.count)):")
-                                    .font(.caption2)
-                                    .foregroundColor(.gray)
-                                ForEach(availableBags, id: \.id) { bag in
-                                    HStack {
-                                        Text("•")
-                                        Text("\(bag.isSubBag ? "Sub: " : "Main: ")")
-                                        Text("'\(bag.name)'")
-                                        Text("(isEmpty: \(bag.name.isEmpty))")
-                                    }
-                                    .font(.caption2)
-                                    .foregroundColor(.gray)
-                                }
-                            }
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.yellow.opacity(0.1))
                             .cornerRadius(6)
                         }
                         
