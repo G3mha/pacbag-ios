@@ -358,6 +358,21 @@ enum ItemSortOrder: String, CaseIterable {
         }
     }
     
+    var shortDisplayName: String {
+        switch self {
+        case .name:
+            return "Name"
+        case .category:
+            return "Category"
+        case .weight:
+            return "Weight"
+        case .dateAdded:
+            return "Date"
+        case .packed:
+            return "Status"
+        }
+    }
+    
     var systemImage: String {
         switch self {
         case .name:
