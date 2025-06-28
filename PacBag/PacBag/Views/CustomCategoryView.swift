@@ -9,18 +9,35 @@ struct CustomCategoryView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("Create Category")) {
+                Section(header: Text(category.isEmpty ? "Create Category" : "Add Subcategory")) {
                     VStack(alignment: .leading, spacing: 12) {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Category Name")
                                 .font(.subheadline)
                                 .fontWeight(.medium)
-                            TextField("e.g., Sports Equipment", text: $category)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                            
+                            if category.isEmpty {
+                                TextField("e.g., Sports Equipment", text: $category)
+                                    .textFieldStyle(RoundedBorderTextFieldStyle())
+                            } else {
+                                // Show as read-only when adding subcategory to existing category
+                                HStack {
+                                    Text(category)
+                                        .foregroundColor(.primary)
+                                    Spacer()
+                                    Text("(existing)")
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 8)
+                                .background(Color(.systemGray6))
+                                .cornerRadius(8)
+                            }
                         }
                         
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Subcategory (optional)")
+                            Text("Subcategory\(category.isEmpty ? " (optional)" : "")")
                                 .font(.subheadline)
                                 .fontWeight(.medium)
                             TextField("e.g., Running Gear", text: $subcategory)
@@ -61,7 +78,7 @@ struct CustomCategoryView: View {
                     .foregroundColor(.secondary)
                 }
             }
-            .navigationTitle("Custom Category")
+            .navigationTitle(category.isEmpty ? "New Category" : "New Subcategory")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
