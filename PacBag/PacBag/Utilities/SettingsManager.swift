@@ -128,6 +128,18 @@ class SettingsManager: ObservableObject {
         }
     }
     
+    @Published var defaultItemSortOrder: ItemSortOrder {
+        didSet {
+            userDefaults.set(defaultItemSortOrder.rawValue, forKey: Keys.defaultItemSortOrder)
+        }
+    }
+    
+    @Published var sortAscending: Bool {
+        didSet {
+            userDefaults.set(sortAscending, forKey: Keys.sortAscending)
+        }
+    }
+    
     // MARK: - Keys
     
     private enum Keys {
@@ -140,6 +152,8 @@ class SettingsManager: ObservableObject {
         static let smartSuggestions = "settings_smart_suggestions"
         static let showWeightInLists = "settings_show_weight_in_lists"
         static let defaultPackingDaysBeforeTrip = "settings_default_packing_days_before_trip"
+        static let defaultItemSortOrder = "settings_default_item_sort_order"
+        static let sortAscending = "settings_sort_ascending"
         static let firstLaunch = "settings_first_launch"
         static let onboardingCompleted = "settings_onboarding_completed"
     }
@@ -157,6 +171,8 @@ class SettingsManager: ObservableObject {
         self.smartSuggestions = userDefaults.object(forKey: Keys.smartSuggestions) as? Bool ?? true
         self.showWeightInLists = userDefaults.object(forKey: Keys.showWeightInLists) as? Bool ?? true
         self.defaultPackingDaysBeforeTrip = userDefaults.object(forKey: Keys.defaultPackingDaysBeforeTrip) as? Int ?? 7
+        self.defaultItemSortOrder = ItemSortOrder(rawValue: userDefaults.string(forKey: Keys.defaultItemSortOrder) ?? "") ?? .category
+        self.sortAscending = userDefaults.object(forKey: Keys.sortAscending) as? Bool ?? true
         
         // Apply theme on initialization
         updateAppearance()
@@ -180,6 +196,8 @@ class SettingsManager: ObservableObject {
         smartSuggestions = true
         showWeightInLists = true
         defaultPackingDaysBeforeTrip = 7
+        defaultItemSortOrder = .category
+        sortAscending = true
     }
     
     func isFirstLaunch() -> Bool {
@@ -220,7 +238,9 @@ class SettingsManager: ObservableObject {
             "autoPackingList": autoPackingList,
             "smartSuggestions": smartSuggestions,
             "showWeightInLists": showWeightInLists,
-            "defaultPackingDaysBeforeTrip": defaultPackingDaysBeforeTrip
+            "defaultPackingDaysBeforeTrip": defaultPackingDaysBeforeTrip,
+            "defaultItemSortOrder": defaultItemSortOrder.rawValue,
+            "sortAscending": sortAscending
         ]
     }
     
@@ -262,6 +282,15 @@ class SettingsManager: ObservableObject {
         if let defaultPackingDaysBeforeTrip = data["defaultPackingDaysBeforeTrip"] as? Int {
             self.defaultPackingDaysBeforeTrip = defaultPackingDaysBeforeTrip
         }
+        
+        if let defaultItemSortOrderString = data["defaultItemSortOrder"] as? String,
+           let defaultItemSortOrder = ItemSortOrder(rawValue: defaultItemSortOrderString) {
+            self.defaultItemSortOrder = defaultItemSortOrder
+        }
+        
+        if let sortAscending = data["sortAscending"] as? Bool {
+            self.sortAscending = sortAscending
+        }
     }
     
     // MARK: - Private Methods
@@ -283,9 +312,9 @@ class SettingsManager: ObservableObject {
 extension SettingsManager {
     
     // Computed properties for complex preferences
-    var preferredItemSortOrder: ItemSortOrder {
-        // Could be made configurable in the future
-        return .category
+    var preferredItemSortDescriptor: NSSortDescriptor {
+        let descriptor = defaultItemSortOrder.sortDescriptor
+        return NSSortDescriptor(key: descriptor.key, ascending: sortAscending)
     }
     
     var preferredDateFormat: DateFormatter {
@@ -326,6 +355,21 @@ enum ItemSortOrder: String, CaseIterable {
             return "Date Added"
         case .packed:
             return "Packed Status"
+        }
+    }
+    
+    var systemImage: String {
+        switch self {
+        case .name:
+            return "textformat.abc"
+        case .category:
+            return "folder"
+        case .weight:
+            return "scalemass"
+        case .dateAdded:
+            return "calendar"
+        case .packed:
+            return "checkmark.circle"
         }
     }
     
