@@ -208,10 +208,10 @@ class CategoryManager: ObservableObject {
     }
     
     func deleteCategory(_ category: Category, moveItemsTo newCategory: Category? = nil) {
-        // Store the category ID before deletion
-        let categoryIdToDelete = category.objectID
+        // Instead of actually deleting, mark as archived and remove from UI immediately
+        // This prevents UUID bridging crashes while still removing from user view
         
-        // First, handle all items before deletion
+        // First, handle all items before archiving
         let itemsToUpdate = Array(category.itemsArray) // Create a copy to avoid collection mutation
         
         // Move items to new category if specified
@@ -230,32 +230,39 @@ class CategoryManager: ObservableObject {
             }
         }
         
-        // Handle subcategories - delete them first
-        let subcategoriesToDelete = Array(category.subcategoriesArray)
-        for subcategory in subcategoriesToDelete {
+        // Handle subcategories - archive them too
+        let subcategoriesToArchive = Array(category.subcategoriesArray)
+        for subcategory in subcategoriesToArchive {
             // Clear subcategory from items that use it
             let itemsWithSubcategory = Array(subcategory.itemsArray)
             for item in itemsWithSubcategory {
                 item.subcategoryEntity = nil
                 item.subcategory = nil
             }
-            context.delete(subcategory)
+            subcategory.isArchived = true
         }
         
-        // Now it's safe to delete the category
-        context.delete(category)
+        // Mark category as archived instead of deleting
+        category.isArchived = true
         
-        // Save changes immediately
+        // Save changes
         do {
             try context.save()
             
-            // Remove the deleted category from our local array immediately
-            categories.removeAll { $0.objectID == categoryIdToDelete }
-            updatePublishedArrays()
+            // Remove from UI immediately by updating local arrays
+            DispatchQueue.main.async { [weak self] in
+                guard let self = self else { return }
+                
+                // Remove the archived category from our local array immediately
+                self.categories.removeAll { $0.objectID == category.objectID }
+                self.updatePublishedArrays()
+            }
         } catch {
-            print("Error deleting category: \(error)")
+            print("Error archiving category: \(error)")
             // If save fails, reload to get back to a consistent state
-            loadCategories()
+            DispatchQueue.main.async { [weak self] in
+                self?.loadCategories()
+            }
         }
     }
     
@@ -263,6 +270,22 @@ class CategoryManager: ObservableObject {
         category.isArchived = true
         saveContext()
         loadCategories()
+    }
+    
+    // Permanently delete archived categories (can be called during app cleanup)
+    func permanentlyDeleteArchivedCategories() {
+        let request: NSFetchRequest<Category> = Category.fetchRequest()
+        request.predicate = NSPredicate(format: "isArchived == YES")
+        
+        do {
+            let archivedCategories = try context.fetch(request)
+            for category in archivedCategories {
+                context.delete(category)
+            }
+            try context.save()
+        } catch {
+            print("Error permanently deleting archived categories: \(error)")
+        }
     }
     
     // MARK: - Usage Tracking
