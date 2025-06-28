@@ -167,6 +167,13 @@ class CategoryManager: ObservableObject {
         category.createdDate = Date()
         category.lastUsedDate = nil
         
+        // Ensure the object is properly registered with Core Data
+        do {
+            try context.obtainPermanentIDs(for: [category])
+        } catch {
+            print("Error obtaining permanent ID for category: \(error)")
+        }
+        
         return category
     }
     
@@ -182,6 +189,13 @@ class CategoryManager: ObservableObject {
         subcategory.lastUsedDate = nil
         subcategory.category = category
         
+        // Ensure the object is properly registered with Core Data
+        do {
+            try context.obtainPermanentIDs(for: [subcategory])
+        } catch {
+            print("Error obtaining permanent ID for subcategory: \(error)")
+        }
+        
         return subcategory
     }
     
@@ -194,21 +208,55 @@ class CategoryManager: ObservableObject {
     }
     
     func deleteCategory(_ category: Category, moveItemsTo newCategory: Category? = nil) {
+        // Store the category ID before deletion
+        let categoryIdToDelete = category.objectID
+        
+        // First, handle all items before deletion
+        let itemsToUpdate = Array(category.itemsArray) // Create a copy to avoid collection mutation
+        
         // Move items to new category if specified
         if let newCategory = newCategory {
-            for item in category.itemsArray {
+            for item in itemsToUpdate {
                 item.categoryEntity = newCategory
+                // Also update the legacy string category for compatibility
+                item.category = newCategory.name
             }
         } else {
             // Clear category from items
-            for item in category.itemsArray {
+            for item in itemsToUpdate {
                 item.categoryEntity = nil
+                // Also clear the legacy string category
+                item.category = nil
             }
         }
         
+        // Handle subcategories - delete them first
+        let subcategoriesToDelete = Array(category.subcategoriesArray)
+        for subcategory in subcategoriesToDelete {
+            // Clear subcategory from items that use it
+            let itemsWithSubcategory = Array(subcategory.itemsArray)
+            for item in itemsWithSubcategory {
+                item.subcategoryEntity = nil
+                item.subcategory = nil
+            }
+            context.delete(subcategory)
+        }
+        
+        // Now it's safe to delete the category
         context.delete(category)
-        saveContext()
-        loadCategories()
+        
+        // Save changes immediately
+        do {
+            try context.save()
+            
+            // Remove the deleted category from our local array immediately
+            categories.removeAll { $0.objectID == categoryIdToDelete }
+            updatePublishedArrays()
+        } catch {
+            print("Error deleting category: \(error)")
+            // If save fails, reload to get back to a consistent state
+            loadCategories()
+        }
     }
     
     func archiveCategory(_ category: Category) {
@@ -242,6 +290,18 @@ class CategoryManager: ObservableObject {
     
     func category(named name: String) -> Category? {
         return categories.first { $0.name.lowercased() == name.lowercased() }
+    }
+    
+    func ensureGeneralCategoryExists() -> Category {
+        if let general = category(named: "General") {
+            return general
+        }
+        
+        // Create General category if it doesn't exist
+        let general = createCategory("General", icon: "folder.fill", color: "#007AFF", isDefault: true)
+        saveContext()
+        loadCategories()
+        return general
     }
     
     func subcategories(for categoryName: String) -> [SubCategory] {
