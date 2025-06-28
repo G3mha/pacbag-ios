@@ -10,6 +10,7 @@ struct TripDetailView: View {
     @State private var showingEditTrip = false
     @State private var showingShareView = false
     @State private var showingDeleteConfirmation = false
+    @State private var showingCreateTemplate = false
     
     var body: some View {
         ScrollView {
@@ -45,6 +46,10 @@ struct TripDetailView: View {
                         showingShareView = true
                     }
                     
+                    Button("Create Template", systemImage: "doc.badge.plus") {
+                        showingCreateTemplate = true
+                    }
+                    
                     Divider()
                     
                     Button("Mark as Completed", systemImage: "checkmark.circle") {
@@ -76,6 +81,9 @@ struct TripDetailView: View {
         }
         .sheet(isPresented: $showingShareView) {
             ShareView(shareableItem: .trip(trip))
+        }
+        .sheet(isPresented: $showingCreateTemplate) {
+            CustomTemplateCreationView(sourceTrip: trip, sourceBag: nil)
         }
         .alert("Delete Trip", isPresented: $showingDeleteConfirmation) {
             Button("Delete", role: .destructive) {

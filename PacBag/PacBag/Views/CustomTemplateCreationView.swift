@@ -79,8 +79,8 @@ struct CustomTemplateCreationView: View {
                                 Text(sourceTrip.name)
                                     .font(.headline)
                                 
-                                if let destination = sourceTrip.destination {
-                                    Text(destination)
+                                if !sourceTrip.destination.isEmpty {
+                                    Text(sourceTrip.destination)
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                 }
