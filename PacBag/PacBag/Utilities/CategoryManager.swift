@@ -241,7 +241,7 @@ class CategoryManager: ObservableObject {
     }
     
     func category(named name: String) -> Category? {
-        return categories.first { $0.name == name }
+        return categories.first { $0.name.lowercased() == name.lowercased() }
     }
     
     func subcategories(for categoryName: String) -> [SubCategory] {
