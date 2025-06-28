@@ -287,7 +287,7 @@ class PackingTemplateManager: ObservableObject {
     private func determineTripType(from trip: Trip) -> TripType {
         // Simple heuristic based on trip name and destination
         let tripName = trip.name.lowercased()
-        let destination = trip.destination?.lowercased() ?? ""
+        let destination = trip.destination.lowercased()
         
         if tripName.contains("business") || tripName.contains("work") || tripName.contains("conference") {
             return .business
@@ -307,9 +307,8 @@ class PackingTemplateManager: ObservableObject {
     }
     
     private func determineDuration(from trip: Trip) -> TripDuration {
-        guard let startDate = trip.startDate, let endDate = trip.endDate else {
-            return .weekend
-        }
+        let startDate = trip.startDate
+        let endDate = trip.endDate
         
         let calendar = Calendar.current
         let days = calendar.dateComponents([.day], from: startDate, to: endDate).day ?? 1
@@ -329,9 +328,7 @@ class PackingTemplateManager: ObservableObject {
     }
     
     private func determineSeason(from trip: Trip) -> Season {
-        guard let startDate = trip.startDate else {
-            return .allSeason
-        }
+        let startDate = trip.startDate
         
         let calendar = Calendar.current
         let month = calendar.component(.month, from: startDate)
