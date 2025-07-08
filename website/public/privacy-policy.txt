@@ -1,0 +1,69 @@
+PRIVACY POLICY FOR PACBAG
+
+Last Updated: December 2024
+
+OVERVIEW
+--------
+PacBag respects your privacy. We do not collect, store, or have access to any of your personal data. All information remains private in your iCloud account.
+
+WHAT INFORMATION WE COLLECT
+---------------------------
+We collect NO personal information. PacBag:
+- Does not require user accounts
+- Does not track users
+- Does not show advertisements
+- Does not share data with third parties
+- Does not use analytics
+
+HOW YOUR DATA IS STORED
+-----------------------
+iCloud (CloudKit):
+- Your trips, bags, and packing lists are stored in your personal iCloud account
+- Only you can access this data with your Apple ID
+- We cannot see or access your information
+- Data syncs between your devices automatically
+
+Local Storage:
+- App settings stored on device
+- Notification schedules stored locally
+
+PHOTOS
+------
+- Photos you add are stored in your iCloud Photo Library
+- App only accesses photos you select
+- Requires your permission
+- Can be disabled in iOS Settings
+
+NOTIFICATIONS
+-------------
+- All reminders are local notifications
+- No external push notification servers
+- You control all notification settings
+
+DATA SECURITY
+-------------
+Protected by:
+- Apple's iCloud security
+- Your device passcode/Face ID/Touch ID
+- iOS app sandboxing
+- End-to-end encryption
+
+YOUR RIGHTS
+-----------
+You can:
+- Delete any data at any time
+- Reset entire app in Settings
+- Disable iCloud sync
+- Delete app to remove all local data
+
+CHILDREN
+--------
+PacBag is suitable for all ages (4+) and does not collect information from anyone.
+
+CONTACT
+-------
+For privacy questions: privacy@pacbagapp.com
+
+SUMMARY
+-------
+Your data stays in your iCloud account. We cannot access it. You have complete control.
