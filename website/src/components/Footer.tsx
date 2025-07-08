@@ -51,7 +51,7 @@ const Footer: React.FC = () => {
       { name: 'Press Kit', href: '#press' }
     ],
     legal: [
-      { name: 'Privacy Policy', href: '#privacy' },
+      { name: 'Privacy Policy', href: '/privacy-policy.html' },
       { name: 'Terms of Service', href: '#terms' },
       { name: 'Cookie Policy', href: '#cookies' },
       { name: 'GDPR', href: '#gdpr' }
