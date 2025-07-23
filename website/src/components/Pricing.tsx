@@ -8,53 +8,23 @@ import type { PricingPlan } from '@/types'
 
 const plans: PricingPlan[] = [
   {
-    name: 'Free',
-    price: '$0',
+    name: 'PacBag',
+    price: 'Free',
     period: 'forever',
-    description: 'Perfect for occasional travelers',
+    description: 'Everything you need for perfect packing',
     features: [
-      'Up to 3 active trips',
-      'Basic packing templates',
-      'Manual item management',
-      'Basic weather integration',
-      'iOS app access'
-    ],
-    cta: 'Get Started Free'
-  },
-  {
-    name: 'Pro',
-    price: '$4.99',
-    period: 'per month',
-    description: 'Ideal for frequent travelers',
-    features: [
-      'Unlimited trips',
-      'AI-powered suggestions',
-      'Advanced templates',
-      'Real-time weather updates',
-      'Cloud sync across devices',
-      'Family sharing (up to 5)',
+      'Unlimited trips and bags',
+      'Smart packing templates',
       'Custom categories',
-      'Export & sharing'
+      'Weight tracking',
+      'iCloud sync across devices',
+      'Trip reminders',
+      'List sharing & export',
+      'Multi-bag organization',
+      'No ads or limitations'
     ],
     popular: true,
-    cta: 'Start Free Trial'
-  },
-  {
-    name: 'Family',
-    price: '$9.99',
-    period: 'per month',
-    description: 'Best for families and groups',
-    features: [
-      'Everything in Pro',
-      'Unlimited family members',
-      'Group trip planning',
-      'Advanced analytics',
-      'Priority support',
-      'Custom branding',
-      'Bulk operations',
-      'Team collaboration tools'
-    ],
-    cta: 'Start Free Trial'
+    cta: 'Download Free'
   }
 ]
 
@@ -99,26 +69,11 @@ const Pricing: React.FC = () => {
           </h2>
           
           <p className="text-xl text-gray-400 max-w-3xl mx-auto mb-8">
-            Start free and upgrade when you need more features. All plans include our core packing intelligence.
+            Everything you need, completely free. No subscriptions, no hidden costs, no limitations.
           </p>
-
-          {/* Billing Toggle */}
-          <motion.div
-            className="inline-flex items-center bg-white/5 backdrop-blur-sm border border-white/10 rounded-full p-1"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={inView ? { opacity: 1, scale: 1 } : {}}
-            transition={{ duration: 0.5, delay: 0.4 }}
-          >
-            <button className="px-4 py-2 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white text-sm font-medium">
-              Monthly
-            </button>
-            <button className="px-4 py-2 rounded-full text-gray-400 text-sm font-medium hover:text-white transition-colors">
-              Annual <span className="text-green-400">(Save 20%)</span>
-            </button>
-          </motion.div>
         </motion.div>
 
-        <div className="grid lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+        <div className="flex justify-center max-w-md mx-auto">
           {plans.map((plan, index) => (
             <motion.div
               key={index}
@@ -205,48 +160,31 @@ const Pricing: React.FC = () => {
                 </motion.button>
 
                 {/* Extra Info */}
-                {plan.name === 'Pro' && (
-                  <motion.p
-                    className="text-center text-sm text-gray-400 mt-4"
-                    initial={{ opacity: 0 }}
-                    animate={inView ? { opacity: 1 } : {}}
-                    transition={{ duration: 0.5, delay: 1 }}
-                  >
-                    7-day free trial, cancel anytime
-                  </motion.p>
-                )}
+                <motion.p
+                  className="text-center text-sm text-gray-400 mt-4"
+                  initial={{ opacity: 0 }}
+                  animate={inView ? { opacity: 1 } : {}}
+                  transition={{ duration: 0.5, delay: 1 }}
+                >
+                  Available on the App Store
+                </motion.p>
               </div>
             </motion.div>
           ))}
         </div>
 
-        {/* FAQ Link */}
+        {/* Free App Badge */}
         <motion.div
           className="text-center mt-16"
-          initial={{ opacity: 0, y: 30 }}
-          animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.7, delay: 0.8 }}
-        >
-          <p className="text-gray-400 mb-4">
-            Have questions about our pricing?
-          </p>
-          <button className="text-purple-400 hover:text-purple-300 transition-colors font-medium">
-            Check our FAQ →
-          </button>
-        </motion.div>
-
-        {/* Money Back Guarantee */}
-        <motion.div
-          className="text-center mt-12"
           initial={{ opacity: 0, y: 20 }}
           animate={inView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 1 }}
+          transition={{ duration: 0.6, delay: 0.8 }}
         >
-          <div className="inline-flex items-center space-x-2 bg-green-500/10 border border-green-500/20 rounded-full px-4 py-2">
-            <div className="w-4 h-4 bg-green-500 rounded-full flex items-center justify-center">
-              <Check className="w-2 h-2 text-white" />
+          <div className="inline-flex items-center space-x-2 bg-green-500/10 border border-green-500/20 rounded-full px-6 py-3">
+            <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+              <Check className="w-3 h-3 text-white" />
             </div>
-            <span className="text-sm text-green-300">30-day money-back guarantee</span>
+            <span className="text-green-300 font-medium">100% Free - No Catch!</span>
           </div>
         </motion.div>
       </div>
