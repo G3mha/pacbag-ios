@@ -42,7 +42,7 @@ export default function SupportPage() {
                   How do I sync my data across devices?
                 </summary>
                 <p className="mt-2 text-gray-600">
-                  PacBag automatically syncs through iCloud. Make sure you're signed into the same Apple ID on all devices and have iCloud enabled for PacBag in Settings → [Your Name] → iCloud.
+                  PacBag automatically syncs through iCloud. Make sure you&apos;re signed into the same Apple ID on all devices and have iCloud enabled for PacBag in Settings → [Your Name] → iCloud.
                 </p>
               </details>
               
@@ -87,7 +87,7 @@ export default function SupportPage() {
                   Is my data private?
                 </summary>
                 <p className="mt-2 text-gray-600">
-                  Absolutely! All your data is stored privately in your iCloud account. We don't have access to any of your information. Read our{' '}
+                  Absolutely! All your data is stored privately in your iCloud account. We don&apos;t have access to any of your information. Read our{' '}
                   <Link href="/privacy-policy.html" className="text-blue-600 hover:underline">
                     Privacy Policy
                   </Link>{' '}
@@ -104,7 +104,7 @@ export default function SupportPage() {
             Still need help?
           </h2>
           <p className="text-gray-600 mb-6">
-            We're here to assist you. Choose the best way to reach us:
+            We&apos;re here to assist you. Choose the best way to reach us:
           </p>
           
           <div className="space-y-4">
