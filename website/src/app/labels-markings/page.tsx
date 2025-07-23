@@ -124,7 +124,8 @@ export default function LabelsMarkingsPage() {
             
             <div className="flex items-start">
               <svg className="w-6 h-6 text-blue-600 mt-1 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0-9v9" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3s-4.5 4.03-4.5 9 2.015 9 4.5 9z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2 12h20" />
               </svg>
               <div>
                 <h4 className="font-medium text-gray-900">Website</h4>
@@ -136,7 +137,7 @@ export default function LabelsMarkingsPage() {
 
             <div className="flex items-start">
               <svg className="w-6 h-6 text-blue-600 mt-1 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192L5.636 18.364M12 2.25a9.75 9.75 0 11-9.75 9.75 9.75 9.75 0 019.75-9.75z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <div>
                 <h4 className="font-medium text-gray-900">Support</h4>
@@ -150,7 +151,7 @@ export default function LabelsMarkingsPage() {
 
         {/* Footer */}
         <div className="mt-12 text-center text-gray-500">
-          <p>Last Updated: December 2024</p>
+          <p>Last Updated: July 2025</p>
           <p>PacBag - Digital Luggage v1.0</p>
           <p>Developed by Enricco Gemha</p>
         </div>
