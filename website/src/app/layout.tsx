@@ -13,6 +13,7 @@ export const viewport: Viewport = {
     { media: "(prefers-color-scheme: light)", color: "#a855f7" },
     { media: "(prefers-color-scheme: dark)", color: "#a855f7" },
   ],
+  colorScheme: "dark",
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
@@ -105,7 +106,6 @@ export const metadata: Metadata = {
   category: "travel",
   classification: "Travel & Tourism",
   referrer: "origin-when-cross-origin",
-  colorScheme: "dark",
   appLinks: {
     ios: {
       url: "https://apps.apple.com/app/pacbag",
