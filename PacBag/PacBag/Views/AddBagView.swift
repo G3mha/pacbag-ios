@@ -166,8 +166,7 @@ struct AddBagView: View {
             try viewContext.save()
             return newBag
         } catch {
-            let nsError = error as NSError
-            print("Error creating bag: \(nsError), \(nsError.userInfo)")
+            print("Failed to save new bag: \(error)")
             return nil
         }
     }

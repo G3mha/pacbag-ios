@@ -31,7 +31,7 @@ struct AddTripView: View {
                 
                 Section(header: Text("Dates")) {
                     DatePicker("Start Date", selection: $startDate, displayedComponents: .date)
-                        .onChange(of: startDate) { oldValue, newValue in
+                        .onChange(of: startDate) { _, newValue in
                             // Ensure end date is after start date
                             if endDate <= newValue {
                                 endDate = Calendar.current.date(byAdding: .day, value: 1, to: newValue) ?? newValue.addingTimeInterval(86400)
@@ -144,8 +144,7 @@ struct AddTripView: View {
                 
                 dismiss()
             } catch {
-                let nsError = error as NSError
-                print("Error creating trip: \(nsError), \(nsError.userInfo)")
+                print("Failed to save new trip: \(error)")
             }
         }
     }

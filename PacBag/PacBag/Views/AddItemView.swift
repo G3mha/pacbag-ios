@@ -32,6 +32,125 @@ struct AddItemView: View {
         return categoryManager.subcategories(for: category)
     }
     
+    private var categorySelectionView: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Picker("Category", selection: $selectedCategory) {
+                    Text("Select Category").tag(nil as Category?)
+                    ForEach(availableCategories, id: \.id) { category in
+                        HStack {
+                            Image(systemName: category.icon)
+                                .foregroundColor(category.color)
+                            Text(category.name)
+                        }
+                        .tag(category as Category?)
+                    }
+                }
+                .pickerStyle(MenuPickerStyle())
+                .onChange(of: selectedCategory) { _, _ in
+                    selectedSubcategory = nil
+                }
+                
+                Button(action: { showingCustomCategory = true }) {
+                    Image(systemName: "plus.circle.fill")
+                        .font(.title2)
+                        .foregroundColor(.blue)
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+            
+            if !availableSubcategories.isEmpty {
+                subcategorySelectionView
+            }
+            
+            if let category = selectedCategory {
+                currentSelectionView(category: category)
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var subcategorySelectionView: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            subcategoryHeader
+            subcategoryGrid
+        }
+    }
+    
+    private var subcategoryHeader: some View {
+        HStack {
+            Text("Subcategory")
+                .font(.subheadline)
+                .fontWeight(.medium)
+            Text("(optional)")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            Spacer()
+        }
+    }
+    
+    private var subcategoryGrid: some View {
+        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 8) {
+            ForEach(availableSubcategories, id: \.id) { subcategory in
+                subcategoryButton(for: subcategory)
+            }
+        }
+    }
+    
+    private func subcategoryButton(for subcategory: SubCategory) -> some View {
+        Button(action: {
+            if selectedSubcategory == subcategory {
+                selectedSubcategory = nil
+            } else {
+                selectedSubcategory = subcategory
+            }
+        }) {
+            HStack {
+                Image(systemName: subcategory.category.icon)
+                    .foregroundColor(subcategory.category.color)
+                Text(subcategory.name)
+                    .font(.caption)
+                Spacer()
+                if selectedSubcategory == subcategory {
+                    Image(systemName: "checkmark")
+                        .foregroundColor(.blue)
+                        .font(.caption)
+                }
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(
+                RoundedRectangle(cornerRadius: 6)
+                    .fill(selectedSubcategory == subcategory ? subcategory.category.color.opacity(0.2) : Color.gray.opacity(0.1))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 6)
+                    .stroke(selectedSubcategory == subcategory ? subcategory.category.color : Color.clear, lineWidth: 1)
+            )
+        }
+        .buttonStyle(PlainButtonStyle())
+    }
+    
+    private func currentSelectionView(category: Category) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("Current Selection:")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            
+            HStack {
+                Image(systemName: category.icon)
+                    .foregroundColor(category.color)
+                Text(selectedSubcategory == nil ? category.name : "\(category.name) > \(selectedSubcategory?.name ?? "Unknown")")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+            .background(category.color.opacity(0.1))
+            .cornerRadius(6)
+        }
+    }
+    
     var body: some View {
         NavigationView {
             Form {
@@ -43,94 +162,7 @@ struct AddItemView: View {
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .lineLimit(2...4)
                     
-                    VStack(alignment: .leading, spacing: 12) {
-                        HStack {
-                            Picker("Category", selection: $selectedCategory) {
-                                Text("Select Category").tag(nil as Category?)
-                                ForEach(availableCategories, id: \.id) { category in
-                                    HStack {
-                                        Image(systemName: category.icon)
-                                            .foregroundColor(category.color)
-                                        Text(category.name)
-                                    }
-                                    .tag(category as Category?)
-                                }
-                            }
-                            .pickerStyle(MenuPickerStyle())
-                            .onChange(of: selectedCategory) { oldValue, newValue in
-                                // Reset subcategory when category changes
-                                selectedSubcategory = nil
-                            }
-                            
-                            Button(action: { showingCustomCategory = true }) {
-                                Image(systemName: "plus.circle.fill")
-                                    .font(.title2)
-                                    .foregroundColor(.blue)
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                        }
-                        
-                        if !availableSubcategories.isEmpty {
-                            VStack(alignment: .leading, spacing: 8) {
-                                HStack {
-                                    Text("Subcategory")
-                                        .font(.subheadline)
-                                        .fontWeight(.medium)
-                                    Text("(optional)")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                    Spacer()
-                                }
-                                
-                                HStack {
-                                    Picker("Subcategory", selection: $selectedSubcategory) {
-                                        Text("None").tag(nil as SubCategory?)
-                                        ForEach(availableSubcategories, id: \.id) { subcategory in
-                                            Text(subcategory.name).tag(subcategory as SubCategory?)
-                                        }
-                                    }
-                                    .pickerStyle(MenuPickerStyle())
-                                    .padding(.vertical, 4)
-                                    .background(Color(.systemGray6))
-                                    .cornerRadius(8)
-                                    
-                                    Button(action: { 
-                                        customCategory = selectedCategory?.name ?? ""
-                                        showingCustomCategory = true 
-                                    }) {
-                                        Image(systemName: "plus.circle.fill")
-                                            .font(.title3)
-                                            .foregroundColor(.blue)
-                                    }
-                                    .buttonStyle(PlainButtonStyle())
-                                }
-                            }
-                            .padding(.top, 8)
-                        }
-                        
-                        
-                        // Current selection display
-                        if let category = selectedCategory {
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text("Current Selection:")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                
-                                HStack {
-                                    Image(systemName: category.icon)
-                                        .foregroundColor(category.color)
-                                    Text(selectedSubcategory == nil ? category.name : "\(category.name) > \(selectedSubcategory!.name)")
-                                        .font(.subheadline)
-                                        .fontWeight(.medium)
-                                }
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(category.color.opacity(0.1))
-                                .cornerRadius(6)
-                            }
-                            .padding(.top, 8)
-                        }
-                    }
+                    categorySelectionView
                 }
                 
                 Section(header: Text("Quantity & Weight")) {
@@ -202,7 +234,7 @@ struct AddItemView: View {
                 }
             }
         }
-        .onChange(of: selectedPhoto) { oldValue, newValue in
+        .onChange(of: selectedPhoto) { _, newValue in
             loadPhoto(from: newValue)
         }
         .onAppear {
@@ -266,8 +298,8 @@ struct AddItemView: View {
                 try viewContext.save()
                 dismiss()
             } catch {
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+                print("Failed to save item: \(error)")
+                fatalError("Unresolved error \(error)")
             }
         }
     }
