@@ -118,8 +118,8 @@ struct AddSubBagView: View {
                 try viewContext.save()
                 dismiss()
             } catch {
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+                print("Failed to save sub-bag: \(error)")
+                fatalError("Unresolved error \(error)")
             }
         }
     }

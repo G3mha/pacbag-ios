@@ -33,15 +33,10 @@ class IconSetupManager {
             "icon-1024": 1024
         ]
         
-        // Log what we're looking for
-        print("📱 Looking for icon files...")
-        for (filename, size) in iconSizes {
+        // Check what we're looking for
+        for (filename, _) in iconSizes {
             let iconPath = iconsPath.appendingPathComponent("\(filename).png")
-            if FileManager.default.fileExists(atPath: iconPath.path) {
-                print("✅ Found: \(filename).png (\(size)×\(size))")
-            } else {
-                print("❌ Missing: \(filename).png (\(size)×\(size))")
-            }
+            _ = FileManager.default.fileExists(atPath: iconPath.path)
         }
     }
     
@@ -49,7 +44,6 @@ class IconSetupManager {
     
     func copyIconsToBundle() {
         guard let bundlePath = Bundle.main.resourcePath else {
-            print("❌ Could not access bundle path")
             return
         }
         
@@ -62,9 +56,7 @@ class IconSetupManager {
                 withIntermediateDirectories: true,
                 attributes: nil
             )
-            print("✅ Created AppIcon.appiconset directory")
         } catch {
-            print("❌ Failed to create AppIcon directory: \(error)")
             return
         }
         
@@ -142,21 +134,17 @@ class IconSetupManager {
         
         do {
             try contentsJSON.write(toFile: contentsPath, atomically: true, encoding: .utf8)
-            print("✅ Created Contents.json")
         } catch {
-            print("❌ Failed to create Contents.json: \(error)")
+            print("Failed to write Contents.json: \(error)")
         }
     }
     
     // MARK: - Setup App Icons on Launch
     
     func setupAppIcons() {
-        print("🎨 Setting up app icons...")
         createIconsFromDownloadedFiles()
         
         // Generate a fallback icon if needed
-        if let generatedIcon = AppIconManager.shared.generateAppIcon() {
-            print("✅ Generated fallback app icon")
-        }
+        _ = AppIconManager.shared.generateAppIcon()
     }
 }

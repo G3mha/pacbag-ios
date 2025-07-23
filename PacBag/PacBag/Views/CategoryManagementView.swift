@@ -123,8 +123,8 @@ struct CategoryManagementView: View {
     
     private func deleteCategory(_ category: Category) {
         // Store category information before deletion to avoid accessing deleted object
-        let categoryObjectID = category.objectID
-        let categoryName = category.name
+        _ = category.objectID
+        _ = category.name
         
         // Clear UI state immediately to prevent further access to the object
         showingDeleteAlert = nil
@@ -132,17 +132,11 @@ struct CategoryManagementView: View {
         
         // Perform deletion without animation to avoid UI conflicts
         Task {
-            do {
-                // Ensure General category exists and get it
-                let generalCategory = categoryManager.ensureGeneralCategoryExists()
-                
-                // Delete the category and move items to General
-                categoryManager.deleteCategory(category, moveItemsTo: generalCategory)
-                
-                print("Successfully deleted category: \(categoryName)")
-            } catch {
-                print("Failed to delete category: \(error)")
-            }
+            // Ensure General category exists and get it
+            let generalCategory = categoryManager.ensureGeneralCategoryExists()
+            
+            // Delete the category and move items to General
+            categoryManager.deleteCategory(category, moveItemsTo: generalCategory)
         }
     }
 }

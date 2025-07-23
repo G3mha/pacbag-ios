@@ -156,8 +156,8 @@ struct BagDetailView: View {
         do {
             try viewContext.save()
         } catch {
-            let nsError = error as NSError
-            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+            print("Failed to save context: \(error)")
+            fatalError("Unresolved error \(error)")
         }
     }
 }
@@ -557,7 +557,7 @@ struct ItemsListView: View {
             do {
                 try item.managedObjectContext?.save()
             } catch {
-                print("Error deleting item: \(error)")
+                print("Failed to save after deleting item: \(error)")
             }
         }
     }
@@ -566,8 +566,7 @@ struct ItemsListView: View {
         do {
             try bag.managedObjectContext?.save()
         } catch {
-            let nsError = error as NSError
-            print("Unresolved error \(nsError), \(nsError.userInfo)")
+            print("Failed to save context: \(error)")
         }
     }
 }

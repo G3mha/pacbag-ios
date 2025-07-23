@@ -96,8 +96,8 @@ struct EditBagView: View {
                 try viewContext.save()
                 dismiss()
             } catch {
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+                print("Failed to save bag changes: \(error)")
+                fatalError("Unresolved error \(error)")
             }
         }
     }
@@ -112,8 +112,8 @@ struct EditBagView: View {
             do {
                 try viewContext.save()
             } catch {
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+                print("Failed to save bag changes: \(error)")
+                fatalError("Unresolved error \(error)")
             }
         }
     }
@@ -127,8 +127,8 @@ struct EditBagView: View {
             do {
                 try viewContext.save()
             } catch {
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+                print("Failed to save bag changes: \(error)")
+                fatalError("Unresolved error \(error)")
             }
         }
     }
