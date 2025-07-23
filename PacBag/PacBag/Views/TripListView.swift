@@ -151,8 +151,7 @@ struct TripListView: View {
             do {
                 try viewContext.save()
             } catch {
-                let nsError = error as NSError
-                print("Error deleting trip: \(nsError), \(nsError.userInfo)")
+                print("Failed to delete trip: \(error)")
             }
         }
     }

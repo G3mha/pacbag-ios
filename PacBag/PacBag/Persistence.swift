@@ -29,8 +29,8 @@ struct PersistenceController {
         do {
             try viewContext.save()
         } catch {
-            let nsError = error as NSError
-            fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+            print("Failed to save context: \(error)")
+            fatalError("Unresolved error \(error)")
         }
         return result
     }()
@@ -41,7 +41,7 @@ struct PersistenceController {
         // Use CoreDataManager's model instead
         container = NSPersistentCloudKitContainer(name: "PacBagModel", managedObjectModel: CoreDataManager.shared.persistentContainer.managedObjectModel)
         if inMemory {
-            container.persistentStoreDescriptions.first!.url = URL(fileURLWithPath: "/dev/null")
+            container.persistentStoreDescriptions.first?.url = URL(fileURLWithPath: "/dev/null")
         }
         container.loadPersistentStores(completionHandler: { (storeDescription, error) in
             if let error = error as NSError? {

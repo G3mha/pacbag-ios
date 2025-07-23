@@ -165,7 +165,7 @@ struct ShareSheetView: UIViewControllerRepresentable {
         do {
             try exportItem.content.write(to: tempURL, atomically: true, encoding: .utf8)
         } catch {
-            print("Error writing file: \(error)")
+            print("Failed to write export file: \(error)")
         }
         
         let activityVC = UIActivityViewController(
