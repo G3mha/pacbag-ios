@@ -477,8 +477,8 @@ struct SettingsView: View {
             do {
                 try viewContext.save()
             } catch {
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+                print("Failed to clear all data: \(error)")
+                fatalError("Unresolved error \(error)")
             }
         }
     }

@@ -123,8 +123,7 @@ struct TripDetailView: View {
                 try viewContext.save()
                 dismiss() // Navigate back after deletion
             } catch {
-                let nsError = error as NSError
-                print("Error deleting trip: \(nsError), \(nsError.userInfo)")
+                print("Failed to delete trip: \(error)")
             }
         }
     }
@@ -133,8 +132,7 @@ struct TripDetailView: View {
         do {
             try viewContext.save()
         } catch {
-            let nsError = error as NSError
-            print("Error saving context: \(nsError), \(nsError.userInfo)")
+            print("Failed to save context: \(error)")
         }
     }
 }
@@ -396,7 +394,7 @@ struct TripActionsView: View {
         do {
             try trip.managedObjectContext?.save()
         } catch {
-            print("Error saving context: \(error)")
+            print("Failed to save context: \(error)")
         }
     }
 }
@@ -498,8 +496,7 @@ struct BagsForTripView: View {
             do {
                 try viewContext.save()
             } catch {
-                let nsError = error as NSError
-                print("Error deleting bag: \(nsError), \(nsError.userInfo)")
+                print("Failed to delete trip: \(error)")
             }
         }
     }

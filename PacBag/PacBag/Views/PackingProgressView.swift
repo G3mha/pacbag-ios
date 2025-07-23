@@ -144,9 +144,12 @@ struct PackingDetailBreakdown: View {
                 stats[category] = (packed: 0, total: 0)
             }
             
-            stats[category]!.total += quantity
-            if item.isPacked {
-                stats[category]!.packed += quantity
+            if var categoryStats = stats[category] {
+                categoryStats.total += quantity
+                if item.isPacked {
+                    categoryStats.packed += quantity
+                }
+                stats[category] = categoryStats
             }
         }
         
@@ -160,9 +163,12 @@ struct PackingDetailBreakdown: View {
                     stats[category] = (packed: 0, total: 0)
                 }
                 
-                stats[category]!.total += quantity
-                if item.isPacked {
-                    stats[category]!.packed += quantity
+                if var categoryStats = stats[category] {
+                    categoryStats.total += quantity
+                    if item.isPacked {
+                        categoryStats.packed += quantity
+                    }
+                    stats[category] = categoryStats
                 }
             }
         }
@@ -183,8 +189,8 @@ struct PackingDetailBreakdown: View {
                 ForEach(categoryStats.keys.sorted(), id: \.self) { category in
                     CategoryProgressCard(
                         category: category,
-                        packed: categoryStats[category]!.packed,
-                        total: categoryStats[category]!.total
+                        packed: categoryStats[category]?.packed ?? 0,
+                        total: categoryStats[category]?.total ?? 0
                     )
                 }
             }

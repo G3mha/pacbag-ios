@@ -467,7 +467,7 @@ struct TemplateDetailView: View {
             try viewContext.save()
             dismiss()
         } catch {
-            print("Error applying selected items: \(error)")
+            print("Failed to save template items: \(error)")
         }
     }
 }

@@ -399,7 +399,7 @@ struct CustomTemplateRow: View {
             HStack {
                 Image(systemName: template.icon)
                     .font(.title2)
-                    .foregroundColor(Color(template.color) ?? .blue)
+                    .foregroundColor(Color(template.color))
                 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(template.name)

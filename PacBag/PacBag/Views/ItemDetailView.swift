@@ -138,7 +138,7 @@ struct ItemDetailView: View {
         } message: {
             Text("Are you sure you want to delete this item? This action cannot be undone.")
         }
-        .onChange(of: selectedPhoto) { oldValue, newValue in
+        .onChange(of: selectedPhoto) { _, newValue in
             if isEditing {
                 loadPhoto(from: newValue)
             }
@@ -208,8 +208,8 @@ struct ItemDetailView: View {
                 try viewContext.save()
                 isEditing = false
             } catch {
-                let nsError = error as NSError
-                fatalError("Unresolved error \(nsError), \(nsError.userInfo)")
+                print("Failed to save item changes: \(error)")
+                fatalError("Unresolved error \(error)")
             }
         }
     }
@@ -240,8 +240,7 @@ struct ItemDetailView: View {
                 try viewContext.save()
                 dismiss()
             } catch {
-                let nsError = error as NSError
-                print("Unresolved error \(nsError), \(nsError.userInfo)")
+                print("Failed to delete item: \(error)")
                 // Still try to dismiss even if save failed
                 dismiss()
             }
@@ -386,7 +385,7 @@ struct ItemDetailsSection: View {
                                     }
                                 }
                                 .pickerStyle(MenuPickerStyle())
-                                .onChange(of: editedCategory) { oldValue, newValue in
+                                .onChange(of: editedCategory) { _, _ in
                                     // Reset subcategory when category changes
                                     editedSubcategory = nil
                                 }
