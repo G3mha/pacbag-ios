@@ -407,7 +407,7 @@ class PackingTemplateManager: ObservableObject {
         do {
             try context.save()
         } catch {
-            print("Error applying template: \(error)")
+            print("Failed to save packing template items: \(error)")
         }
     }
 }

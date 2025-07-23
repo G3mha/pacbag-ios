@@ -23,7 +23,6 @@ class NotificationManager: ObservableObject {
             }
             return granted
         } catch {
-            print("Error requesting notification authorization: \(error)")
             await MainActor.run {
                 self.authorizationStatus = .denied
             }
@@ -44,7 +43,6 @@ class NotificationManager: ObservableObject {
     
     func schedulePackingReminders(for trip: Trip) async {
         guard authorizationStatus == .authorized else {
-            print("Notifications not authorized")
             return
         }
         
@@ -163,9 +161,8 @@ class NotificationManager: ObservableObject {
         
         do {
             try await center.add(request)
-            print("Scheduled notification: \(reminder.type.rawValue) for trip \(trip.name) at \(reminder.date)")
         } catch {
-            print("Error scheduling notification: \(error)")
+            print("Failed to schedule notification: \(error)")
         }
     }
     

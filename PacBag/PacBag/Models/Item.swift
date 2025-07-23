@@ -62,7 +62,7 @@ extension Item {
     }
     
     var hasSubcategory: Bool {
-        return subcategoryEntity != nil || (subcategory != nil && !subcategory!.isEmpty)
+        return subcategoryEntity != nil || (subcategory != nil && !(subcategory?.isEmpty ?? true))
     }
     
     var effectiveCategoryName: String {

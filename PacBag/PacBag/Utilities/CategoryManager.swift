@@ -123,7 +123,6 @@ class CategoryManager: ObservableObject {
         do {
             categories = try context.fetch(request)
         } catch {
-            print("Error loading categories: \(error)")
             categories = []
         }
     }
@@ -148,7 +147,7 @@ class CategoryManager: ObservableObject {
         do {
             try context.save()
         } catch {
-            print("Error saving category context: \(error)")
+            print("Failed to save context: \(error)")
         }
     }
     
@@ -171,7 +170,7 @@ class CategoryManager: ObservableObject {
         do {
             try context.obtainPermanentIDs(for: [category])
         } catch {
-            print("Error obtaining permanent ID for category: \(error)")
+            print("Failed to save context: \(error)")
         }
         
         return category
@@ -193,7 +192,7 @@ class CategoryManager: ObservableObject {
         do {
             try context.obtainPermanentIDs(for: [subcategory])
         } catch {
-            print("Error obtaining permanent ID for subcategory: \(error)")
+            print("Failed to save context: \(error)")
         }
         
         return subcategory
@@ -258,7 +257,6 @@ class CategoryManager: ObservableObject {
                 self.updatePublishedArrays()
             }
         } catch {
-            print("Error archiving category: \(error)")
             // If save fails, reload to get back to a consistent state
             DispatchQueue.main.async { [weak self] in
                 self?.loadCategories()
@@ -284,7 +282,7 @@ class CategoryManager: ObservableObject {
             }
             try context.save()
         } catch {
-            print("Error permanently deleting archived categories: \(error)")
+            print("Failed to save context: \(error)")
         }
     }
     

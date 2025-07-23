@@ -17,25 +17,17 @@ class AppIconManager {
     private func setupAlternateIcons() {
         // Check if alternate icons are supported
         guard UIApplication.shared.supportsAlternateIcons else {
-            print("❌ Alternate icons not supported on this device")
             return
         }
-        
-        print("✅ Alternate icons supported")
     }
     
     func setAlternateIcon(named iconName: String?) {
         guard UIApplication.shared.supportsAlternateIcons else {
-            print("❌ Alternate icons not supported")
             return
         }
         
-        UIApplication.shared.setAlternateIconName(iconName) { error in
-            if let error = error {
-                print("❌ Failed to change app icon: \(error.localizedDescription)")
-            } else {
-                print("✅ App icon changed successfully")
-            }
+        UIApplication.shared.setAlternateIconName(iconName) { _ in
+            // Icon change completed
         }
     }
     
@@ -103,10 +95,9 @@ extension AppIconManager {
         if let data = icon.pngData() {
             do {
                 try data.write(to: iconURL)
-                print("✅ Generated icon saved to: \(iconURL.path)")
                 return iconURL
             } catch {
-                print("❌ Failed to save icon: \(error)")
+                print("Failed to write icon data: \(error)")
             }
         }
         

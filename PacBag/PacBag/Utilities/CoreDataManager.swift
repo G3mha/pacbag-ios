@@ -23,9 +23,6 @@ class CoreDataManager {
             if let error = error {
                 fatalError("Core Data error: \(error)")
             }
-            print("✅ Core Data loaded successfully")
-            print("📱 Store URL: \(storeDescription.url?.absoluteString ?? "Unknown")")
-            print("☁️ CloudKit enabled: \(storeDescription.cloudKitContainerOptions != nil)")
         }
         
         // Enable CloudKit sync debugging
