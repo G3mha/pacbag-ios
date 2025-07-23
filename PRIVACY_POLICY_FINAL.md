@@ -79,14 +79,16 @@ For EU users:
 
 ### 11. Contact Information
 For privacy questions:
-- Email: [Your Email]
-- Website: [Your Website]
+- Email: me@enriccogemha.dev
+- Website: https://pacbag.app
+- Developer: Enricco Gemha
 
 ## How to Use This Privacy Policy
 
-1. **Replace placeholder information:**
-   - [Your Email] - Add your contact email
-   - [Your Website] - Add your website URL
+1. **Information has been updated:**
+   - Email: me@enriccogemha.dev
+   - Website: https://pacbag.app
+   - Developer: Enricco Gemha
    - Update the date when you publish
 
 2. **Host the privacy policy:**
