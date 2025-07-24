@@ -236,11 +236,9 @@ const Footer: React.FC = () => {
             </div>
 
             <div className="flex items-center space-x-6 text-gray-400 text-sm">
-              <span>iOS 15.0+</span>
+              <span>iOS 17.0+</span>
               <span>•</span>
               <span>iPhone & iPad</span>
-              <span>•</span>
-              <span>Apple Watch</span>
             </div>
           </div>
         </motion.div>
@@ -253,7 +251,7 @@ const Footer: React.FC = () => {
           transition={{ duration: 0.6, delay: 1 }}
         >
           <div className="text-gray-400 text-sm">
-            © 2024 PacBag. All rights reserved.
+            © 2025 Enricco Gemha. All rights reserved.
           </div>
           
           <div className="flex items-center space-x-4 text-gray-400 text-sm">
