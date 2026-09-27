@@ -1,0 +1,19 @@
+PacBag keeps track of what's in your luggage.
+
+List the bags you're taking. Put items in them. Check items off as they go in. PacBag adds up the weight of each bag against the limit you set, so you find out you're overweight at home instead of at the airport.
+
+WHAT'S IN IT
+
+• Trips with dates, holding as many bags as you need
+• Suitcases, backpacks, carry-ons, duffels and totes — and sub-bags, for packing cubes
+• Weight per item and per bag, against a limit you choose
+• Eight ready-made lists: business trips, beach, city breaks, camping, backpacking and more
+• Your own templates, saved for next time
+• Categories and subcategories you can rename, recolor, and add to
+• Reminders before you leave
+• Export a trip or a bag as text, Markdown, or rich text and send it to anyone
+• iCloud sync across your iPhone and iPad
+
+NO ACCOUNT, NO SERVER
+
+There's nothing to sign up for. Your lists sit in your own iCloud account. No analytics, no ads, no tracking.

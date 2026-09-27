@@ -32,27 +32,7 @@ What's published, and what to check when submitting an update. Live since 24 Jul
 
 ## Description
 
-The text below is a rewrite. The live listing still has the original, which called the app an "intelligent travel companion" and promised "smart" templates — wording the app doesn't earn. Paste this into App Store Connect to replace it.
-
-```
-PacBag keeps track of what's in your luggage.
-
-List the bags you're taking. Put items in them. Check items off as they go in. PacBag adds up the weight of each bag against the limit you set, so you find out you're overweight at home instead of at the airport.
-
-WHAT'S IN IT
-• Trips with dates, holding as many bags as you need
-• Suitcases, backpacks, carry-ons, duffels and totes — and sub-bags, for packing cubes
-• Weight per item and per bag, against a limit you choose
-• Eight ready-made lists: business trips, beach, city breaks, camping, backpacking and more
-• Your own templates, saved for next time
-• Categories and subcategories you can rename, recolor, and add to
-• Reminders before you leave
-• Export a trip or a bag as text, Markdown, or rich text and send it to anyone
-• iCloud sync across your iPhone and iPad
-
-NO ACCOUNT, NO SERVER
-There's nothing to sign up for. Your lists sit in your own iCloud account. No analytics, no ads, no tracking.
-```
+Lives in [`fastlane/metadata/en-US/description.txt`](fastlane/metadata/en-US/description.txt), so it is edited in one place and pushed from there. See [Updating the listing](#updating-the-listing).
 
 ## What's new — 1.0
 
@@ -109,3 +89,24 @@ Contact: me@enriccogemha.dev
 ## Known cleanup
 
 Doesn't affect users, but should go before the next submission: `Info.plist` declares the `remote-notification` background mode, and `PacBag.entitlements` sets `aps-environment` to `development`. The app only uses local notifications, so neither is needed.
+
+## Updating the listing
+
+Text fields are managed with fastlane. Apple lets a live app change its
+description, release notes, promotional text and the support, marketing and
+privacy URLs without submitting a new version; everything else (name, keywords,
+screenshots, category) needs one.
+
+Edit the matching file under `fastlane/metadata/`, then:
+
+```bash
+export ASC_KEY_ID=<the AuthKey_XXXXXXXXXX.p8 filename>
+export ASC_ISSUER_ID=<App Store Connect > Users and Access > Integrations>
+bundle exec fastlane ios update_metadata
+```
+
+It opens an HTML preview and asks before sending anything. Add `force:true` to
+skip the prompt. No build is uploaded and nothing is submitted for review.
+
+`deliver` skips any metadata file that is absent, so a file you have not created
+leaves that field alone on App Store Connect.
