@@ -16,7 +16,7 @@ class CoreDataManager {
         
         // Explicitly set CloudKit container
         storeDescription?.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(
-            containerIdentifier: "iCloud.enriccogemha.PacBag"
+            containerIdentifier: "iCloud.com.enriccogemha.PacBag"
         )
         
         container.loadPersistentStores { storeDescription, error in
