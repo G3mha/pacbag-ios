@@ -1,147 +1,111 @@
-# App Store Submission Guide
+# App Store listing
 
-This document contains all the information needed for App Store submission and updates.
+What's published, and what to check when submitting an update. Live since 24 July 2025.
 
-## Current Status
-- ✅ App uploaded to App Store Connect
-- ✅ Metadata configured
-- ✅ Screenshots prepared
-- ✅ Privacy policy deployed
-- 🔄 Awaiting review
+**Listing:** [PacBag - Digital Luggage](https://apps.apple.com/br/app/pacbag-digital-luggage/id6749021887)
 
-## App Information
+## Identifiers
 
-### Basic Details
-- **App Name**: PacBag - Digital Luggage
-- **Subtitle**: Smart Travel Packing Lists
-- **Bundle ID**: enriccogemha.PacBagApp
-- **Version**: 1.0.0
-- **Build**: 1
-- **SKU**: PACBAG001
+| | |
+|---|---|
+| Name | PacBag - Digital Luggage |
+| Subtitle | Smart Travel Packing Lists |
+| Bundle ID | `enriccogemha.PacBagApp` |
+| Apple ID | 6749021887 |
+| SKU | PACBAG001 |
+| Version | 1.0 (build 1) |
+| Price | Free, no in-app purchases |
+| Category | Travel, then Productivity |
+| Age rating | 4+ |
+| Minimum iOS | 18.5 |
+| Devices | iPhone and iPad |
+| Language | English |
+| Export compliance | No encryption |
+| Copyright | © 2025 Enricco Gemha |
 
-### Categories
-- **Primary**: Travel
-- **Secondary**: Productivity
+## URLs
 
-### Pricing
-- **Price**: Free
-- **In-App Purchases**: None
+- Marketing: https://pacbag.app
+- Support: https://pacbag.app/support
+- Privacy policy: https://pacbag.app/privacy-policy
+- Labels and markings (EU DSA): https://pacbag.app/labels-markings
 
-### App Description
+## Description
+
+The text below is a rewrite. The live listing still has the original, which called the app an "intelligent travel companion" and promised "smart" templates — wording the app doesn't earn. Paste this into App Store Connect to replace it.
+
 ```
-PacBag is your intelligent travel companion that takes the stress out of packing. Never forget essential items again with smart packing templates, customizable lists, and helpful reminders.
+PacBag keeps track of what's in your luggage.
 
-KEY FEATURES:
-• Smart Templates - Pre-built packing lists for different trip types
-• Multiple Bags - Organize items across different bags and sub-bags
-• Weight Tracking - Stay within airline limits
-• Custom Categories - Organize items your way
-• Reminders - Get notified before your trip
-• Share Lists - Export and share with travel companions
-• CloudKit Sync - Access your lists across all devices
+List the bags you're taking. Put items in them. Check items off as they go in. PacBag adds up the weight of each bag against the limit you set, so you find out you're overweight at home instead of at the airport.
 
-Perfect for business travelers, vacationers, and anyone who wants to pack smarter, not harder.
-```
+WHAT'S IN IT
+• Trips with dates, holding as many bags as you need
+• Suitcases, backpacks, carry-ons, duffels and totes — and sub-bags, for packing cubes
+• Weight per item and per bag, against a limit you choose
+• Eight ready-made lists: business trips, beach, city breaks, camping, backpacking and more
+• Your own templates, saved for next time
+• Categories and subcategories you can rename, recolor, and add to
+• Reminders before you leave
+• Export a trip or a bag as text, Markdown, or rich text and send it to anyone
+• iCloud sync across your iPhone and iPad
 
-### What's New (Version 1.0)
-```
-Initial release of PacBag!
-- Smart packing templates
-- Multi-bag organization
-- Weight tracking
-- Custom categories
-- Trip reminders
-- List sharing
-```
-
-### Promotional Text
-```
-Never forget to pack again! Smart templates, weight tracking, and iCloud sync make travel packing effortless. Download now and pack like a pro!
+NO ACCOUNT, NO SERVER
+There's nothing to sign up for. Your lists sit in your own iCloud account. No analytics, no ads, no tracking.
 ```
 
-### Keywords
+## What's new — 1.0
+
+```
+First release.
+```
+
+## Keywords
+
 ```
 travel, packing, list, organizer, trip, planner, vacation, luggage, checklist, travel app
 ```
 
-## URLs
-- **Support URL**: https://pacbag.app/support
-- **Marketing URL**: https://pacbag.app
-- **Privacy Policy URL**: https://pacbag.app/privacy-policy
-- **Labels & Markings URL**: https://pacbag.app/labels-markings
-
-## Technical Information
-- **Minimum iOS Version**: 17.0
-- **Devices**: iPhone & iPad (Universal)
-- **Languages**: English
-- **Age Rating**: 4+
-- **Copyright**: © 2025 Enricco Gemha
-- **Export Compliance**: No encryption
-
 ## Screenshots
 
-### Required Sizes
-- **iPhone 6.9"** (1290 x 2796): ✅ Uploaded
-- **iPad 13"** (2048 x 2732): ✅ Uploaded
+Two sizes are uploaded: iPhone 6.9" (1290 × 2796) and iPad 13" (2048 × 2732).
 
-### Screenshot Captions
-1. "Your Travel Hub" - Organize all your trips in one place
-2. "Digital Luggage Twin" - See everything packed at a glance
-3. "Smart Templates" - Beach, business, camping - we've got you covered
-4. "Pack with Precision" - Track weight, quantity, and categories
-5. "Stay Organized" - Custom categories for perfect packing
-6. "Never Forget Again" - Visual progress for peace of mind
-7. "Multiple Bags, One App" - Suitcase, carry-on, backpack - track them all
-8. "Sync Across Devices" - Your lists, everywhere you go
+Captions:
 
-## Review Notes
+1. Every trip in one place
+2. See what's in each bag
+3. Start from a ready-made list
+4. Weight, quantity and category per item
+5. Categories you control
+6. Packing progress at a glance
+7. Suitcase, carry-on, backpack — all tracked
+8. The same lists on your iPad
+
+## Review notes
+
 ```
-Thank you for reviewing PacBag!
+PacBag is a packing list app. No account or test credentials needed — install and use.
 
-PacBag is a travel packing assistant that helps users organize their luggage digitally. 
+To try the main flow: create a trip, add a bag, add items to it, then check items off.
+Templates under the Templates tab fill a trip with a starting list.
 
-Key Features to Test:
-- Create a new trip and add bags
-- Add items to bags with categories
-- Use packing templates for quick setup
-- All data syncs via iCloud (no account required)
-
-Testing Notes:
-- The app uses iCloud for data sync - no login needed
-- Push notifications are for local reminders only (no server required)
-- All features work offline
-- Sample templates are included for easy testing
-
-No special configuration or test accounts needed. Simply install and use!
+Data syncs through the user's own iCloud account. There is no server and no login.
+Reminders are local notifications; nothing is pushed from outside the device.
+Every feature works offline.
 
 Contact: me@enriccogemha.dev
 ```
 
-## Pre-Submission Checklist
-- [x] Test on real devices
-- [x] Check for crashes
-- [x] Verify all features work
-- [x] Test iCloud sync
-- [x] Review UI on different screen sizes
-- [x] Remove placeholder text
-- [x] Remove debug code
-- [x] Verify proper app icon displays
+## Before submitting an update
 
-## Post-Submission
-- [ ] Monitor review status
-- [ ] Respond to reviewer feedback
-- [ ] Plan launch announcement
-- [ ] Update website with App Store link
-- [ ] Request user reviews
+- [ ] `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` bumped
+- [ ] Tested on a real device, not just the simulator
+- [ ] iCloud sync checked across two devices
+- [ ] No debug prints left in
+- [ ] Build has no warnings
+- [ ] Screenshots still match the UI
+- [ ] This file updated with anything that changed in the listing
 
-## Future Updates
-- [ ] Additional packing templates
-- [ ] Collaborative packing lists
-- [ ] Travel document storage
-- [ ] Weather-based suggestions
-- [ ] Packing analytics
+## Known cleanup
 
-## Important Contacts
-- **Developer**: Enricco Gemha
-- **Email**: me@enriccogemha.dev
-- **App Store Connect**: https://appstoreconnect.apple.com
+Doesn't affect users, but should go before the next submission: `Info.plist` declares the `remote-notification` background mode, and `PacBag.entitlements` sets `aps-environment` to `development`. The app only uses local notifications, so neither is needed.
