@@ -16,6 +16,7 @@ extension Bag {
     @NSManaged public var name: String
     @NSManaged public var maxWeight: Double
     @NSManaged public var currentWeight: Double
+    @NSManaged public var bagWeight: Double
     @NSManaged public var trip: Trip?
     @NSManaged public var items: NSSet?
     @NSManaged public var parentBag: Bag?
@@ -59,11 +60,16 @@ extension Bag {
         return Double(packedItemsCount) / Double(totalItemsCount)
     }
     
-    // Total weight including sub-bags
-    var totalWeight: Double {
+    // Weight of items only (excluding bag itself)
+    var itemsWeight: Double {
         let directWeight = itemsArray.reduce(0) { $0 + $1.totalWeight }
         let subBagsWeight = subBagsArray.reduce(0) { $0 + $1.totalWeight }
         return directWeight + subBagsWeight
+    }
+
+    // Total weight including bag's own weight and sub-bags
+    var totalWeight: Double {
+        return bagWeight + itemsWeight
     }
     
     var weightUtilization: Double {

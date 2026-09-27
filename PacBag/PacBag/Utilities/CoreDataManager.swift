@@ -121,8 +121,14 @@ class CoreDataManager {
         bagCurrentWeight.type = .double
         bagCurrentWeight.isOptional = false
         bagCurrentWeight.defaultValue = 0.0
-        
-        bagEntity.properties = [bagId, bagName, bagMaxWeight, bagCurrentWeight]
+
+        let bagWeight = NSAttributeDescription()
+        bagWeight.name = "bagWeight"
+        bagWeight.type = .double
+        bagWeight.isOptional = false
+        bagWeight.defaultValue = 0.0
+
+        bagEntity.properties = [bagId, bagName, bagMaxWeight, bagCurrentWeight, bagWeight]
         
         // Item Entity
         let itemEntity = NSEntityDescription()

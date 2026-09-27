@@ -163,7 +163,7 @@ struct BagDetailView: View {
 
 struct BagHeaderView: View {
     @ObservedObject var bag: Bag
-    
+
     var body: some View {
         VStack(spacing: 16) {
             // Visual bag representation
@@ -177,23 +177,53 @@ struct BagHeaderView: View {
                         )
                     )
                     .frame(height: 150)
-                
+
                 VStack(spacing: 12) {
                     Image(systemName: bagIcon)
                         .font(.system(size: 50))
                         .foregroundColor(bagColor)
-                    
+
                     VStack(spacing: 4) {
                         Text("\(bag.totalWeight, specifier: "%.1f") / \(bag.maxWeight, specifier: "%.1f") kg")
                             .font(.title2)
                             .fontWeight(.semibold)
-                        
+
                         ProgressView(value: bag.weightUtilization)
                             .progressViewStyle(LinearProgressViewStyle(tint: progressColor))
                             .frame(width: 120)
                     }
                 }
             }
+
+            // Weight breakdown
+            HStack(spacing: 16) {
+                WeightBreakdownItem(
+                    label: "Bag",
+                    weight: bag.bagWeight,
+                    color: .blue
+                )
+
+                Divider()
+                    .frame(height: 30)
+
+                WeightBreakdownItem(
+                    label: "Items",
+                    weight: bag.itemsWeight,
+                    color: .green
+                )
+
+                Divider()
+                    .frame(height: 30)
+
+                WeightBreakdownItem(
+                    label: "Total",
+                    weight: bag.totalWeight,
+                    color: bag.totalWeight > bag.maxWeight ? .red : .purple
+                )
+            }
+            .padding()
+            .background(Color(.systemGray6))
+            .cornerRadius(12)
         }
     }
     
@@ -230,6 +260,30 @@ struct BagHeaderView: View {
         default:
             return "suitcase.rolling.fill"
         }
+    }
+}
+
+struct WeightBreakdownItem: View {
+    let label: String
+    let weight: Double
+    let color: Color
+
+    var body: some View {
+        VStack(spacing: 4) {
+            Text(label)
+                .font(.caption)
+                .foregroundColor(.secondary)
+
+            Text("\(weight, specifier: "%.1f")")
+                .font(.title3)
+                .fontWeight(.bold)
+                .foregroundColor(color)
+
+            Text("kg")
+                .font(.caption2)
+                .foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity)
     }
 }
 
@@ -527,7 +581,7 @@ struct ItemsListView: View {
             PackingTemplatesView(bag: bag)
         }
     }
-    
+
     private func toggleItemPacked(_ item: Item) {
         withAnimation(.spring(response: 0.3)) {
             item.isPacked.toggle()
@@ -614,7 +668,9 @@ struct EmptyItemsView: View {
 struct ItemRowView: View {
     @ObservedObject var item: Item
     let onToggle: () -> Void
-    
+    @State private var cachedPhoto: UIImage?
+    @State private var photoLoaded = false
+
     var body: some View {
         NavigationLink(destination: ItemDetailView(item: item)) {
             HStack(spacing: 12) {
@@ -623,21 +679,17 @@ struct ItemRowView: View {
                         Circle()
                             .fill(item.isPacked ? Color.green.opacity(0.2) : Color.clear)
                             .frame(width: 30, height: 30)
-                            .scaleEffect(item.isPacked ? 1.2 : 1.0)
-                            .animation(.spring(response: 0.3, dampingFraction: 0.6), value: item.isPacked)
-                        
+
                         Image(systemName: item.isPacked ? "checkmark.circle.fill" : "circle")
                             .font(.title3)
                             .foregroundColor(item.isPacked ? .green : .gray)
-                            .scaleEffect(item.isPacked ? 1.1 : 1.0)
-                            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: item.isPacked)
                     }
                 }
                 .buttonStyle(PlainButtonStyle())
-                
-                // Photo thumbnail
+
+                // Photo thumbnail with caching
                 Group {
-                    if let photo = item.photo {
+                    if let photo = cachedPhoto {
                         Image(uiImage: photo)
                             .resizable()
                             .aspectRatio(contentMode: .fill)
@@ -652,6 +704,12 @@ struct ItemRowView: View {
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             )
+                    }
+                }
+                .onAppear {
+                    if !photoLoaded {
+                        cachedPhoto = item.photo
+                        photoLoaded = true
                     }
                 }
                 

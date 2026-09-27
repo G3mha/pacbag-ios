@@ -9,6 +9,7 @@ struct AddBagView: View {
     
     @State private var bagName = ""
     @State private var maxWeight = 20.0
+    @State private var bagWeight = 3.0
     @State private var selectedBagType = BagType.suitcase
     @State private var showingTemplates = false
     @State private var createdBag: Bag?
@@ -53,14 +54,36 @@ struct AddBagView: View {
                 return 5.0
             }
         }
+
+        var defaultBagWeight: Double {
+            switch self {
+            case .suitcase:
+                return 4.5  // Average large suitcase weight
+            case .backpack:
+                return 1.5
+            case .carryOn:
+                return 3.0
+            case .duffel:
+                return 1.0
+            case .tote:
+                return 0.5
+            }
+        }
     }
     
     var body: some View {
         NavigationView {
             Form {
                 Section(header: Text("Bag Information")) {
-                    TextField("Bag Name", text: $bagName)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                    HStack(spacing: 12) {
+                        Image(systemName: "bag.fill")
+                            .foregroundColor(.blue)
+                            .frame(width: 24)
+                        TextField("Bag Name", text: $bagName)
+                    }
+                    .padding(12)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
                     
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Bag Type")
@@ -75,6 +98,7 @@ struct AddBagView: View {
                                     ) {
                                         selectedBagType = bagType
                                         maxWeight = bagType.defaultWeight
+                                        bagWeight = bagType.defaultBagWeight
                                     }
                                 }
                             }
@@ -83,17 +107,73 @@ struct AddBagView: View {
                     }
                 }
                 
-                Section(header: Text("Capacity")) {
-                    VStack(alignment: .leading, spacing: 8) {
+                Section(header: Text("Weight Settings")) {
+                    VStack(alignment: .leading, spacing: 12) {
                         HStack {
-                            Text("Maximum Weight")
+                            Image(systemName: "scalemass")
+                                .foregroundColor(.orange)
+                                .frame(width: 24)
+                            Text("Bag Weight (Empty)")
+                            Spacer()
+                            Text("\(bagWeight, specifier: "%.1f") kg")
+                                .font(.headline)
+                                .foregroundColor(.orange)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 4)
+                                .background(Color.orange.opacity(0.15))
+                                .cornerRadius(8)
+                        }
+
+                        Slider(value: $bagWeight, in: 0...10, step: 0.5)
+                            .tint(.orange)
+
+                        Text("Weight of the empty bag itself")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.vertical, 4)
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            Image(systemName: "gauge.with.dots.needle.bottom.50percent")
+                                .foregroundColor(.blue)
+                                .frame(width: 24)
+                            Text("Maximum Total Weight")
                             Spacer()
                             Text("\(maxWeight, specifier: "%.1f") kg")
-                                .foregroundColor(.secondary)
+                                .font(.headline)
+                                .foregroundColor(.blue)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 4)
+                                .background(Color.blue.opacity(0.15))
+                                .cornerRadius(8)
                         }
-                        
+
                         Slider(value: $maxWeight, in: 1...50, step: 0.5)
+                            .tint(.blue)
+
+                        Text("Airline weight limit (bag + items)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
                     }
+                    .padding(.vertical, 4)
+
+                    // Available capacity display
+                    HStack {
+                        Image(systemName: "arrow.up.left.and.arrow.down.right")
+                            .foregroundColor(maxWeight > bagWeight ? .green : .red)
+                            .frame(width: 24)
+                        Text("Available for Items")
+                        Spacer()
+                        Text("\(max(0, maxWeight - bagWeight), specifier: "%.1f") kg")
+                            .font(.headline)
+                            .foregroundColor(maxWeight > bagWeight ? .green : .red)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 4)
+                            .background((maxWeight > bagWeight ? Color.green : Color.red).opacity(0.15))
+                            .cornerRadius(8)
+                    }
+                    .padding(.vertical, 8)
                 }
                 
                 Section(header: Text("Quick Start")) {
@@ -159,9 +239,10 @@ struct AddBagView: View {
         newBag.id = UUID()
         newBag.name = bagName.trimmingCharacters(in: .whitespacesAndNewlines)
         newBag.maxWeight = maxWeight
+        newBag.bagWeight = bagWeight
         newBag.currentWeight = 0.0
         newBag.trip = trip // Assign to trip if provided
-        
+
         do {
             try viewContext.save()
             return newBag
