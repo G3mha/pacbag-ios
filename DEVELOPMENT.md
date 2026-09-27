@@ -1,222 +1,90 @@
-# PacBag Development Guide
+# Development
 
-## Architecture Overview
+Notes for working on the app. The [README](README.md) covers what PacBag does and how to build it.
 
-### Tech Stack
-- **Language**: Swift 5.9
-- **UI Framework**: SwiftUI
-- **Data Persistence**: Core Data + CloudKit
-- **Minimum iOS**: 17.0
-- **Architecture Pattern**: MVVM
+## Stack
 
-### Key Technologies
-- CloudKit for sync
-- UserNotifications for reminders
-- PhotosUI for item images
-- Core Data for local storage
+| | |
+|---|---|
+| Language | Swift 5.0 |
+| UI | SwiftUI |
+| Storage | Core Data |
+| Sync | CloudKit, through `NSPersistentCloudKitContainer` |
+| Notifications | `UserNotifications`, local only |
+| Photos | `PhotosUI` |
+| Deployment target | iOS 18.5 |
+| Devices | iPhone and iPad |
 
-## Project Structure
+No third-party dependencies. No package manager.
 
-```
-PacBag/
-├── Models/
-│   ├── Trip.swift              # Trip entity
-│   ├── Bag.swift               # Bag entity  
-│   ├── Item.swift              # Item entity
-│   ├── Category.swift          # Category management
-│   ├── SubCategory.swift       # Subcategory support
-│   └── PackingTemplate.swift   # Template system
-├── Views/
-│   ├── TripListView.swift      # Main trips screen
-│   ├── TripDetailView.swift    # Trip details
-│   ├── BagDetailView.swift     # Bag contents
-│   ├── AddItemView.swift       # Item creation
-│   └── SettingsView.swift      # App settings
-├── Utilities/
-│   ├── CoreDataManager.swift   # Core Data stack
-│   ├── CategoryManager.swift   # Category logic
-│   ├── NotificationManager.swift # Reminders
-│   └── SharingManager.swift    # Export functionality
-└── Resources/
-    ├── Info.plist              # App configuration
-    └── PacBag.entitlements     # Capabilities
-```
+## Data model
 
-## Core Features Implementation
+The model is built in code, in `CoreDataManager.managedObjectModel`. There is no `.xcdatamodeld` file, so adding an attribute means editing that method — see `bagWeight` for the shape of it. Entities:
 
-### Data Model
+**Trip** — `name`, `destination`, `startDate`, `endDate`, `tripDescription`, `isCompleted`, `remindersEnabled`. Has many bags.
 
-#### Core Entities
-- **Trip**: Contains multiple bags, has reminder settings
-- **Bag**: Belongs to trip, contains items, tracks weight
-- **Item**: Belongs to bag, has category, quantity, weight
-- **Category**: System and custom categories with icons
-- **SubCategory**: Optional subcategories for organization
+**Bag** — `name`, `maxWeight`, `currentWeight`. Belongs to a trip, has many items, and can have a `parentBag` plus its own sub-bags.
 
-#### Relationships
-```
-Trip 1 → * Bag 1 → * Item
-Category 1 → * SubCategory
-Category 1 → * Item
-```
+**Item** — `name`, `weight`, `quantity`, `isPacked`, `category`, `subcategory`, `itemDescription`, `photoData`. Belongs to a bag.
 
-### CloudKit Integration
-- Automatic sync via NSPersistentCloudKitContainer
-- No custom CloudKit code required
-- User's private database only
-- Offline support built-in
+**Category** and **SubCategory** — user-facing groupings with an icon and a color. Items reference them both by string and by relationship (`categoryEntity`, `subcategoryEntity`).
 
-### Key Managers
+Two computed properties do the work most screens read:
 
-#### CoreDataManager
-- Singleton pattern
-- Handles persistent container setup
-- CloudKit configuration
-- Save context management
+- `Bag.totalWeight` recurses through sub-bags, so a parent bag's weight includes its children's
+- `Bag.packingProgress` is packed items over total items, counting sub-bags
 
-#### CategoryManager  
-- Default categories initialization
-- Custom category creation
-- Icon and color management
-- Usage analytics
+## Managers
 
-#### NotificationManager
-- Local notifications only
-- Trip reminder scheduling
-- Permission handling
-- Notification cleanup
+All in `Utilities/`, all singletons.
 
-## Building & Testing
+`CoreDataManager` — builds the model, configures the CloudKit container, saves the context.
 
-### Requirements
-- Xcode 15.0+
-- macOS Sonoma 14.0+
-- iOS 17.0+ device/simulator
+`CategoryManager` — seeds the default categories on first launch and creates custom ones.
 
-### Build Configuration
+`NotificationManager` — schedules and cancels trip reminders. Uses `UNCalendarNotificationTrigger`, so reminders fire without a server.
+
+`SharingManager` — renders a trip or a bag as plain text, Markdown, or RTF. Each format has its own generator; they don't share a walker, so a change to what's exported means touching all three.
+
+`SettingsManager`, `OnboardingManager`, `AppIconManager`, `IconSetupManager` — app preferences, first-run state, and alternate app icons.
+
+## Build and test
+
 ```bash
 # Debug build
-xcodebuild -project PacBag.xcodeproj -scheme PacBag -configuration Debug
+xcodebuild -project PacBag/PacBag.xcodeproj -scheme PacBag -configuration Debug build
 
-# Release build  
-xcodebuild -project PacBag.xcodeproj -scheme PacBag -configuration Release
-
-# Archive for App Store
-xcodebuild -project PacBag.xcodeproj -scheme PacBag -configuration Release archive
+# Tests
+xcodebuild -project PacBag/PacBag.xcodeproj -scheme PacBag \
+  -destination 'platform=iOS Simulator,name=iPhone 16' test
 ```
 
-### Testing
-- Unit tests in PacBagTests/
-- UI tests in PacBagUITests/
-- Test CloudKit sync with multiple devices
-- Test data migration scenarios
+Tests are in `PacBagTests/` and `PacBagUITests/`. Both are close to empty — the templates in them are still the Xcode defaults.
 
-## Code Style Guidelines
+## Working on sync
 
-### SwiftUI Best Practices
-- Use `@StateObject` for view models
-- Prefer `@EnvironmentObject` for shared state
-- Extract complex views into components
-- Use preview providers for development
+CloudKit sync only runs on a real device signed in to iCloud, and it isn't instant. To check it:
 
-### Data Handling
-- Always handle Core Data errors
-- Use proper optionals (no force unwrapping)
-- Validate user input
-- Handle edge cases gracefully
+1. Run on two devices on the same Apple ID
+2. Add a trip on one, wait, pull to refresh on the other
+3. Watch the Console app, filtered to the app, for `NSPersistentCloudKitContainer` logs
 
-### Naming Conventions
-- Views: `*View` suffix (e.g., `TripDetailView`)
-- View Models: `*ViewModel` suffix
-- Managers: `*Manager` suffix
-- Models: Noun without suffix
+`CoreDataManager` logs store-load errors instead of crashing, so a broken container shows up as an app with no data rather than a crash. Check the console before assuming the model is fine.
 
-## Common Tasks
+## Releasing
 
-### Adding a New Feature
-1. Update Core Data model if needed
-2. Create/modify views
-3. Update relevant managers
-4. Add unit tests
-5. Test CloudKit sync
-6. Update documentation
+1. Bump `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` in the project settings
+2. Build for "Any iOS Device", then Product → Archive
+3. Validate, then upload to App Store Connect
+4. Update [APP_STORE_SUBMISSION.md](APP_STORE_SUBMISSION.md) with whatever changed in the listing
 
-### Debugging CloudKit
-1. Check Console app for CloudKit logs
-2. Verify entitlements configuration
-3. Test with Development/Production environments
-4. Check iCloud account status
+## Not built
 
-### Performance Optimization
-- Use `@FetchRequest` with predicates
-- Implement pagination for large lists
-- Optimize image storage
-- Profile with Instruments
+Ideas, none of them started. Nothing here is in the shipped app, and none of it should show up in the app's description or on the website until it is.
 
-## Troubleshooting
-
-### Common Issues
-
-**CloudKit not syncing**
-- Verify iCloud signed in
-- Check network connection
-- Ensure CloudKit capability enabled
-- Check container configuration
-
-**Core Data errors**
-- Check for model version conflicts
-- Verify migration policies
-- Clear derived data
-- Reset simulator/device
-
-**UI performance**
-- Profile with Instruments
-- Check for excessive redraws
-- Optimize ForEach usage
-- Use lazy loading
-
-## Release Process
-
-1. **Version Bump**
-   - Update version in project settings
-   - Update build number
-
-2. **Testing**
-   - Run full test suite
-   - Test on multiple devices
-   - Verify CloudKit sync
-   - Check for memory leaks
-
-3. **Code Cleanup**
-   - Remove debug prints
-   - Fix all warnings
-   - Run SwiftLint (if configured)
-
-4. **Archive**
-   - Select "Any iOS Device"
-   - Product → Archive
-   - Validate archive
-   - Upload to App Store Connect
-
-## Security Considerations
-
-- No user data leaves device (except iCloud)
-- No analytics or tracking
-- No third-party SDKs
-- Photos remain in user's library
-- All data encrypted by iOS/iCloud
-
-## Future Enhancements
-
-### Planned Features
 - Travel document storage
-- Weather integration
-- Collaborative lists
+- Weather-based suggestions
+- Shared or collaborative lists
 - Apple Watch app
-- Widgets
-
-### Technical Improvements
-- Swift 6 migration
-- Performance optimizations
-- Accessibility enhancements
-- Localization support
+- Home screen widgets
+- Localization — the app is English only
