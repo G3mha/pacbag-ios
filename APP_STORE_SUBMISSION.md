@@ -20,7 +20,7 @@ What's published, and what to check when submitting an update. Live since 24 Jul
 | Minimum iOS | 18.5 |
 | Devices | iPhone and iPad |
 | Language | English |
-| Export compliance | No encryption |
+| Export compliance | No non-exempt encryption, declared in `Info.plist` |
 | Copyright | © 2025 Enricco Gemha |
 
 ## URLs
@@ -124,10 +124,15 @@ leaves that field alone on App Store Connect.
 
 ## Shipping 1.0.1
 
-The listing text is already on 1.0.1. What is left is the build:
+Build 2 is uploaded, processed and attached, and the listing text is in place.
+One thing is left, and it has to be done in the web UI:
 
-1. Archive in Xcode and upload to App Store Connect (the project is at 1.0.1, build 2)
-2. Attach the build to the 1.0.1 version
-3. Submit for review
+**App Store Connect > PacBag > Age Rating > Edit.** Apple expanded the age
+rating questionnaire, so the answers recorded for 1.0 are no longer complete.
+A submission fails with `You must provide a value for the attribute
+'ageAssurance'` until the new questions are answered.
 
-Nothing here submits for you. `update_metadata` only writes text.
+Then **1.0.1 > Add for Review > Submit**.
+
+A review submission with no items, `c6bf7ec6`, was left behind by a failed
+attempt. Apple would not let it be cancelled. It should be harmless.
