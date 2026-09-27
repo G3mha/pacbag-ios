@@ -21,7 +21,8 @@ class CoreDataManager {
         
         container.loadPersistentStores { storeDescription, error in
             if let error = error {
-                fatalError("Core Data error: \(error)")
+                // Log error but don't crash - allow app to continue with limited functionality
+                print("Core Data error: \(error). Some features may be unavailable.")
             }
         }
         

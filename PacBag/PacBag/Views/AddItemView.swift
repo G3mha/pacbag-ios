@@ -299,7 +299,6 @@ struct AddItemView: View {
                 dismiss()
             } catch {
                 print("Failed to save item: \(error)")
-                fatalError("Unresolved error \(error)")
             }
         }
     }

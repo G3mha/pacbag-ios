@@ -97,7 +97,6 @@ struct EditBagView: View {
                 dismiss()
             } catch {
                 print("Failed to save bag changes: \(error)")
-                fatalError("Unresolved error \(error)")
             }
         }
     }
@@ -113,7 +112,6 @@ struct EditBagView: View {
                 try viewContext.save()
             } catch {
                 print("Failed to save bag changes: \(error)")
-                fatalError("Unresolved error \(error)")
             }
         }
     }
@@ -128,7 +126,6 @@ struct EditBagView: View {
                 try viewContext.save()
             } catch {
                 print("Failed to save bag changes: \(error)")
-                fatalError("Unresolved error \(error)")
             }
         }
     }

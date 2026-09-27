@@ -157,7 +157,6 @@ struct BagDetailView: View {
             try viewContext.save()
         } catch {
             print("Failed to save context: \(error)")
-            fatalError("Unresolved error \(error)")
         }
     }
 }
