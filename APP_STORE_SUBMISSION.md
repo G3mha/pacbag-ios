@@ -13,7 +13,7 @@ What's published, and what to check when submitting an update. Live since 24 Jul
 | Bundle ID | `enriccogemha.PacBagApp` |
 | Apple ID | 6749021887 |
 | SKU | PACBAG001 |
-| Version | 1.0 live; 1.0.1 in Prepare for Submission (build 2) |
+| Version | 1.0 live; 1.0.1 in Prepare for Submission (build 3) |
 | Price | Free, no in-app purchases |
 | Category | Travel, then Productivity |
 | Age rating | 4+ |
@@ -52,18 +52,26 @@ travel, packing, list, organizer, trip, planner, vacation, luggage, checklist, t
 
 ## Screenshots
 
-Two sizes are uploaded: iPhone 6.9" (1290 × 2796) and iPad 13" (2048 × 2732).
+Generated, not collected by hand:
 
-Captions:
+```bash
+fastlane snapshot            # captures both device classes
+fastlane ios upload_screenshots
+```
 
-1. Every trip in one place
-2. See what's in each bag
-3. Start from a ready-made list
-4. Weight, quantity and category per item
-5. Categories you control
-6. Packing progress at a glance
-7. Suitcase, carry-on, backpack — all tracked
-8. The same lists on your iPad
+A UI test in `PacBagUITests/ScreenshotTests.swift` drives one pass through the
+app. Output is gitignored — regenerate it rather than committing it.
+
+Four screens, at 1320×2868 (iPhone 6.9") and 2064×2752 (iPad 13"):
+
+1. My Trips
+2. The trip, with packing progress
+3. Adding a bag, showing the empty-bag weight against the limit
+4. Inside a bag
+
+Two things to know before changing the test: it passes
+`-PacBagDisableCloudKit`, without which the app cannot launch in a simulator at
+all; and the simulator must be `en_US`, or weights render as "3,0 kg".
 
 ## Review notes
 
@@ -126,6 +134,9 @@ leaves that field alone on App Store Connect.
 
 Build 2 is uploaded, processed and attached, and the listing text is in place.
 One thing is left, and it has to be done in the web UI:
+
+Build 3, the listing text and the screenshots are all in place. One thing is
+left, and it has to be done in the web UI:
 
 **App Store Connect > PacBag > Age Rating > Edit.** Apple expanded the age
 rating questionnaire, so the answers recorded for 1.0 are no longer complete.
