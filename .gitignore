@@ -71,3 +71,8 @@ fastlane/test_output
 fastlane/.env
 fastlane/.env.default
 fastlane/.env.local
+
+# fastlane snapshot output -- regenerate with `fastlane snapshot`
+fastlane/screenshots/
+fastlane/Preview.html
+build/

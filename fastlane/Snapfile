@@ -1,0 +1,26 @@
+# App Store screenshot sizes. 6.9" covers every current iPhone listing slot and
+# 13" covers iPad; Apple scales the rest from these.
+devices([
+  "iPhone 17 Pro Max",
+  "iPad Pro 13-inch (M5)"
+])
+
+languages(["en-US"])
+
+project("./PacBag/PacBag.xcodeproj")
+scheme("PacBag")
+
+output_directory("./fastlane/screenshots")
+clear_previous_screenshots(true)
+
+# The status bar otherwise shows whatever the simulator felt like.
+override_status_bar(true)
+
+# Screenshots come from the test itself, not from every assertion.
+skip_open_summary(true)
+concurrent_simulators(false)
+
+# Only the capture test, so the placeholder tests Xcode generated stay out of it.
+only_testing(["PacBagUITests/ScreenshotTests"])
+
+derived_data_path("./build/snapshot")
