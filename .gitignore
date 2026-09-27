@@ -63,3 +63,11 @@ fastlane/test_output
 
 # macOS
 .DS_Store
+
+# Local credentials. fastlane auto-loads fastlane/.env and fastlane/.env.default.
+# fastlane/.env.example is the committed template and is deliberately not listed.
+.env
+.env.local
+fastlane/.env
+fastlane/.env.default
+fastlane/.env.local
