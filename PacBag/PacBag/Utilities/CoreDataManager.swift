@@ -5,20 +5,41 @@ class CoreDataManager {
     static let shared = CoreDataManager()
     
     private init() {}
-    
+
+    /// Runs the app against a local store with no iCloud mirroring.
+    ///
+    /// Pass `-PacBagDisableCloudKit` as a launch argument, or set
+    /// `PACBAG_DISABLE_CLOUDKIT=1`, to turn CloudKit off. This exists because
+    /// CloudKit mirroring traps during setup when it cannot resolve its
+    /// container -- a simulator with no iCloud account signed in, for instance.
+    /// That trap happens on CloudKit's own queue, so `loadPersistentStores`
+    /// never sees it and the app dies before any of the error handling below
+    /// can run. Off by default: a normal build syncs exactly as before.
+    static var isCloudKitDisabled: Bool {
+        ProcessInfo.processInfo.arguments.contains("-PacBagDisableCloudKit")
+            || ProcessInfo.processInfo.environment["PACBAG_DISABLE_CLOUDKIT"] == "1"
+    }
+
     lazy var persistentContainer: NSPersistentCloudKitContainer = {
         let container = NSPersistentCloudKitContainer(name: "PacBagModel", managedObjectModel: managedObjectModel)
-        
-        // Configure for CloudKit
+
         let storeDescription = container.persistentStoreDescriptions.first
         storeDescription?.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
         storeDescription?.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
-        
-        // Explicitly set CloudKit container
-        storeDescription?.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(
-            containerIdentifier: "iCloud.com.enriccogemha.PacBag"
-        )
-        
+
+        if Self.isCloudKitDisabled {
+            // nil options leave the store local, with no mirroring.
+            storeDescription?.cloudKitContainerOptions = nil
+            print("CloudKit disabled: PacBag is running against a local store.")
+        } else {
+            // Must match com.apple.developer.icloud-container-identifiers in
+            // PacBag.entitlements. A container the app is not entitled for
+            // fails inside CloudKit, out of reach of the handler below.
+            storeDescription?.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(
+                containerIdentifier: "iCloud.com.enriccogemha.PacBag"
+            )
+        }
+
         container.loadPersistentStores { storeDescription, error in
             if let error = error {
                 // Log error but don't crash - allow app to continue with limited functionality
