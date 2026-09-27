@@ -13,23 +13,23 @@ struct LandingPageView: View {
     let features = [
         Feature(
             icon: "suitcase.fill",
-            title: "Smart Packing",
-            description: "Digital twin of your luggage with intelligent organization and weight tracking"
+            title: "Bags inside bags",
+            description: "A packing cube in your suitcase gets its own list, and the suitcase still counts what is inside it"
         ),
         Feature(
             icon: "list.bullet.clipboard",
-            title: "Trip Planning",
-            description: "Organize multiple trips with customizable packing lists and templates"
+            title: "Lists to start from",
+            description: "Eight ready-made lists, from a business week to a camping trip, or save your own"
         ),
         Feature(
             icon: "folder.badge.gearshape",
-            title: "Category Management",
-            description: "Advanced categorization with analytics and usage insights"
+            title: "Categories you control",
+            description: "Rename them, add subcategories, pick your own icons and colours"
         ),
         Feature(
             icon: "icloud.fill",
-            title: "CloudKit Sync",
-            description: "Your data syncs seamlessly across all your devices"
+            title: "Your iCloud, no account",
+            description: "Trips sync between your iPhone and iPad through your own Apple ID"
         )
     ]
     
@@ -124,7 +124,7 @@ struct HeroSection: View {
                         .opacity(animateHero ? 1.0 : 0.0)
                         .offset(y: animateHero ? 0 : 20)
                     
-                    Text("Your Digital Travel Companion")
+                    Text("Travel packing lists")
                         .font(.title2)
                         .fontWeight(.medium)
                         .foregroundColor(.secondary)
@@ -135,7 +135,7 @@ struct HeroSection: View {
             
             // Hero Description
             VStack(spacing: 20) {
-                Text("Transform your travel packing with the ultimate digital luggage manager")
+                Text("Know what is in every bag, and what it weighs")
                     .font(.title3)
                     .fontWeight(.medium)
                     .multilineTextAlignment(.center)
@@ -143,7 +143,7 @@ struct HeroSection: View {
                     .opacity(animateHero ? 1.0 : 0.0)
                     .offset(y: animateHero ? 0 : 30)
                 
-                Text("Never forget an item again. Track weight, organize by category, and sync across all your devices.")
+                Text("List the bags you are taking, put items in them, and check them off as you pack.")
                     .font(.body)
                     .multilineTextAlignment(.center)
                     .foregroundColor(.secondary)
@@ -159,7 +159,7 @@ struct HeroSection: View {
                     }
                 }) {
                     HStack(spacing: 12) {
-                        Text(isModal ? "Explore Features" : "Start Packing Smart")
+                        Text(isModal ? "See what it does" : "Get started")
                             .font(.headline)
                             .fontWeight(.semibold)
                         
@@ -198,11 +198,11 @@ struct FeaturesSection: View {
         VStack(spacing: 40) {
             // Section Header
             VStack(spacing: 16) {
-                Text("Powerful Features")
+                Text("What it does")
                     .font(.system(size: 36, weight: .bold, design: .rounded))
                     .multilineTextAlignment(.center)
                 
-                Text("Everything you need for organized travel")
+                Text("No server, no sign-up, nothing guessing what you should bring")
                     .font(.title3)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
@@ -280,20 +280,20 @@ struct FeatureCard: View {
 
 struct ScreenshotsSection: View {
     let screenshots = [
-        Screenshot(title: "Trip Overview", description: "Manage multiple trips with ease", systemImage: "list.bullet"),
-        Screenshot(title: "Smart Categories", description: "Organized packing with analytics", systemImage: "folder.badge.gearshape"),
-        Screenshot(title: "Weight Tracking", description: "Never exceed weight limits", systemImage: "scalemass.fill")
+        Screenshot(title: "Trip Overview", description: "Every trip in one place", systemImage: "list.bullet"),
+        Screenshot(title: "Categories", description: "Group items the way you pack them", systemImage: "folder.badge.gearshape"),
+        Screenshot(title: "Weight Tracking", description: "Set a limit per bag and see what is left", systemImage: "scalemass.fill")
     ]
     
     var body: some View {
         VStack(spacing: 40) {
             // Section Header
             VStack(spacing: 16) {
-                Text("See It In Action")
+                Text("The main screens")
                     .font(.system(size: 36, weight: .bold, design: .rounded))
                     .multilineTextAlignment(.center)
                 
-                Text("Beautiful, intuitive interface designed for travelers")
+                Text("Trips, bags, items")
                     .font(.title3)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
@@ -365,15 +365,15 @@ struct ScreenshotCard: View {
 
 struct StatsSection: View {
     let stats = [
-        Stat(number: "100%", label: "Free to Use"),
-        Stat(number: "∞", label: "Unlimited Trips"),
-        Stat(number: "⚡", label: "Lightning Fast"),
-        Stat(number: "☁️", label: "Cloud Sync")
+        Stat(number: "100%", label: "Free to use"),
+        Stat(number: "∞", label: "Trips, bags and items"),
+        Stat(number: "0", label: "Ads or purchases"),
+        Stat(number: "0", label: "Data collected")
     ]
     
     var body: some View {
         VStack(spacing: 40) {
-            Text("Why Choose PacBag?")
+            Text("What you get")
                 .font(.system(size: 36, weight: .bold, design: .rounded))
                 .multilineTextAlignment(.center)
             
@@ -409,11 +409,11 @@ struct CTASection: View {
     var body: some View {
         VStack(spacing: 32) {
             VStack(spacing: 16) {
-                Text("Ready to Pack Smart?")
+                Text("Start packing")
                     .font(.system(size: 36, weight: .bold, design: .rounded))
                     .multilineTextAlignment(.center)
                 
-                Text("Join thousands of travelers who never forget to pack the essentials")
+                Text("No account to create. Your lists stay in your own iCloud.")
                     .font(.title3)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
@@ -422,7 +422,7 @@ struct CTASection: View {
             if !isModal {
                 Button(action: { onboardingManager.completeOnboarding() }) {
                     HStack(spacing: 16) {
-                        Text("Get Started Now")
+                        Text("Get started")
                             .font(.title2)
                             .fontWeight(.bold)
                     
@@ -469,11 +469,11 @@ struct FooterSection: View {
                         .fontWeight(.bold)
                 }
                 
-                Text("Your Digital Travel Companion")
+                Text("Travel packing lists")
                     .font(.caption)
                     .foregroundColor(.secondary)
                 
-                Text("Made with ❤️ for travelers")
+                Text("Built by Enricco Gemha in São Paulo")
                     .font(.caption2)
                     .foregroundColor(.secondary)
             }
