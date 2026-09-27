@@ -13,7 +13,7 @@ What's published, and what to check when submitting an update. Live since 24 Jul
 | Bundle ID | `enriccogemha.PacBagApp` |
 | Apple ID | 6749021887 |
 | SKU | PACBAG001 |
-| Version | 1.0 live; 1.0.1 in Prepare for Submission (build 3) |
+| Version | 1.0 live; 1.0.1 waiting for review (build 3) |
 | Price | Free, no in-app purchases |
 | Category | Travel, then Productivity |
 | Age rating | 4+ |
@@ -130,20 +130,17 @@ skip the prompt. No build is uploaded and nothing is submitted for review.
 `deliver` skips any metadata file that is absent, so a file you have not created
 leaves that field alone on App Store Connect.
 
-## Shipping 1.0.1
+## Shipping a version
 
-Build 2 is uploaded, processed and attached, and the listing text is in place.
-One thing is left, and it has to be done in the web UI:
+1. Edit the text under `fastlane/metadata/`, then `fastlane ios update_metadata`
+2. `fastlane snapshot` and `fastlane ios upload_screenshots`
+3. Bump `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION`, archive, upload
+4. Attach the build to the version
+5. Check Age Rating in the web UI — Apple adds questions, and a stale answer
+   blocks submission with `You must provide a value for the attribute
+   'ageAssurance'`
+6. Submit
 
-Build 3, the listing text and the screenshots are all in place. One thing is
-left, and it has to be done in the web UI:
+1.0.1 went out on 27 September 2026 with build 3: the new description, release
+notes, promotional text and a fresh set of screenshots.
 
-**App Store Connect > PacBag > Age Rating > Edit.** Apple expanded the age
-rating questionnaire, so the answers recorded for 1.0 are no longer complete.
-A submission fails with `You must provide a value for the attribute
-'ageAssurance'` until the new questions are answered.
-
-Then **1.0.1 > Add for Review > Submit**.
-
-A review submission with no items, `c6bf7ec6`, was left behind by a failed
-attempt. Apple would not let it be cancelled. It should be harmless.
