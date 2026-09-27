@@ -155,41 +155,84 @@ struct AddItemView: View {
         NavigationView {
             Form {
                 Section(header: Text("Item Details")) {
-                    TextField("Item Name", text: $itemName)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                    
-                    TextField("Description (optional)", text: $itemDescription, axis: .vertical)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .lineLimit(2...4)
-                    
+                    HStack(spacing: 12) {
+                        Image(systemName: "cube.box.fill")
+                            .foregroundColor(.blue)
+                            .frame(width: 24)
+                        TextField("Item Name", text: $itemName)
+                    }
+                    .padding(12)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
+
+                    HStack(alignment: .top, spacing: 12) {
+                        Image(systemName: "text.alignleft")
+                            .foregroundColor(.gray)
+                            .frame(width: 24)
+                            .padding(.top, 4)
+                        TextField("Description (optional)", text: $itemDescription, axis: .vertical)
+                            .lineLimit(2...4)
+                    }
+                    .padding(12)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(10)
+
                     categorySelectionView
                 }
                 
                 Section(header: Text("Quantity & Weight")) {
                     HStack {
+                        Image(systemName: "number")
+                            .foregroundColor(.purple)
+                            .frame(width: 24)
                         Text("Quantity")
                         Spacer()
-                        Stepper("\(quantity)", value: $quantity, in: 1...99)
+                        Text("\(quantity)")
+                            .font(.headline)
+                            .foregroundColor(.purple)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 4)
+                            .background(Color.purple.opacity(0.15))
+                            .cornerRadius(8)
+                        Stepper("", value: $quantity, in: 1...99)
+                            .labelsHidden()
                     }
-                    
-                    VStack(alignment: .leading, spacing: 8) {
+
+                    VStack(alignment: .leading, spacing: 12) {
                         HStack {
+                            Image(systemName: "scalemass")
+                                .foregroundColor(.orange)
+                                .frame(width: 24)
                             Text("Weight per item")
                             Spacer()
                             Text("\(weight, specifier: "%.1f") kg")
-                                .foregroundColor(.secondary)
+                                .font(.headline)
+                                .foregroundColor(.orange)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 4)
+                                .background(Color.orange.opacity(0.15))
+                                .cornerRadius(8)
                         }
-                        
+
                         Slider(value: $weight, in: 0.1...10.0, step: 0.1)
-                        
+                            .tint(.orange)
+
                         HStack {
+                            Image(systemName: "sum")
+                                .foregroundColor(.green)
+                                .frame(width: 24)
                             Text("Total weight")
                             Spacer()
                             Text("\(weight * Double(quantity), specifier: "%.1f") kg")
-                                .foregroundColor(.primary)
-                                .fontWeight(.semibold)
+                                .font(.headline)
+                                .foregroundColor(.green)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 4)
+                                .background(Color.green.opacity(0.15))
+                                .cornerRadius(8)
                         }
                     }
+                    .padding(.vertical, 4)
                 }
                 
                 Section(header: Text("Photo")) {
@@ -482,18 +525,4 @@ struct ItemPreview: View {
             isPacked: isPacked
         )
     }
-}
-
-
-#Preview {
-    AddItemView(bag: {
-        let context = CoreDataManager.shared.context
-        let bag = Bag(context: context)
-        bag.id = UUID()
-        bag.name = "Sample Bag"
-        bag.maxWeight = 20.0
-        bag.currentWeight = 5.0
-        return bag
-    }())
-    .environment(\.managedObjectContext, CoreDataManager.shared.context)
 }
