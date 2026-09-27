@@ -1,142 +1,93 @@
-# PacBag - Digital Luggage
+# PacBag
 
-<div align="center">
-  <img src="assets/icon-raw.png" width="120" height="120" alt="PacBag Icon" />
-  <h3>Never forget to pack again</h3>
-  <p>Smart travel packing lists for iOS</p>
-  
-  [![iOS](https://img.shields.io/badge/iOS-17.0+-007AFF?style=flat-square&logo=apple)](https://apps.apple.com/app/pacbag)
-  [![Swift](https://img.shields.io/badge/Swift-5.9-FA7343?style=flat-square&logo=swift)](https://swift.org)
-  [![SwiftUI](https://img.shields.io/badge/SwiftUI-5.0-blue?style=flat-square)](https://developer.apple.com/xcode/swiftui/)
-</div>
+An iOS app for packing luggage. You list the bags you're taking, put items in them, and check items off as they go in. It adds up weight per bag, so you find out you're over the airline limit at home instead of at the counter.
 
-## Overview
+Built by **Enricco Gemha**. On the App Store since 24 July 2025: [PacBag - Digital Luggage](https://apps.apple.com/br/app/pacbag-digital-luggage/id6749021887). Free, no in-app purchases, no account.
 
-PacBag is an intelligent travel companion that takes the stress out of packing. Create digital twins of your luggage, track items across multiple bags, and never leave essentials behind.
+The landing page is a separate repo: [pacbag-website](https://github.com/G3mha/pacbag-website).
 
-### Key Features
+## What it does
 
-- 🎒 **Smart Packing Templates** - Pre-built lists for different trip types
-- 📦 **Multi-Bag Organization** - Track items across suitcases, carry-ons, and backpacks
-- ⚖️ **Weight Tracking** - Stay within airline limits
-- 🏷️ **Custom Categories** - Organize items your way
-- 🔔 **Trip Reminders** - Get notified before you travel
-- 📤 **List Sharing** - Export and share with travel companions
-- ☁️ **iCloud Sync** - Access lists on all your devices
-- 🔒 **Privacy First** - All data stays in your iCloud, no tracking
+**Trips** have a name, a destination, and start and end dates. A trip holds bags.
 
-## Development
+**Bags** are one of five types — suitcase, backpack, carry-on, duffel, tote. A bag can hold sub-bags, so a packing cube inside a suitcase gets its own list. Each bag has a weight limit, and the app shows how much of it you've used.
 
-### Requirements
+**Items** have a name, a category, a quantity, a weight, and an optional photo from your library. Checking one off moves the trip's packing progress.
 
-- Xcode 15.0+
-- iOS 17.0+
-- Swift 5.9+
-- macOS Sonoma 14.0+ (for development)
+**Templates** fill a new trip with a starting list. Eight ship with the app: Business Week, Business Weekend, Beach Vacation, City Break, Weekend Getaway, Camping Adventure, Backpacking, and Adventure Sports. You can save your own too.
 
-### Project Structure
+**Categories** group items — Clothes, Electronics, Toiletries, and so on — and can have subcategories. You can add your own with an icon and a color.
 
-```
-PacBag/
-├── PacBag/              # Main app target
-│   ├── Models/          # Core Data models
-│   ├── Views/           # SwiftUI views
-│   ├── Utilities/       # Managers and helpers
-│   └── Assets.xcassets/ # Images and colors
-├── website/             # Landing page (Next.js)
-└── assets/             # Project assets
-```
+**Reminders** are local notifications scheduled against a trip's start date. Nothing leaves the device to send them.
 
-### Getting Started
+**Export** writes a trip or a single bag out as plain text, Markdown, or rich text and hands it to the iOS share sheet.
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/yourusername/pacbag.git
-   cd pacbag
-   ```
+**Sync** goes through CloudKit. Your trips live in your own iCloud account and appear on your other devices signed in to the same Apple ID.
 
-2. Open in Xcode:
-   ```bash
-   open PacBag/PacBag.xcodeproj
-   ```
+## Scope
 
-3. Select your development team in Xcode's Signing & Capabilities
+There's no server. No weather lookup, no destination-based suggestions, nothing guessing what you should bring, no shared or collaborative lists. The features above are the whole app.
 
-4. Build and run (⌘R)
+## Build it
 
-### Architecture
+You need:
 
-- **SwiftUI** - Modern declarative UI
-- **Core Data + CloudKit** - Local storage with cloud sync
-- **MVVM Pattern** - Clean separation of concerns
-- **iOS 17 Features** - Latest platform capabilities
+- Xcode 16.4 or later — the deployment target is iOS 18.5
+- An iPhone or iPad on iOS 18.5+, or a matching simulator
+- An Apple Developer account, because the app uses an iCloud container
 
-## App Store Information
-
-### Metadata
-- **Name**: PacBag - Digital Luggage
-- **Subtitle**: Smart Travel Packing Lists
-- **Category**: Travel (Primary), Productivity (Secondary)
-- **Price**: Free
-- **Bundle ID**: enriccogemha.PacBagApp
-
-### Description
-PacBag is your intelligent travel companion that takes the stress out of packing. Never forget essential items again with smart packing templates, customizable lists, and helpful reminders.
-
-### Keywords
-travel, packing, list, organizer, trip, planner, vacation, luggage, checklist, travel app
-
-### Support
-- **Website**: https://pacbag.app
-- **Support**: https://pacbag.app/support
-- **Privacy Policy**: https://pacbag.app/privacy-policy
-
-## Privacy & Compliance
-
-PacBag is designed with privacy at its core:
-- ✅ No data collection or analytics
-- ✅ All data stored in user's iCloud
-- ✅ No third-party services
-- ✅ GDPR compliant
-- ✅ EU DSA compliant
-
-See our [Privacy Policy](https://pacbag.app/privacy-policy) for details.
-
-## Website
-
-The marketing website is built with Next.js and deployed on Vercel.
-
-### Running Locally
 ```bash
-cd website
-npm install
-npm run dev
+git clone https://github.com/G3mha/pacbag-ios.git
+cd pacbag-ios
+open PacBag/PacBag.xcodeproj
 ```
 
-Visit http://localhost:3000
+In Xcode, pick your team under **Signing & Capabilities**, then ⌘R to build and run. The iCloud container is hardcoded to `iCloud.com.enriccogemha.PacBag`, so point it at one of your own.
 
-### Deployment
-```bash
-git push origin main
-# Vercel auto-deploys from main branch
+## Layout
+
+```
+PacBag/PacBag/
+├── Models/             Core Data entities and the template catalog
+├── Views/              SwiftUI screens
+├── Utilities/          Core Data stack, categories, notifications, export
+├── Persistence.swift   Container used by SwiftUI previews
+└── PacBagApp.swift     App entry point
 ```
 
-## Contributing
+## How it's put together
 
-This is currently a personal project, but feedback and suggestions are welcome!
+SwiftUI for the interface, Core Data for storage, CloudKit for sync.
 
-## Author
+`CoreDataManager` builds the managed object model in Swift instead of loading a `.xcdatamodeld` file, then wraps it in an `NSPersistentCloudKitContainer`. That container is what syncs; there's no CloudKit code of its own anywhere in the app.
 
-**Enricco Gemha**  
-- Email: me@enriccogemha.dev
-- Website: https://pacbag.app
+The entities:
+
+```
+Trip ──< Bag ──< Item
+         └──< Bag      (sub-bags, through parentBag)
+
+Category ──< SubCategory
+Category ──< Item
+```
+
+`Bag.totalWeight` adds the bag's own items to the totals of its sub-bags, so a suitcase weighs what's in it plus what's in the cubes inside it.
+
+## Privacy
+
+No analytics, no third-party SDKs, no accounts. Trips sync through your iCloud account and go nowhere else. Photos you attach are copied into the app's own store when you pick them — the app never reads your library on its own.
+
+Full policy: [pacbag.app/privacy-policy](https://pacbag.app/privacy-policy)
+
+## More docs
+
+- [DEVELOPMENT.md](DEVELOPMENT.md) — architecture, data model, build and release steps
+- [APP_STORE_SUBMISSION.md](APP_STORE_SUBMISSION.md) — the published listing and what an update needs
+
+## Contact
+
+Enricco Gemha — me@enriccogemha.dev
 
 ## License
 
 © 2025 Enricco Gemha. All rights reserved.
-
----
-
-<div align="center">
-  Made with ❤️ in São Paulo
-</div>
