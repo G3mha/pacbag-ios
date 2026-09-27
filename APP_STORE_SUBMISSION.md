@@ -13,7 +13,7 @@ What's published, and what to check when submitting an update. Live since 24 Jul
 | Bundle ID | `enriccogemha.PacBagApp` |
 | Apple ID | 6749021887 |
 | SKU | PACBAG001 |
-| Version | 1.0 (build 1) |
+| Version | 1.0 live; 1.0.1 in Prepare for Submission (build 2) |
 | Price | Free, no in-app purchases |
 | Category | Travel, then Productivity |
 | Age rating | 4+ |
@@ -34,7 +34,9 @@ What's published, and what to check when submitting an update. Live since 24 Jul
 
 Both live under [`fastlane/metadata/en-US/`](fastlane/metadata/en-US/) and are pushed from there. See [Updating the listing](#updating-the-listing).
 
-The promotional text is live. The description is not: Apple refuses a description edit on a version that is already on sale, so `description.txt` is staged and goes out with the next version.
+Promotional text is live on 1.0. The description and release notes are on
+1.0.1, which sits in Prepare for Submission — Apple refuses a description edit
+on a version that is already on sale.
 
 ## What's new — 1.0
 
@@ -119,3 +121,13 @@ skip the prompt. No build is uploaded and nothing is submitted for review.
 
 `deliver` skips any metadata file that is absent, so a file you have not created
 leaves that field alone on App Store Connect.
+
+## Shipping 1.0.1
+
+The listing text is already on 1.0.1. What is left is the build:
+
+1. Archive in Xcode and upload to App Store Connect (the project is at 1.0.1, build 2)
+2. Attach the build to the 1.0.1 version
+3. Submit for review
+
+Nothing here submits for you. `update_metadata` only writes text.

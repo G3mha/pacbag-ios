@@ -51,8 +51,11 @@ platform :ios do
     app = Spaceship::ConnectAPI::App.find(CredentialsManager::AppfileConfig.try_fetch_value(:app_identifier))
     UI.user_error!("Could not find the app on App Store Connect") if app.nil?
 
-    version = app.get_live_app_store_version
-    UI.user_error!("No live version -- this lane only edits an app that is already on sale") if version.nil?
+    # Prefer a version being prepared: it accepts every field, where a version
+    # already on sale only accepts a few. Falls back to the live one so the
+    # lane still works for a promotional text change between releases.
+    version = app.get_edit_app_store_version || app.get_live_app_store_version
+    UI.user_error!("No version to edit") if version.nil?
     UI.message("#{app.name} #{version.version_string} (#{version.app_store_state})")
 
     # deliver's own `upload_to_app_store` is the usual way to do this, but it
@@ -64,7 +67,7 @@ platform :ios do
     UI.user_error!("No metadata directory at #{metadata_root}") unless Dir.exist?(metadata_root)
 
     locales = version.get_app_store_version_localizations
-    UI.message("locales on the live version: #{locales.map(&:locale).join(', ')}")
+    UI.message("locales: #{locales.map(&:locale).join(', ')}")
 
     changed = 0
     skipped = []

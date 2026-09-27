@@ -1,0 +1,5 @@
+Bags now have a weight of their own.
+
+A packed suitcase weighs what is in it plus the suitcase. PacBag only counted the contents, so a bag reading 19 of 20 kg could still be over at the check-in desk. New bags start from a sensible empty weight for their type, you can set it yourself on any bag, and the bag screen now breaks the total into bag, items and total.
+
+The add and edit screens are easier to read, and the app no longer closes itself when a save fails.
