@@ -377,29 +377,37 @@ struct ItemsListView: View {
     @Binding var showingAddItem: Bool
     @StateObject private var settingsManager = SettingsManager.shared
     @State private var showingTemplates = false
-    
+    @State private var cachedSortedItems: [Item] = []
+    @State private var lastSortOrder: ItemSortOrder?
+    @State private var lastSortAscending: Bool?
+    @State private var lastItemCount: Int = 0
+
     private var sortOrder: ItemSortOrder {
         settingsManager.defaultItemSortOrder
     }
-    
+
     private var sortAscending: Bool {
         settingsManager.sortAscending
     }
-    
+
     var sortedItems: [Item] {
+        cachedSortedItems
+    }
+
+    private func updateSortedItems() {
         let items = bag.itemsArray
-        
+
         switch sortOrder {
         case .name:
-            return items.sorted { 
+            cachedSortedItems = items.sorted {
                 let comparison = $0.name.localizedCaseInsensitiveCompare($1.name)
                 return sortAscending ? comparison == .orderedAscending : comparison == .orderedDescending
             }
         case .category:
-            return items.sorted { 
+            cachedSortedItems = items.sorted {
                 let fullCat1 = $0.fullCategory
                 let fullCat2 = $1.fullCategory
-                
+
                 if fullCat1 == fullCat2 {
                     let comparison = $0.name.localizedCaseInsensitiveCompare($1.name)
                     return sortAscending ? comparison == .orderedAscending : comparison == .orderedDescending
@@ -408,7 +416,7 @@ struct ItemsListView: View {
                 return sortAscending ? comparison == .orderedAscending : comparison == .orderedDescending
             }
         case .weight:
-            return items.sorted { 
+            cachedSortedItems = items.sorted {
                 if $0.totalWeight == $1.totalWeight {
                     let comparison = $0.name.localizedCaseInsensitiveCompare($1.name)
                     return sortAscending ? comparison == .orderedAscending : comparison == .orderedDescending
@@ -416,7 +424,7 @@ struct ItemsListView: View {
                 return sortAscending ? $0.totalWeight < $1.totalWeight : $0.totalWeight > $1.totalWeight
             }
         case .packed:
-            return items.sorted { 
+            cachedSortedItems = items.sorted {
                 if $0.isPacked == $1.isPacked {
                     let comparison = $0.name.localizedCaseInsensitiveCompare($1.name)
                     return sortAscending ? comparison == .orderedAscending : comparison == .orderedDescending
@@ -424,12 +432,21 @@ struct ItemsListView: View {
                 return sortAscending ? (!$0.isPacked && $1.isPacked) : ($0.isPacked && !$1.isPacked)
             }
         case .dateAdded:
-            return items.sorted {
-                // Use the item's UUID creation time as a proxy for date added
+            cachedSortedItems = items.sorted {
                 let comparison = $0.id.uuidString.compare($1.id.uuidString)
                 return sortAscending ? comparison == .orderedAscending : comparison == .orderedDescending
             }
         }
+
+        lastSortOrder = sortOrder
+        lastSortAscending = sortAscending
+        lastItemCount = items.count
+    }
+
+    private var needsResort: Bool {
+        lastSortOrder != sortOrder ||
+        lastSortAscending != sortAscending ||
+        lastItemCount != bag.itemsArray.count
     }
     
     var body: some View {
@@ -579,6 +596,18 @@ struct ItemsListView: View {
         }
         .sheet(isPresented: $showingTemplates) {
             PackingTemplatesView(bag: bag)
+        }
+        .onAppear {
+            updateSortedItems()
+        }
+        .onChange(of: settingsManager.defaultItemSortOrder) { _, _ in
+            updateSortedItems()
+        }
+        .onChange(of: settingsManager.sortAscending) { _, _ in
+            updateSortedItems()
+        }
+        .onChange(of: bag.itemsArray.count) { _, _ in
+            updateSortedItems()
         }
     }
 
