@@ -30,9 +30,11 @@ What's published, and what to check when submitting an update. Live since 24 Jul
 - Privacy policy: https://pacbag.app/privacy-policy
 - Labels and markings (EU DSA): https://pacbag.app/labels-markings
 
-## Description
+## Description and promotional text
 
-Lives in [`fastlane/metadata/en-US/description.txt`](fastlane/metadata/en-US/description.txt), so it is edited in one place and pushed from there. See [Updating the listing](#updating-the-listing).
+Both live under [`fastlane/metadata/en-US/`](fastlane/metadata/en-US/) and are pushed from there. See [Updating the listing](#updating-the-listing).
+
+The promotional text is live. The description is not: Apple refuses a description edit on a version that is already on sale, so `description.txt` is staged and goes out with the next version.
 
 ## What's new — 1.0
 
@@ -92,10 +94,17 @@ Doesn't affect users, but should go before the next submission: `Info.plist` dec
 
 ## Updating the listing
 
-Text fields are managed with fastlane. Apple lets a live app change its
-description, release notes, promotional text and the support, marketing and
-privacy URLs without submitting a new version; everything else (name, keywords,
-screenshots, category) needs one.
+Text fields are managed with fastlane. What Apple accepts depends on the
+version's state, and it is stricter than fastlane's own list of "live editable"
+fields suggests.
+
+On PacBag today -- one version, 1.0, READY_FOR_SALE, nothing in Prepare for
+Submission -- **promotional text** goes through. **Description** comes back as
+`Attribute 'description' cannot be edited at this time` and needs a new app
+version, as do the name, keywords, screenshots and category.
+
+The lane sends each field separately and prints what was refused, so a rejected
+field does not block the rest.
 
 Edit the matching file under `fastlane/metadata/`, then:
 
