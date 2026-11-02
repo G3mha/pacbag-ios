@@ -52,6 +52,71 @@ class CategoryManager: ObservableObject {
     init(coreData: CoreDataManager = .shared) {
         self.coreData = coreData
         setupCategories()
+        mergeDuplicates()
+        remoteChangeObserver = NotificationCenter.default.addObserver(
+            forName: .NSPersistentStoreRemoteChange, object: nil, queue: .main
+        ) { [weak self] _ in
+            guard let self else { return }
+            MainActor.assumeIsolated {
+                self.scheduleMerge()
+            }
+        }
+    }
+    
+    // MARK: - Duplicates from sync
+    
+    private var remoteChangeObserver: NSObjectProtocol?
+    private var pendingMerge: Task<Void, Never>?
+    
+    /// Syncs arrive in bursts, so this waits for a quiet moment.
+    private func scheduleMerge() {
+        pendingMerge?.cancel()
+        pendingMerge = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            guard !Task.isCancelled else { return }
+            self?.mergeDuplicates()
+        }
+    }
+    
+    /// Every device seeds its own default categories, so the first sync brings doubles. The lowest
+    /// id always wins, so two devices merging at once pick the same one.
+    func mergeDuplicates() {
+        let key: (String) -> String = { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
+        let all = (try? context.fetch(Category.fetchRequest())) ?? []
+        var changed = false
+        
+        for group in Dictionary(grouping: all, by: { key($0.name) }).values where group.count > 1 {
+            let sorted = group.sorted { $0.id.uuidString < $1.id.uuidString }
+            let keeper = sorted[0]
+            for duplicate in sorted.dropFirst() {
+                duplicate.itemsArray.forEach { $0.categoryEntity = keeper }
+                duplicate.subcategoriesArray.forEach { $0.category = keeper }
+                keeper.usageCount = max(keeper.usageCount, duplicate.usageCount)
+                keeper.isArchived = keeper.isArchived && duplicate.isArchived
+                context.delete(duplicate)
+                changed = true
+            }
+        }
+        
+        for category in all where !category.isDeleted {
+            let names = Dictionary(grouping: category.subcategoriesArray, by: { key($0.name) })
+            for group in names.values where group.count > 1 {
+                let sorted = group.sorted { $0.id.uuidString < $1.id.uuidString }
+                for duplicate in sorted.dropFirst() {
+                    duplicate.itemsArray.forEach { $0.subcategoryEntity = sorted[0] }
+                    sorted[0].usageCount = max(sorted[0].usageCount, duplicate.usageCount)
+                    context.delete(duplicate)
+                    changed = true
+                }
+            }
+        }
+        
+        if changed {
+            saveContext()
+        }
+        // Always, because new categories may have just synced in.
+        loadCategories()
+        updatePublishedArrays()
     }
     
     // MARK: - Setup and Migration
