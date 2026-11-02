@@ -146,7 +146,7 @@ struct UsageDistributionChart: View {
     var chartData: [CategoryChartData] {
         analytics.categoryUsageDistribution
             .prefix(8)  // Show top 8 categories
-            .map { CategoryChartData(name: $0.category.name, count: Int($0.category.usageCount), percentage: $0.usagePercentage) }
+            .map { CategoryChartData(name: $0.category.name, count: Int($0.category.usageCount)) }
     }
     
     var body: some View {
@@ -155,51 +155,22 @@ struct UsageDistributionChart: View {
                 .font(.headline)
                 .fontWeight(.semibold)
             
-            if #available(iOS 16.0, *) {
-                Chart(chartData, id: \.name) { data in
-                    BarMark(
-                        x: .value("Category", data.name),
-                        y: .value("Usage", data.count)
-                    )
-                    .foregroundStyle(Color.blue.gradient)
+            Chart(chartData, id: \.name) { data in
+                BarMark(
+                    x: .value("Category", data.name),
+                    y: .value("Usage", data.count)
+                )
+                .foregroundStyle(Color.blue.gradient)
+            }
+            .frame(height: 200)
+            .chartXAxis {
+                AxisMarks(values: .automatic) { _ in
+                    AxisValueLabel()
+                        .font(.caption2)
                 }
-                .frame(height: 200)
-                .chartXAxis {
-                    AxisMarks(values: .automatic) { _ in
-                        AxisValueLabel()
-                            .font(.caption2)
-                    }
-                }
-                .chartYAxis {
-                    AxisMarks(position: .leading)
-                }
-            } else {
-                // Fallback for iOS 15
-                VStack(spacing: 8) {
-                    ForEach(chartData.prefix(5), id: \.name) { data in
-                        HStack {
-                            Text(data.name)
-                                .font(.caption)
-                                .frame(width: 80, alignment: .leading)
-                            
-                            GeometryReader { geometry in
-                                HStack(spacing: 0) {
-                                    Rectangle()
-                                        .fill(Color.blue)
-                                        .frame(width: geometry.size.width * (data.percentage / 100))
-                                    
-                                    Spacer(minLength: 0)
-                                }
-                            }
-                            .frame(height: 8)
-                            
-                            Text("\(data.count)")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .frame(width: 30, alignment: .trailing)
-                        }
-                    }
-                }
+            }
+            .chartYAxis {
+                AxisMarks(position: .leading)
             }
         }
         .padding()
@@ -211,7 +182,6 @@ struct UsageDistributionChart: View {
 struct CategoryChartData {
     let name: String
     let count: Int
-    let percentage: Double
 }
 
 struct TopCategoriesView: View {
