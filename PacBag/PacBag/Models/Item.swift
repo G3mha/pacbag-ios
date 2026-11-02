@@ -7,6 +7,8 @@ import UIKit
 /// field existed, so it counts as entered.
 enum WeightSource: String {
     case entered, catalog, ai, photo
+    /// AI was asked and had no answer, so the row stays not weighed and isn't asked about again.
+    case skipped
 }
 
 @objc(Item)
@@ -44,7 +46,7 @@ extension Item {
     
     var isWeightEstimated: Bool {
         guard isWeighed, let weightSource else { return false }
-        return weightSource != WeightSource.entered.rawValue
+        return weightSource != WeightSource.entered.rawValue && weightSource != WeightSource.skipped.rawValue
     }
     
     var hasPhoto: Bool {

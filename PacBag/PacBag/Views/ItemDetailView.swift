@@ -297,6 +297,15 @@ struct PhotoDisplaySection: View {
                     )
             }
             
+            if item.hasPhoto && AIConsent.shared.isGranted && !isEditing {
+                Button("Fill In From Photo") {
+                    guard let context = item.managedObjectContext else { return }
+                    Task { await AIFill.shared.fillFromPhoto(item, isNewRow: false, context: context) }
+                }
+                .buttonStyle(.bordered)
+                .accessibilityIdentifier(AccessibilityID.itemDetailFillFromPhoto)
+            }
+            
             if isEditing {
                 HStack(spacing: 12) {
                     PhotosPicker("Change Photo", selection: $selectedPhoto, matching: .images)
