@@ -74,6 +74,7 @@ enum DefaultsKey {
     static let sortAscending = "settings_sort_ascending"
     static let hasCompletedOnboarding = "hasCompletedOnboarding"
     static let customPackingTemplates = "CustomPackingTemplates"
+    static let aiConsent = "ai_consent"
     static let retired = ["settings_analytics_enabled", "settings_auto_packing_list",
         "settings_smart_suggestions", "settings_show_weight_in_lists",
         "settings_default_packing_days_before_trip", "settings_default_bag_weight",

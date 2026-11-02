@@ -2,6 +2,8 @@ import SwiftUI
 import CoreData
 
 struct SettingsView: View {
+    @ObservedObject private var aiConsent = AIConsent.shared
+    @State private var showingAIConsent = false
     @Environment(\.dismiss) private var dismiss
     @Environment(\.managedObjectContext) private var viewContext
     @StateObject private var settingsManager = SettingsManager.shared
@@ -206,6 +208,14 @@ struct SettingsView: View {
                 
                 // Privacy & Security Section
                 Section(header: Text("Privacy & Security")) {
+                    Toggle("AI estimates", isOn: Binding(
+                        get: { AIConsent.shared.isGranted },
+                        set: { isOn in
+                            if isOn { showingAIConsent = true } else { AIConsent.shared.decline() }
+                        }
+                    ))
+                    .sheet(isPresented: $showingAIConsent) { ConsentSheet() }
+                    
                     Button("Reset All Data", role: .destructive) {
                         showingDeleteConfirmation = true
                     }

@@ -10,6 +10,11 @@ enum AccessibilityID {
     static let bagDetailTotalNote = "bagDetail.totalNote"
     static let quickAddField = "quickAdd.field"
     static let quickAddUndo = "quickAdd.undo"
+    static let quickAddPhoto = "quickAdd.photo"
+    static let quickAddOffer = "quickAdd.offer"
+    static let consentAccept = "consent.accept"
+    static let consentDecline = "consent.decline"
+    static let itemDetailFillFromPhoto = "itemDetail.fillFromPhoto"
 
     static let itemRowToggle = "itemRow.toggle"
     static func itemRow(_ name: String) -> String {
