@@ -212,6 +212,7 @@ struct SettingsView: View {
                 }
                 
                 // Developer Section
+                #if DEBUG
                 Section(header: Text("Developer")) {
                     Button(action: { showingLandingPage = true }) {
                         HStack {
@@ -235,6 +236,7 @@ struct SettingsView: View {
                         showingResetConfirmation = true
                     }
                 }
+                #endif
                 
                 // About Section
                 Section(header: Text("About")) {
