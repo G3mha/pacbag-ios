@@ -106,7 +106,15 @@ struct SettingsView: View {
                 }
                 
                 // Notifications Section
-                Section(header: Text("Notifications")) {
+                Section(
+                    header: Text("Notifications"),
+                    footer: Text("Get notified 1 week, 3 days and 1 day before each trip, and on the morning it starts.")
+                ) {
+                    Toggle("Packing reminders", isOn: $settingsManager.remindersEnabled)
+                        .onChange(of: settingsManager.remindersEnabled) { _, _ in
+                            Task { await notificationManager.applyReminderSetting() }
+                        }
+                    
                     Button(action: { showingNotificationSettings = true }) {
                         HStack {
                             Image(systemName: "bell")

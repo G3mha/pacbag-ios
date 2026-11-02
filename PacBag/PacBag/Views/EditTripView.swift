@@ -13,7 +13,6 @@ struct EditTripView: View {
     @State private var endDate: Date
     @State private var tripDescription: String
     @State private var isCompleted: Bool
-    @State private var remindersEnabled: Bool
     
     init(trip: Trip) {
         self.trip = trip
@@ -23,7 +22,6 @@ struct EditTripView: View {
         self._endDate = State(initialValue: trip.endDate)
         self._tripDescription = State(initialValue: trip.tripDescription ?? "")
         self._isCompleted = State(initialValue: trip.isCompleted)
-        self._remindersEnabled = State(initialValue: trip.remindersEnabled)
     }
     
     var body: some View {
@@ -69,14 +67,6 @@ struct EditTripView: View {
                     
                     if isCompleted {
                         Text("This trip will be marked as completed")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    Toggle("Enable packing reminders", isOn: $remindersEnabled)
-                    
-                    if remindersEnabled {
-                        Text("Get notified before your trip starts")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -151,27 +141,22 @@ struct EditTripView: View {
     
     private func saveTrip() {
         withAnimation {
-            let wasRemindersEnabled = trip.remindersEnabled
-            
             trip.name = tripName.trimmingCharacters(in: .whitespacesAndNewlines)
             trip.destination = destination.trimmingCharacters(in: .whitespacesAndNewlines)
             trip.startDate = startDate
             trip.endDate = endDate
             trip.tripDescription = tripDescription.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : tripDescription.trimmingCharacters(in: .whitespacesAndNewlines)
             trip.isCompleted = isCompleted
-            trip.remindersEnabled = remindersEnabled
             
             do {
                 try viewContext.save()
                 
-                // Handle notification changes
+                // Dates and names may have changed, so the pending reminders are rebuilt.
                 Task {
-                    if remindersEnabled && (!wasRemindersEnabled || startDate != trip.startDate) {
-                        // Schedule new reminders if enabled or date changed
-                        await NotificationManager.shared.schedulePackingReminders(for: trip)
-                    } else if !remindersEnabled && wasRemindersEnabled {
-                        // Clear reminders if disabled
+                    if isCompleted {
                         await NotificationManager.shared.clearReminders(for: trip)
+                    } else {
+                        await NotificationManager.shared.schedulePackingReminders(for: trip)
                     }
                 }
                 

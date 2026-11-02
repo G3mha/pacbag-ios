@@ -35,6 +35,7 @@ struct NotificationSettingsView: View {
                             Button("Enable") {
                                 Task {
                                     await notificationManager.requestAuthorization()
+                                    await notificationManager.applyReminderSetting()
                                 }
                             }
                             .buttonStyle(.borderedProminent)

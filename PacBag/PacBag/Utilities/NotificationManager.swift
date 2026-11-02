@@ -1,6 +1,7 @@
 import Foundation
 import UserNotifications
 import SwiftUI
+import CoreData
 
 class NotificationManager: ObservableObject {
     static let shared = NotificationManager()
@@ -41,8 +42,27 @@ class NotificationManager: ObservableObject {
     
     // MARK: - Trip Reminders
     
+    /// Brings pending reminders in line with the app-wide setting.
+    @MainActor
+    func applyReminderSetting() async {
+        guard SettingsManager.shared.remindersEnabled else {
+            await clearAllReminders()
+            return
+        }
+        // Tests run in memory, and a system alert would block their taps.
+        if authorizationStatus == .notDetermined && !LaunchOption.usesInMemoryStore {
+            _ = await requestAuthorization()
+        }
+        let request = Trip.fetchRequest()
+        request.predicate = NSPredicate(format: "isCompleted == NO")
+        let trips = (try? CoreDataManager.shared.context.fetch(request)) ?? []
+        for trip in trips {
+            await schedulePackingReminders(for: trip)
+        }
+    }
+    
     func schedulePackingReminders(for trip: Trip) async {
-        guard authorizationStatus == .authorized else {
+        guard SettingsManager.shared.remindersEnabled, authorizationStatus == .authorized else {
             return
         }
         

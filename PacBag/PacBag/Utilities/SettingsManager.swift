@@ -72,6 +72,7 @@ enum DefaultsKey {
     static let appTheme = "settings_app_theme"
     static let defaultItemSortOrder = "settings_default_item_sort_order"
     static let sortAscending = "settings_sort_ascending"
+    static let remindersEnabled = "settings_reminders_enabled"
     static let hasCompletedOnboarding = "hasCompletedOnboarding"
     static let customPackingTemplates = "CustomPackingTemplates"
     static let aiConsent = "ai_consent"
@@ -116,6 +117,13 @@ class SettingsManager: ObservableObject {
         }
     }
     
+    /// Packing reminders for every trip. There's no per-trip choice.
+    @Published var remindersEnabled: Bool {
+        didSet {
+            userDefaults.set(remindersEnabled, forKey: DefaultsKey.remindersEnabled)
+        }
+    }
+    
     // MARK: - Initialization
     
     private init() {
@@ -124,6 +132,7 @@ class SettingsManager: ObservableObject {
         self.appTheme = AppTheme(rawValue: userDefaults.string(forKey: DefaultsKey.appTheme) ?? "") ?? .system
         self.defaultItemSortOrder = ItemSortOrder(rawValue: userDefaults.string(forKey: DefaultsKey.defaultItemSortOrder) ?? "") ?? .category
         self.sortAscending = userDefaults.object(forKey: DefaultsKey.sortAscending) as? Bool ?? true
+        self.remindersEnabled = userDefaults.object(forKey: DefaultsKey.remindersEnabled) as? Bool ?? true
         
         // Apply theme on initialization
         updateAppearance()
@@ -139,6 +148,7 @@ class SettingsManager: ObservableObject {
         appTheme = .system
         defaultItemSortOrder = .category
         sortAscending = true
+        remindersEnabled = true
     }
     
     // MARK: - Private Methods

@@ -88,13 +88,13 @@ struct AddTripView: View {
             newTrip.endDate = endDate
             newTrip.tripDescription = tripDescription.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : tripDescription.trimmingCharacters(in: .whitespacesAndNewlines)
             newTrip.isCompleted = false
-            newTrip.remindersEnabled = true
             
             do {
                 try viewContext.save()
                 
+                // The first trip is when someone gets asked to allow notifications.
                 Task {
-                    await NotificationManager.shared.schedulePackingReminders(for: newTrip)
+                    await NotificationManager.shared.applyReminderSetting()
                 }
                 
                 dismiss()

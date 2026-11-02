@@ -20,6 +20,7 @@ extension Trip {
     @NSManaged public var destination: String
     @NSManaged public var tripDescription: String?
     @NSManaged public var isCompleted: Bool
+    // No longer read, since reminders are an app setting. It stays because CloudKit fields can't be removed.
     @NSManaged public var remindersEnabled: Bool
     @NSManaged public var bags: NSSet?
 }

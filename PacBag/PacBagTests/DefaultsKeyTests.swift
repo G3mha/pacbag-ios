@@ -41,6 +41,7 @@ final class DefaultsKeyTests: XCTestCase {
         XCTAssertEqual(DefaultsKey.appTheme, "settings_app_theme")
         XCTAssertEqual(DefaultsKey.defaultItemSortOrder, "settings_default_item_sort_order")
         XCTAssertEqual(DefaultsKey.sortAscending, "settings_sort_ascending")
+        XCTAssertEqual(DefaultsKey.remindersEnabled, "settings_reminders_enabled")
         XCTAssertEqual(DefaultsKey.hasCompletedOnboarding, "hasCompletedOnboarding")
         XCTAssertEqual(DefaultsKey.customPackingTemplates, "CustomPackingTemplates")
     }
