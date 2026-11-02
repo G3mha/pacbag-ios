@@ -37,6 +37,8 @@ class CoreDataManager {
     }
 
     lazy var persistentContainer: NSPersistentCloudKitContainer = {
+        // First, so the events from loading the store aren't missed.
+        _ = SyncMonitor.shared
         let container = NSPersistentCloudKitContainer(name: "PacBagModel", managedObjectModel: Self.model)
         container.persistentStoreDescriptions = [storeDescription]
 
@@ -58,6 +60,8 @@ class CoreDataManager {
         
         // Enable CloudKit sync debugging
         container.viewContext.automaticallyMergesChangesFromParent = true
+        // A save can race a sync. The newer value per field wins, where the default just fails the save.
+        container.viewContext.mergePolicy = NSMergeByPropertyObjectTrumpMergePolicy
         
         return container
     }()
