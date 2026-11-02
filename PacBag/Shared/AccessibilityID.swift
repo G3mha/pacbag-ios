@@ -7,6 +7,9 @@ enum AccessibilityID {
     /// The header Add Item button, until every entry points at quick add.
     static let bagDetailAddItem = "bagDetail.addItem"
     static let bagDetailTotal = "bagDetail.total"
+    static let bagDetailTotalNote = "bagDetail.totalNote"
+    static let quickAddField = "quickAdd.field"
+    static let quickAddUndo = "quickAdd.undo"
 
     static let itemRowToggle = "itemRow.toggle"
     static func itemRow(_ name: String) -> String {

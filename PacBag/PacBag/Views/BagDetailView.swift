@@ -17,21 +17,24 @@ struct BagDetailView: View {
                 // Bag Header with visual representation
                 BagHeaderView(bag: bag)
                 
-                // Packing Progress
-                PackingProgressView(bag: bag, showDetails: true)
-                
-                // Quick Stats
-                BagStatsView(bag: bag)
+                // Items Section
+                ItemsListView(bag: bag, showingAddItem: $showingAddItem)
                 
                 // Sub-bags Section (only for main bags)
                 if bag.isMainBag {
                     SubBagView(parentBag: bag)
                 }
                 
-                // Items Section
-                ItemsListView(bag: bag, showingAddItem: $showingAddItem)
+                // Packing Progress
+                PackingProgressView(bag: bag, showDetails: true)
+                
+                // Quick Stats
+                BagStatsView(bag: bag)
             }
             .padding()
+        }
+        .safeAreaInset(edge: .bottom) {
+            QuickAddBar(bag: bag)
         }
         .navigationTitle(bag.name.isEmpty ? "Unnamed Bag" : bag.name)
         .navigationBarTitleDisplayMode(.large)
@@ -192,6 +195,13 @@ struct BagHeaderView: View {
                         ProgressView(value: bag.weightUtilization)
                             .progressViewStyle(LinearProgressViewStyle(tint: progressColor))
                             .frame(width: 120)
+
+                        if let totalNote {
+                            Text(totalNote)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                                .accessibilityIdentifier(AccessibilityID.bagDetailTotalNote)
+                        }
                     }
                 }
             }
@@ -226,6 +236,13 @@ struct BagHeaderView: View {
             .background(Color(.systemGray6))
             .cornerRadius(12)
         }
+    }
+    
+    private var totalNote: String? {
+        var parts: [String] = []
+        if bag.estimatedItemsCount > 0 { parts.append("\(bag.estimatedItemsCount) estimated") }
+        if bag.unweighedItemsCount > 0 { parts.append("\(bag.unweighedItemsCount) not weighed") }
+        return parts.isEmpty ? nil : "Includes " + parts.joined(separator: ", ")
     }
     
     private var bagColor: Color {
@@ -409,6 +426,10 @@ struct ItemsListView: View {
                 let fullCat1 = $0.fullCategory
                 let fullCat2 = $1.fullCategory
 
+                // Items with no category stay at the end, whichever way names sort.
+                if ($0.category == nil) != ($1.category == nil) {
+                    return $1.category == nil
+                }
                 if fullCat1 == fullCat2 {
                     let comparison = $0.name.localizedCaseInsensitiveCompare($1.name)
                     return sortAscending ? comparison == .orderedAscending : comparison == .orderedDescending
@@ -611,6 +632,9 @@ struct ItemsListView: View {
         .onChange(of: bag.itemsArray.count) { _, _ in
             updateSortedItems()
         }
+        .onReceive(NotificationCenter.default.publisher(for: .NSManagedObjectContextObjectsDidChange, object: bag.managedObjectContext)) { _ in
+            updateSortedItems()
+        }
     }
 
     private func toggleItemPacked(_ item: Item) {
@@ -783,7 +807,15 @@ struct ItemRowView: View {
                         
                         Spacer()
                         
-                        if item.quantity > 1 {
+                        if !item.isWeighed {
+                            Text("not weighed")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        } else if item.isWeightEstimated {
+                            Text("about \(item.totalWeight, specifier: "%.1f")kg, estimate")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        } else if item.quantity > 1 {
                             Text("\(item.weight, specifier: "%.1f")kg each")
                                 .font(.caption2)
                                 .foregroundColor(.secondary)
