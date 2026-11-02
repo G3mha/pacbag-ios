@@ -72,6 +72,17 @@ extension Bag {
         return bagWeight + itemsWeight
     }
     
+    // Rows whose weight is a guess or missing, so the total can say what it leaves out.
+    var estimatedItemsCount: Int {
+        let direct = itemsArray.filter { $0.isWeightEstimated }.count
+        return direct + subBagsArray.reduce(0) { $0 + $1.estimatedItemsCount }
+    }
+    
+    var unweighedItemsCount: Int {
+        let direct = itemsArray.filter { !$0.isWeighed }.count
+        return direct + subBagsArray.reduce(0) { $0 + $1.unweighedItemsCount }
+    }
+    
     var weightUtilization: Double {
         guard maxWeight > 0 else { return 0 }
         return totalWeight / maxWeight

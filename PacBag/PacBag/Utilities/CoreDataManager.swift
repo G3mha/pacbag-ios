@@ -207,7 +207,12 @@ class CoreDataManager {
         itemPhotoData.isOptional = true
         itemPhotoData.allowsExternalBinaryDataStorage = true
         
-        itemEntity.properties = [itemId, itemName, itemWeight, itemIsPacked, itemCategory, itemSubcategory, itemDescription, itemQuantity, itemPhotoData]
+        let itemWeightSource = NSAttributeDescription()
+        itemWeightSource.name = "weightSource"
+        itemWeightSource.type = .string
+        itemWeightSource.isOptional = true
+        
+        itemEntity.properties = [itemId, itemName, itemWeight, itemIsPacked, itemCategory, itemSubcategory, itemDescription, itemQuantity, itemPhotoData, itemWeightSource]
         
         // Relationships
         let tripToBags = NSRelationshipDescription()

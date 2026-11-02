@@ -188,6 +188,9 @@ struct ItemDetailView: View {
             
             item.name = editedName.trimmingCharacters(in: .whitespacesAndNewlines)
             item.itemDescription = editedDescription.isEmpty ? nil : editedDescription.trimmingCharacters(in: .whitespacesAndNewlines)
+            if editedWeight != item.weight {
+                item.weightSource = WeightSource.entered.rawValue
+            }
             item.weight = editedWeight
             item.quantity = Int32(editedQuantity)
             // Set both legacy and new category relationships for compatibility

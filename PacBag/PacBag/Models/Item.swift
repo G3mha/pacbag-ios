@@ -3,6 +3,12 @@ import CoreData
 import CloudKit
 import UIKit
 
+/// Where a weight came from. An item with no source and a weight above 0 was typed before this
+/// field existed, so it counts as entered.
+enum WeightSource: String {
+    case entered, catalog, ai, photo
+}
+
 @objc(Item)
 public class Item: NSManagedObject, Identifiable {
     
@@ -22,6 +28,7 @@ extension Item {
     @NSManaged public var itemDescription: String?
     @NSManaged public var quantity: Int32
     @NSManaged public var photoData: Data?
+    @NSManaged public var weightSource: String?
     @NSManaged public var bag: Bag?
     @NSManaged public var categoryEntity: Category?
     @NSManaged public var subcategoryEntity: SubCategory?
@@ -29,6 +36,15 @@ extension Item {
     // Computed properties for convenience
     var totalWeight: Double {
         return weight * Double(quantity)
+    }
+    
+    var isWeighed: Bool {
+        return weight > 0
+    }
+    
+    var isWeightEstimated: Bool {
+        guard isWeighed, let weightSource else { return false }
+        return weightSource != WeightSource.entered.rawValue
     }
     
     var hasPhoto: Bool {
