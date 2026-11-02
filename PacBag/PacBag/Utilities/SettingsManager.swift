@@ -200,98 +200,9 @@ class SettingsManager: ObservableObject {
         sortAscending = true
     }
     
-    func isFirstLaunch() -> Bool {
-        return !userDefaults.bool(forKey: Keys.firstLaunch)
-    }
-    
-    func markOnboardingCompleted() {
-        userDefaults.set(true, forKey: Keys.onboardingCompleted)
-    }
-    
-    func isOnboardingCompleted() -> Bool {
-        return userDefaults.bool(forKey: Keys.onboardingCompleted)
-    }
-    
     // MARK: - Weight Conversion Helpers
     
-    func convertWeight(_ weight: Double, from sourceUnit: WeightUnit) -> Double {
-        return sourceUnit.convert(from: weight, to: weightUnit)
-    }
-    
-    func formatWeight(_ weight: Double) -> String {
-        return String(format: "%.1f %@", weight, weightUnit.symbol)
-    }
-    
-    func formatWeightRange(min: Double, max: Double) -> String {
-        return String(format: "%.1f - %.1f %@", min, max, weightUnit.symbol)
-    }
-    
     // MARK: - Export/Import
-    
-    func exportSettings() -> [String: Any] {
-        return [
-            "weightUnit": weightUnit.rawValue,
-            "defaultBagWeight": defaultBagWeight,
-            "appTheme": appTheme.rawValue,
-            "defaultReminderDays": defaultReminderDays,
-            "analyticsEnabled": analyticsEnabled,
-            "autoPackingList": autoPackingList,
-            "smartSuggestions": smartSuggestions,
-            "showWeightInLists": showWeightInLists,
-            "defaultPackingDaysBeforeTrip": defaultPackingDaysBeforeTrip,
-            "defaultItemSortOrder": defaultItemSortOrder.rawValue,
-            "sortAscending": sortAscending
-        ]
-    }
-    
-    func importSettings(from data: [String: Any]) {
-        if let weightUnitString = data["weightUnit"] as? String,
-           let weightUnit = WeightUnit(rawValue: weightUnitString) {
-            self.weightUnit = weightUnit
-        }
-        
-        if let defaultBagWeight = data["defaultBagWeight"] as? Double {
-            self.defaultBagWeight = defaultBagWeight
-        }
-        
-        if let appThemeString = data["appTheme"] as? String,
-           let appTheme = AppTheme(rawValue: appThemeString) {
-            self.appTheme = appTheme
-        }
-        
-        if let defaultReminderDays = data["defaultReminderDays"] as? Int {
-            self.defaultReminderDays = defaultReminderDays
-        }
-        
-        if let analyticsEnabled = data["analyticsEnabled"] as? Bool {
-            self.analyticsEnabled = analyticsEnabled
-        }
-        
-        if let autoPackingList = data["autoPackingList"] as? Bool {
-            self.autoPackingList = autoPackingList
-        }
-        
-        if let smartSuggestions = data["smartSuggestions"] as? Bool {
-            self.smartSuggestions = smartSuggestions
-        }
-        
-        if let showWeightInLists = data["showWeightInLists"] as? Bool {
-            self.showWeightInLists = showWeightInLists
-        }
-        
-        if let defaultPackingDaysBeforeTrip = data["defaultPackingDaysBeforeTrip"] as? Int {
-            self.defaultPackingDaysBeforeTrip = defaultPackingDaysBeforeTrip
-        }
-        
-        if let defaultItemSortOrderString = data["defaultItemSortOrder"] as? String,
-           let defaultItemSortOrder = ItemSortOrder(rawValue: defaultItemSortOrderString) {
-            self.defaultItemSortOrder = defaultItemSortOrder
-        }
-        
-        if let sortAscending = data["sortAscending"] as? Bool {
-            self.sortAscending = sortAscending
-        }
-    }
     
     // MARK: - Private Methods
     
@@ -312,26 +223,6 @@ class SettingsManager: ObservableObject {
 extension SettingsManager {
     
     // Computed properties for complex preferences
-    var preferredItemSortDescriptor: NSSortDescriptor {
-        let descriptor = defaultItemSortOrder.sortDescriptor
-        return NSSortDescriptor(key: descriptor.key, ascending: sortAscending)
-    }
-    
-    var preferredDateFormat: DateFormatter {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        formatter.timeStyle = .none
-        return formatter
-    }
-    
-    var preferredWeightPrecision: Int {
-        switch weightUnit {
-        case .kilograms:
-            return 1 // 1 decimal place for kg
-        case .pounds:
-            return 1 // 1 decimal place for lbs
-        }
-    }
 }
 
 // MARK: - Supporting Types
@@ -385,21 +276,6 @@ enum ItemSortOrder: String, CaseIterable {
             return "calendar"
         case .packed:
             return "checkmark.circle"
-        }
-    }
-    
-    var sortDescriptor: NSSortDescriptor {
-        switch self {
-        case .name:
-            return NSSortDescriptor(keyPath: \Item.name, ascending: true)
-        case .category:
-            return NSSortDescriptor(keyPath: \Item.category, ascending: true)
-        case .weight:
-            return NSSortDescriptor(keyPath: \Item.weight, ascending: false)
-        case .dateAdded:
-            return NSSortDescriptor(keyPath: \Item.id, ascending: false) // Using ID as proxy for creation date
-        case .packed:
-            return NSSortDescriptor(keyPath: \Item.isPacked, ascending: true)
         }
     }
 }

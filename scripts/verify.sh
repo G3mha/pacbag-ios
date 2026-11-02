@@ -63,7 +63,7 @@ rule source-write     0  '(weight|category)Source *=[^=]'                   "$IT
 rule mirror-write     10 '[a-zA-Z]*[iI]tem\.(category|subcategory) *=[^=]'  "$ITEM"         'newItem.category = x'                     "$S"
 rule current-weight   24 'currentWeight'                                    "$CD"           'bag.currentWeight'                        "$S"
 rule weight-multiply  9  '[wW]eight(Kg)? \* |knownKg \* '                   "$ITEM"         'weight * q'                               "$S"
-rule weight-format    57 '%\.[0-9]f'                                        "$FMT"          'String(format: "%.1f", x)'                "$S"
+rule weight-format    55 '%\.[0-9]f'                                        "$FMT"          'String(format: "%.1f", x)'                "$S"
 rule kg-literal       28 '[0-9f ]kg[" )]'                                   "$FMT|$TPL"     '3.0 kg"'                                  "$S"
 rule slider           9  'Slider\('                                         ''              'Slider(value: $x)'                        "$S"
 rule no-cat-labels    19 '"(General|Uncategorized|Other)"'                  "$TPL"          'x = "General"'                            "$S"
