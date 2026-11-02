@@ -3,6 +3,7 @@ import CoreData
 
 struct SettingsView: View {
     @ObservedObject private var aiConsent = AIConsent.shared
+    @ObservedObject private var syncMonitor = SyncMonitor.shared
     @State private var showingAIConsent = false
     @Environment(\.dismiss) private var dismiss
     @Environment(\.managedObjectContext) private var viewContext
@@ -330,6 +331,12 @@ struct SettingsView: View {
         } message: {
             Text("This will reset the app to its initial state and show the onboarding flow again.")
         }
+        .task {
+            await syncMonitor.refresh(
+                cloudKitIsOn: CoreDataManager.shared.storeDescription.cloudKitContainerOptions != nil,
+                containerID: CoreDataManager.cloudKitContainerID
+            )
+        }
         .onAppear {
             notificationManager.checkAuthorizationStatus()
         }
@@ -349,16 +356,15 @@ struct SettingsView: View {
     }
     
     private var iCloudSyncStatus: String {
-        // This would be determined by Core Data CloudKit status
-        return "Syncing"
+        return syncMonitor.text
     }
     
     private var iCloudSyncIcon: String {
-        return "checkmark.circle.fill"
+        return syncMonitor.icon
     }
     
     private var iCloudSyncColor: Color {
-        return .green
+        return syncMonitor.color
     }
     
     private var appVersion: String {
