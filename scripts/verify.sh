@@ -54,7 +54,7 @@ FMT='Utilities/WeightFormatter\.swift'
 TPL='Models/PackingTemplateData\.swift'
 
 rule item-create      4  'Item\(context:'                                   "$STORE"        'let i = Item(context: c)'                 "$S"
-rule save             27 '[cC]ontext\??\.save\(\)'                          "$CD"           'try viewContext.save()'                   "$S"
+rule save             26 '[cC]ontext\??\.save\(\)'                          "$CD"           'try viewContext.save()'                   "$S"
 rule fatal            3  'fatalError\(|preconditionFailure\('               'Utilities/Contract\.swift' 'fatalError("x")'              "$S"
 rule is-packed-write  15 '\.isPacked *=[^=]|\.isPacked\.toggle'             "$STORE"        'item.isPacked = true'                     "$S"
 rule item-field-write 33 '[iI]tem\.(id|createdAt|name|quantity|itemDescription|photoData|bag|categoryEntity|subcategoryEntity) *= |\.addToItems\(|\.removeFromItems\(' "$STORE|$ITEM" 'item.name = x' "$S"

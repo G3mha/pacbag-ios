@@ -264,28 +264,7 @@ class CategoryManager: ObservableObject {
         }
     }
     
-    func archiveCategory(_ category: Category) {
-        category.isArchived = true
-        saveContext()
-        loadCategories()
-    }
-    
     // Permanently delete archived categories (can be called during app cleanup)
-    func permanentlyDeleteArchivedCategories() {
-        let request: NSFetchRequest<Category> = Category.fetchRequest()
-        request.predicate = NSPredicate(format: "isArchived == YES")
-        
-        do {
-            let archivedCategories = try context.fetch(request)
-            for category in archivedCategories {
-                context.delete(category)
-            }
-            try context.save()
-        } catch {
-            print("Failed to save context: \(error)")
-        }
-    }
-    
     // MARK: - Usage Tracking
     
     func incrementUsage(for category: Category) {
@@ -304,10 +283,6 @@ class CategoryManager: ObservableObject {
     }
     
     // MARK: - Convenience Methods
-    
-    var sortedCategoryNames: [String] {
-        return categories.map { $0.name }.sorted()
-    }
     
     func category(named name: String) -> Category? {
         return categories.first { $0.name.lowercased() == name.lowercased() }
@@ -363,29 +338,6 @@ class CategoryManager: ObservableObject {
             $0.name.lowercased().contains(lowercaseQuery) ||
             $0.subcategoriesArray.contains { $0.name.lowercased().contains(lowercaseQuery) }
         }
-    }
-    
-    func suggestCategory(for itemName: String) -> Category? {
-        let lowercaseItemName = itemName.lowercased()
-        
-        // Simple keyword matching for suggestions
-        let categoryKeywords: [String: [String]] = [
-            "Clothes": ["shirt", "pants", "dress", "jacket", "sweater", "jeans", "top"],
-            "Electronics": ["charger", "cable", "phone", "laptop", "tablet", "battery", "adapter"],
-            "Toiletries": ["toothbrush", "shampoo", "soap", "lotion", "perfume", "cream"],
-            "Documents": ["passport", "ticket", "license", "id", "card", "document"],
-            "Shoes": ["shoes", "sneakers", "boots", "sandals", "heels"],
-            "Accessories": ["watch", "jewelry", "belt", "hat", "glasses", "bag"],
-            "Medication": ["medicine", "pills", "vitamin", "tablet", "capsule"]
-        ]
-        
-        for (categoryName, keywords) in categoryKeywords {
-            if keywords.contains(where: { lowercaseItemName.contains($0) }) {
-                return category(named: categoryName)
-            }
-        }
-        
-        return nil
     }
     
     // MARK: - Analytics Methods
@@ -476,47 +428,6 @@ class CategoryManager: ObservableObject {
     }
     
     // MARK: - Data Export/Import
-    
-    func exportCategories() -> Data? {
-        let exportData = categories.map { category in
-            [
-                "name": category.name,
-                "icon": category.iconName ?? "",
-                "color": category.colorHex ?? "",
-                "subcategories": category.subcategoriesArray.map { $0.name }
-            ]
-        }
-        
-        return try? JSONSerialization.data(withJSONObject: exportData, options: .prettyPrinted)
-    }
-    
-    func importCategories(from data: Data) throws {
-        let importData = try JSONSerialization.jsonObject(with: data, options: []) as? [[String: Any]]
-        
-        guard let categoriesData = importData else {
-            throw NSError(domain: "CategoryManager", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid category data format"])
-        }
-        
-        for categoryData in categoriesData {
-            guard let name = categoryData["name"] as? String else { continue }
-            
-            // Skip if category already exists
-            if category(named: name) != nil { continue }
-            
-            let icon = categoryData["icon"] as? String
-            let color = categoryData["color"] as? String
-            let subcategoryNames = categoryData["subcategories"] as? [String] ?? []
-            
-            let category = createCategory(name, icon: icon, color: color)
-            
-            for subcategoryName in subcategoryNames {
-                createSubcategory(subcategoryName, in: category)
-            }
-        }
-        
-        saveContext()
-        loadCategories()
-    }
     
     // MARK: - Reset
     
