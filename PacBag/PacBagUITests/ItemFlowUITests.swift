@@ -55,6 +55,38 @@ final class ItemFlowUITests: PacBagUITestCase {
         XCTAssertTrue(app.wait(for: .notRunning, timeout: 15), "the delete no longer crashes, so this pin can flip")
     }
 
+    /// Today's Edit and Save, found by label. The live form commit removes those steps, and the
+    /// `WeightField` commit moves the weight step to typing.
+    func testEditingAWeightChangesTheTotal() throws {
+        addItem("Socks")
+        XCTAssertTrue(row("Socks").waitForExistence(timeout: 10), "the new row never appeared")
+        let before = try bagTotal()
+
+        // The row's plain button style leaves the gaps between its texts untappable, and that includes its center.
+        row("Socks").staticTexts["Socks"].firstMatch.tap()
+        let edit = app.navigationBars.buttons["Edit"].firstMatch
+        XCTAssertTrue(edit.waitForExistence(timeout: 10), "the item screen should offer Edit")
+        edit.tap()
+
+        let slider = app.sliders[AccessibilityID.itemDetailWeightField].firstMatch
+        XCTAssertTrue(slider.waitForExistence(timeout: 5), "editing should show the weight slider")
+        slider.adjust(toNormalizedSliderPosition: 0.5)
+        app.navigationBars.buttons["Save"].firstMatch.tap()
+        XCTAssertTrue(edit.waitForExistence(timeout: 5), "Save should end editing")
+
+        app.navigationBars.buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(row("Socks").waitForExistence(timeout: 10), "Back should return to the bag")
+        XCTAssertGreaterThan(try bagTotal(), before + 1, "the new weight should reach the bag's total")
+    }
+
+    /// The total's number from the header, "3.1 / 20.0 kg".
+    private func bagTotal() throws -> Double {
+        let total = app.staticTexts[AccessibilityID.bagDetailTotal].firstMatch
+        XCTAssertTrue(total.waitForExistence(timeout: 5), "the bag header's total never appeared")
+        let number = try XCTUnwrap(total.label.split(separator: " ").first)
+        return try XCTUnwrap(Double(number), "couldn't read a number from \(total.label)")
+    }
+
     private func row(_ name: String) -> XCUIElement {
         app.buttons[AccessibilityID.itemRow(name)].firstMatch
     }
