@@ -26,7 +26,8 @@ class PacBagUITestCase: XCTestCase {
     /// Typing leaves the keyboard up. Return closes a text field's keyboard.
     func dismissKeyboard() {
         if app.keyboards.element.exists {
-            app.keyboards.buttons["return"].firstMatch.tap()
+            // Typing it, because tapping the key sometimes fails with "scroll to visible" under load.
+            app.typeText("\n")
         }
     }
 
