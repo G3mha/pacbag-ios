@@ -3,28 +3,42 @@ import CloudKit
 
 class CoreDataManager {
     static let shared = CoreDataManager()
-    
-    private init() {}
+
+    // Must match com.apple.developer.icloud-container-identifiers in
+    // PacBag.entitlements. A container the app is not entitled for
+    // fails inside CloudKit, out of reach of the handler below.
+    static let cloudKitContainerID = "iCloud.com.enriccogemha.PacBag"
+
+    /// Built once. Separate model instances with the same classes confuse Core Data.
+    static let model: NSManagedObjectModel = makeModel()
+
+    /// What the container loads. Nothing loads until `persistentContainer` is read.
+    let storeDescription: NSPersistentStoreDescription
+
+    /// A nil URL is the default store. Tests and fixtures open their own.
+    init(storeURL: URL?, cloudKit: Bool) {
+        let url = storeURL ?? NSPersistentCloudKitContainer.defaultDirectoryURL().appendingPathComponent("PacBagModel.sqlite")
+        let description = NSPersistentStoreDescription(url: url)
+        description.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
+        description.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
+        description.cloudKitContainerOptions = cloudKit
+            ? NSPersistentCloudKitContainerOptions(containerIdentifier: Self.cloudKitContainerID)
+            : nil
+        storeDescription = description
+    }
+
+    /// In memory: `/dev/null`, with no CloudKit, so each instance starts empty.
+    convenience init(inMemory: Bool = false) {
+        if inMemory {
+            self.init(storeURL: URL(fileURLWithPath: "/dev/null"), cloudKit: false)
+        } else {
+            self.init(storeURL: nil, cloudKit: !LaunchOption.isCloudKitDisabled)
+        }
+    }
 
     lazy var persistentContainer: NSPersistentCloudKitContainer = {
-        let container = NSPersistentCloudKitContainer(name: "PacBagModel", managedObjectModel: managedObjectModel)
-
-        let storeDescription = container.persistentStoreDescriptions.first
-        storeDescription?.setOption(true as NSNumber, forKey: NSPersistentHistoryTrackingKey)
-        storeDescription?.setOption(true as NSNumber, forKey: NSPersistentStoreRemoteChangeNotificationPostOptionKey)
-
-        if LaunchOption.isCloudKitDisabled {
-            // nil options leave the store local, with no mirroring.
-            storeDescription?.cloudKitContainerOptions = nil
-            print("CloudKit disabled: PacBag is running against a local store.")
-        } else {
-            // Must match com.apple.developer.icloud-container-identifiers in
-            // PacBag.entitlements. A container the app is not entitled for
-            // fails inside CloudKit, out of reach of the handler below.
-            storeDescription?.cloudKitContainerOptions = NSPersistentCloudKitContainerOptions(
-                containerIdentifier: "iCloud.com.enriccogemha.PacBag"
-            )
-        }
+        let container = NSPersistentCloudKitContainer(name: "PacBagModel", managedObjectModel: Self.model)
+        container.persistentStoreDescriptions = [storeDescription]
 
         container.loadPersistentStores { storeDescription, error in
             if let error = error {
@@ -43,7 +57,7 @@ class CoreDataManager {
         return persistentContainer.viewContext
     }
     
-    private lazy var managedObjectModel: NSManagedObjectModel = {
+    private static func makeModel() -> NSManagedObjectModel {
         let model = NSManagedObjectModel()
         
         // Trip Entity
@@ -405,7 +419,7 @@ class CoreDataManager {
         model.entities = [tripEntity, bagEntity, itemEntity, categoryEntity, subCategoryEntity]
         
         return model
-    }()
+    }
     
     func save() {
         if context.hasChanges {
