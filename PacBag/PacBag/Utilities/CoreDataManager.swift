@@ -47,6 +47,15 @@ class CoreDataManager {
             }
         }
         
+        if LaunchOption.initializesCloudKitSchema {
+            do {
+                try container.initializeCloudKitSchema(options: [])
+                print("CloudKit schema initialized")
+            } catch {
+                print("CloudKit schema failed: \(error)")
+            }
+        }
+        
         // Enable CloudKit sync debugging
         container.viewContext.automaticallyMergesChangesFromParent = true
         

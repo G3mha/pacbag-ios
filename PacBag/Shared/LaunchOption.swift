@@ -7,6 +7,7 @@ enum LaunchOption {
     static let disableCloudKitEnv = "PACBAG_DISABLE_CLOUDKIT"
     static let inMemoryStore = "-PacBagInMemoryStore"
     static let skipOnboarding = "-PacBagSkipOnboarding"
+    static let initCloudKitSchema = "-PacBagInitCloudKitSchema"
     static let concurrencyDebug = ["-com.apple.CoreData.ConcurrencyDebug", "1"]
 
     /// Runs the app against a local store with no iCloud mirroring.
@@ -20,6 +21,15 @@ enum LaunchOption {
     static var isCloudKitDisabled: Bool {
         ProcessInfo.processInfo.arguments.contains(disableCloudKit)
             || ProcessInfo.processInfo.environment[disableCloudKitEnv] == "1"
+    }
+
+    /// Writes every model field to CloudKit's Development schema, so a deploy can't miss one.
+    static var initializesCloudKitSchema: Bool {
+        #if DEBUG
+        return ProcessInfo.processInfo.arguments.contains(initCloudKitSchema)
+        #else
+        return false
+        #endif
     }
 
     /// True for the argument, a hosted unit test, or a SwiftUI preview.
