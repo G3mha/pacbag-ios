@@ -158,7 +158,7 @@ class PackingTemplateManager: ObservableObject {
     @Published var customTemplates: [PackingTemplate] = []
     
     private let userDefaults = UserDefaults.standard
-    private let customTemplatesKey = "CustomPackingTemplates"
+    private let customTemplatesKey = DefaultsKey.customPackingTemplates
     
     private init() {
         loadDefaultTemplates()

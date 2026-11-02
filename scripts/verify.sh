@@ -68,7 +68,7 @@ rule kg-literal       28 '[0-9f ]kg[" )]'                                   "$FM
 rule slider           9  'Slider\('                                         ''              'Slider(value: $x)'                        "$S"
 rule no-cat-labels    18 '"(General|Uncategorized|Other)"'                  "$TPL"          'x = "General"'                            "$S"
 rule image-decode     3  'UIImage\(data:|CGImageSourceCreate|CGImageDestinationCreate' 'Utilities/ImagePipeline\.swift' 'UIImage(data: d)' "$S"
-rule defaults-literal 2  'forKey: "'                                        ''              'set(1, forKey: "x")'                      "$S"
+rule defaults-literal 0  'forKey: "'                                        ''              'set(1, forKey: "x")'                      "$S"
 rule web-url          0  'https?://'                                        'Utilities/AI/ProxyClient\.swift' 'let u = "https://x"'    "$S"
 rule launch-arg       0  'PacBagDisableCloudKit|PACBAG_DISABLE_CLOUDKIT'    'PacBag/Shared/' '-PacBagDisableCloudKit'                  "$P"
 rule a11y-literal     0  'accessibilityIdentifier\("'                       ''              '.accessibilityIdentifier("x")'            "$P"

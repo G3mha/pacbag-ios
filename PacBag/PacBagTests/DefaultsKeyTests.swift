@@ -36,6 +36,15 @@ final class DefaultsKeyTests: XCTestCase {
         XCTAssertEqual(defaults.object(forKey: "hasCompletedOnboarding") as? Bool, false)
     }
 
+    func testKeysEqualTheirStoredStrings() {
+        XCTAssertEqual(DefaultsKey.weightUnit, "settings_weight_unit")
+        XCTAssertEqual(DefaultsKey.appTheme, "settings_app_theme")
+        XCTAssertEqual(DefaultsKey.defaultItemSortOrder, "settings_default_item_sort_order")
+        XCTAssertEqual(DefaultsKey.sortAscending, "settings_sort_ascending")
+        XCTAssertEqual(DefaultsKey.hasCompletedOnboarding, "hasCompletedOnboarding")
+        XCTAssertEqual(DefaultsKey.customPackingTemplates, "CustomPackingTemplates")
+    }
+
     func testWeightUnitRawValues() {
         XCTAssertEqual(WeightUnit.kilograms.rawValue, "kg")
         XCTAssertEqual(WeightUnit.pounds.rawValue, "lbs")
