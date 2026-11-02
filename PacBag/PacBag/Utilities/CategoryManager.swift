@@ -2,6 +2,7 @@ import Foundation
 import CoreData
 import SwiftUI
 
+@MainActor
 class CategoryManager: ObservableObject {
     static let shared = CategoryManager()
     
@@ -9,7 +10,8 @@ class CategoryManager: ObservableObject {
     @Published var recentCategories: [Category] = []
     @Published var popularCategories: [Category] = []
     
-    private let context = CoreDataManager.shared.context
+    private let coreData: CoreDataManager
+    private var context: NSManagedObjectContext { coreData.context }
     private let userDefaultsKey = "CustomPackingCategories"
     
     // Default categories structure for seeding
@@ -46,7 +48,9 @@ class CategoryManager: ObservableObject {
         "Medication": "FF7675"
     ]
     
-    init() {
+    /// A per-test instance saves to its own store and leaves `.shared` alone.
+    init(coreData: CoreDataManager = .shared) {
+        self.coreData = coreData
         setupCategories()
     }
     
