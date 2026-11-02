@@ -10,7 +10,7 @@ class OnboardingManager: ObservableObject {
     }
     
     private init() {
-        self.hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
+        self.hasCompletedOnboarding = LaunchOption.skipsOnboarding || UserDefaults.standard.bool(forKey: "hasCompletedOnboarding")
     }
     
     func completeOnboarding() {

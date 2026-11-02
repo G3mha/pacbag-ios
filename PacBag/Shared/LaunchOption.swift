@@ -6,6 +6,7 @@ enum LaunchOption {
     static let disableCloudKit = "-PacBagDisableCloudKit"
     static let disableCloudKitEnv = "PACBAG_DISABLE_CLOUDKIT"
     static let inMemoryStore = "-PacBagInMemoryStore"
+    static let skipOnboarding = "-PacBagSkipOnboarding"
     static let concurrencyDebug = ["-com.apple.CoreData.ConcurrencyDebug", "1"]
 
     /// Runs the app against a local store with no iCloud mirroring.
@@ -28,6 +29,14 @@ enum LaunchOption {
         return ProcessInfo.processInfo.arguments.contains(inMemoryStore)
             || environment["XCTestConfigurationFilePath"] != nil
             || environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+        #else
+        return false
+        #endif
+    }
+
+    static var skipsOnboarding: Bool {
+        #if DEBUG
+        return ProcessInfo.processInfo.arguments.contains(skipOnboarding)
         #else
         return false
         #endif
