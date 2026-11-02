@@ -187,6 +187,7 @@ struct BagHeaderView: View {
                         Text("\(bag.totalWeight, specifier: "%.1f") / \(bag.maxWeight, specifier: "%.1f") kg")
                             .font(.title2)
                             .fontWeight(.semibold)
+                            .accessibilityIdentifier(AccessibilityID.bagDetailTotal)
 
                         ProgressView(value: bag.weightUtilization)
                             .progressViewStyle(LinearProgressViewStyle(tint: progressColor))
@@ -510,6 +511,7 @@ struct ItemsListView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.small)
+                .accessibilityIdentifier(AccessibilityID.bagDetailAddItem)
             }
             
             if bag.itemsArray.isEmpty {
@@ -715,6 +717,7 @@ struct ItemRowView: View {
                     }
                 }
                 .buttonStyle(PlainButtonStyle())
+                .accessibilityIdentifier(AccessibilityID.itemRowToggle)
 
                 // Photo thumbnail with caching
                 Group {
@@ -803,6 +806,7 @@ struct ItemRowView: View {
             }
         }
         .buttonStyle(PlainButtonStyle())
+        .accessibilityIdentifier(AccessibilityID.itemRow(item.name))
         .padding(.vertical, 8)
         .padding(.horizontal, 12)
         .background(item.isPacked ? Color(.systemGray6) : Color(.systemBackground))

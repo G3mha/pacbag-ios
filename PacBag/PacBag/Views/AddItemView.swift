@@ -160,6 +160,7 @@ struct AddItemView: View {
                             .foregroundColor(.blue)
                             .frame(width: 24)
                         TextField("Item Name", text: $itemName)
+                            .accessibilityIdentifier(AccessibilityID.itemDetailNameField)
                     }
                     .padding(12)
                     .background(Color(.systemGray6))
@@ -267,6 +268,7 @@ struct AddItemView: View {
                     Button("Cancel") {
                         dismiss()
                     }
+                    .accessibilityIdentifier(AccessibilityID.itemDetailCancel)
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -274,6 +276,7 @@ struct AddItemView: View {
                         saveItem()
                     }
                     .disabled(itemName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .accessibilityIdentifier(AccessibilityID.itemDetailSave)
                 }
             }
         }

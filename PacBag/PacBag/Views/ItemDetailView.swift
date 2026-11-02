@@ -345,6 +345,7 @@ struct ItemDetailsSection: View {
                     if isEditing {
                         TextField("Item name", text: $editedName)
                             .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .accessibilityIdentifier(AccessibilityID.itemDetailNameField)
                     } else {
                         Text(item.name.isEmpty ? "Unnamed Item" : item.name)
                             .foregroundColor(.primary)
@@ -557,6 +558,7 @@ struct ItemDetailsSection: View {
                     
                     if isEditing {
                         Slider(value: $editedWeight, in: 0.1...10.0, step: 0.1)
+                            .accessibilityIdentifier(AccessibilityID.itemDetailWeightField)
                     }
                     
                     HStack {
