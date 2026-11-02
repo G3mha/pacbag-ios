@@ -45,6 +45,15 @@ final class DefaultsKeyTests: XCTestCase {
         XCTAssertEqual(DefaultsKey.customPackingTemplates, "CustomPackingTemplates")
     }
 
+    func testRetiredKeysStayRetired() {
+        XCTAssertEqual(Set(DefaultsKey.retired), [
+            "settings_analytics_enabled", "settings_auto_packing_list", "settings_smart_suggestions",
+            "settings_show_weight_in_lists", "settings_default_packing_days_before_trip",
+            "settings_default_bag_weight", "settings_default_reminder_days", "settings_first_launch",
+            "settings_onboarding_completed", "CustomPackingCategories",
+        ])
+    }
+
     func testWeightUnitRawValues() {
         XCTAssertEqual(WeightUnit.kilograms.rawValue, "kg")
         XCTAssertEqual(WeightUnit.pounds.rawValue, "lbs")

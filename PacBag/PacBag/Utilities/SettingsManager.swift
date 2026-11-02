@@ -69,19 +69,16 @@ enum AppTheme: String, CaseIterable {
 /// Every stored key. The strings can't change, because a renamed key resets someone's settings.
 enum DefaultsKey {
     static let weightUnit = "settings_weight_unit"
-    static let defaultBagWeight = "settings_default_bag_weight"
     static let appTheme = "settings_app_theme"
-    static let defaultReminderDays = "settings_default_reminder_days"
-    static let analyticsEnabled = "settings_analytics_enabled"
-    static let autoPackingList = "settings_auto_packing_list"
-    static let smartSuggestions = "settings_smart_suggestions"
-    static let showWeightInLists = "settings_show_weight_in_lists"
-    static let defaultPackingDaysBeforeTrip = "settings_default_packing_days_before_trip"
     static let defaultItemSortOrder = "settings_default_item_sort_order"
     static let sortAscending = "settings_sort_ascending"
-    static let firstLaunch = "settings_first_launch"
     static let hasCompletedOnboarding = "hasCompletedOnboarding"
     static let customPackingTemplates = "CustomPackingTemplates"
+    static let retired = ["settings_analytics_enabled", "settings_auto_packing_list",
+        "settings_smart_suggestions", "settings_show_weight_in_lists",
+        "settings_default_packing_days_before_trip", "settings_default_bag_weight",
+        "settings_default_reminder_days", "settings_first_launch", "settings_onboarding_completed",
+        "CustomPackingCategories"]
 }
 
 // MARK: - SettingsManager
@@ -99,46 +96,10 @@ class SettingsManager: ObservableObject {
         }
     }
     
-    @Published var defaultBagWeight: Double {
-        didSet {
-            userDefaults.set(defaultBagWeight, forKey: DefaultsKey.defaultBagWeight)
-        }
-    }
-    
     @Published var appTheme: AppTheme {
         didSet {
             userDefaults.set(appTheme.rawValue, forKey: DefaultsKey.appTheme)
             updateAppearance()
-        }
-    }
-    
-    @Published var defaultReminderDays: Int {
-        didSet {
-            userDefaults.set(defaultReminderDays, forKey: DefaultsKey.defaultReminderDays)
-        }
-    }
-    
-    @Published var autoPackingList: Bool {
-        didSet {
-            userDefaults.set(autoPackingList, forKey: DefaultsKey.autoPackingList)
-        }
-    }
-    
-    @Published var smartSuggestions: Bool {
-        didSet {
-            userDefaults.set(smartSuggestions, forKey: DefaultsKey.smartSuggestions)
-        }
-    }
-    
-    @Published var showWeightInLists: Bool {
-        didSet {
-            userDefaults.set(showWeightInLists, forKey: DefaultsKey.showWeightInLists)
-        }
-    }
-    
-    @Published var defaultPackingDaysBeforeTrip: Int {
-        didSet {
-            userDefaults.set(defaultPackingDaysBeforeTrip, forKey: DefaultsKey.defaultPackingDaysBeforeTrip)
         }
     }
     
@@ -159,44 +120,25 @@ class SettingsManager: ObservableObject {
     private init() {
         // Load saved values or set defaults
         self.weightUnit = WeightUnit(rawValue: userDefaults.string(forKey: DefaultsKey.weightUnit) ?? "") ?? .kilograms
-        self.defaultBagWeight = userDefaults.object(forKey: DefaultsKey.defaultBagWeight) as? Double ?? 2.0
         self.appTheme = AppTheme(rawValue: userDefaults.string(forKey: DefaultsKey.appTheme) ?? "") ?? .system
-        self.defaultReminderDays = userDefaults.object(forKey: DefaultsKey.defaultReminderDays) as? Int ?? 3
-        self.autoPackingList = userDefaults.object(forKey: DefaultsKey.autoPackingList) as? Bool ?? true
-        self.smartSuggestions = userDefaults.object(forKey: DefaultsKey.smartSuggestions) as? Bool ?? true
-        self.showWeightInLists = userDefaults.object(forKey: DefaultsKey.showWeightInLists) as? Bool ?? true
-        self.defaultPackingDaysBeforeTrip = userDefaults.object(forKey: DefaultsKey.defaultPackingDaysBeforeTrip) as? Int ?? 7
         self.defaultItemSortOrder = ItemSortOrder(rawValue: userDefaults.string(forKey: DefaultsKey.defaultItemSortOrder) ?? "") ?? .category
         self.sortAscending = userDefaults.object(forKey: DefaultsKey.sortAscending) as? Bool ?? true
         
         // Apply theme on initialization
         updateAppearance()
         
-        // Mark first launch
-        if !userDefaults.bool(forKey: DefaultsKey.firstLaunch) {
-            userDefaults.set(true, forKey: DefaultsKey.firstLaunch)
-            // Perform first-launch setup if needed
-        }
+        // Settings that no longer exist shouldn't sit on the device.
+        DefaultsKey.retired.forEach(userDefaults.removeObject(forKey:))
     }
     
     // MARK: - Public Methods
     
     func resetToDefaults() {
         weightUnit = .kilograms
-        defaultBagWeight = 2.0
         appTheme = .system
-        defaultReminderDays = 3
-        autoPackingList = true
-        smartSuggestions = true
-        showWeightInLists = true
-        defaultPackingDaysBeforeTrip = 7
         defaultItemSortOrder = .category
         sortAscending = true
     }
-    
-    // MARK: - Weight Conversion Helpers
-    
-    // MARK: - Export/Import
     
     // MARK: - Private Methods
     
@@ -210,13 +152,6 @@ class SettingsManager: ObservableObject {
             }
         }
     }
-}
-
-// MARK: - Preference Extensions
-
-extension SettingsManager {
-    
-    // Computed properties for complex preferences
 }
 
 // MARK: - Supporting Types
