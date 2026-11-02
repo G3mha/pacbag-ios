@@ -18,7 +18,7 @@ struct QuickAddBar: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            if !lastAdded.isEmpty {
+            if !stillAdded.isEmpty {
                 HStack {
                     Text(addedSummary)
                         .font(.caption)
@@ -119,8 +119,13 @@ struct QuickAddBar: View {
         await fill.fillFromPhoto(item, isNewRow: true, context: viewContext)
     }
 
+    /// The last adds, minus any deleted from the list since.
+    private var stillAdded: [Item] {
+        lastAdded.filter { !$0.isGone }
+    }
+
     private var addedSummary: String {
-        guard lastAdded.count == 1, let item = lastAdded.first else { return "Added \(lastAdded.count) items" }
+        guard stillAdded.count == 1, let item = stillAdded.first else { return "Added \(stillAdded.count) items" }
         let count = item.quantity > 1 ? " ×\(item.quantity)" : ""
         return "Added \(item.name)\(count), \(item.category ?? "not sorted")"
     }
@@ -140,7 +145,7 @@ struct QuickAddBar: View {
 
     private func undo() {
         withAnimation {
-            lastAdded.forEach { QuickAdd.remove($0, in: viewContext) }
+            stillAdded.forEach { QuickAdd.remove($0, in: viewContext) }
             lastAdded = []
         }
     }

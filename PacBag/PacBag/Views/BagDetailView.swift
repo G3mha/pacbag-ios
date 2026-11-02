@@ -409,7 +409,7 @@ struct ItemsListView: View {
     }
 
     var sortedItems: [Item] {
-        cachedSortedItems
+        cachedSortedItems.filter { !$0.isGone }
     }
 
     private func updateSortedItems() {
@@ -542,7 +542,7 @@ struct ItemsListView: View {
                 )
             } else {
                 LazyVStack(spacing: 8) {
-                    ForEach(Array(zip(sortedItems.indices, sortedItems)), id: \.1.id) { index, item in
+                    ForEach(Array(zip(sortedItems.indices, sortedItems)), id: \.1.objectID) { index, item in
                         Group {
                             // Category header for category sorting
                             if sortOrder == .category {
@@ -727,6 +727,13 @@ struct ItemRowView: View {
     @State private var photoLoaded = false
 
     var body: some View {
+        // A row can redraw once more after its item is deleted.
+        if !item.isGone {
+            row
+        }
+    }
+
+    private var row: some View {
         NavigationLink(destination: ItemDetailView(item: item)) {
             HStack(spacing: 12) {
                 Button(action: onToggle) {

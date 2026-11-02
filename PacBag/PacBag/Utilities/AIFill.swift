@@ -29,16 +29,18 @@ final class AIFill: ObservableObject {
         defer { batch.forEach { inFlight.remove($0.objectID) } }
 
         let request = batch.map { (id: $0.id.uuidString, name: $0.name) }
+        // Read now, because a row can be deleted while the request is out.
+        let itemsByID = Dictionary(uniqueKeysWithValues: zip(request.map(\.id), batch))
         guard let response = try? await client.fillText(items: request, categories: Self.categoryNames()) else { return }
 
         switch response.outcome {
         case .crisis:
-            batch.forEach { $0.weightSource = WeightSource.skipped.rawValue }
+            batch.filter { !$0.isGone }.forEach { $0.weightSource = WeightSource.skipped.rawValue }
             try? context.save()
             crisisMessage = response.message
         case .ok:
             for filled in response.items ?? [] {
-                guard let item = batch.first(where: { $0.id.uuidString == filled.id }), !item.isDeleted else { continue }
+                guard let item = itemsByID[filled.id], !item.isGone else { continue }
                 apply(filled, to: item, source: .ai)
             }
             try? context.save()
@@ -59,7 +61,7 @@ final class AIFill: ObservableObject {
         case .crisis:
             crisisMessage = response.message
         case .ok:
-            guard let filled = response.items?.first, !item.isDeleted else { return }
+            guard let filled = response.items?.first, !item.isGone else { return }
             if let kind = filled.documentKind, kind != "none" {
                 item.photoData = nil
                 if isNewRow { QuickAdd.remove(item, in: context) }

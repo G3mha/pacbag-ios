@@ -29,5 +29,10 @@ final class QuickAddUITests: PacBagUITestCase {
         field.typeText("snorkel gizmo\n")
         XCTAssertTrue(app.staticTexts["Added snorkel gizmo, not sorted"].waitForExistence(timeout: 20))
         XCTAssertTrue(app.staticTexts["not weighed"].firstMatch.waitForExistence(timeout: 20))
+
+        app.buttons[AccessibilityID.quickAddUndo].firstMatch.tap()
+        let gone = NSPredicate(format: "exists == false")
+        XCTAssertEqual(XCTWaiter().wait(for: [expectation(for: gone, evaluatedWith: app.staticTexts["not weighed"].firstMatch)], timeout: 20), .completed, "Undo should remove the row")
+        XCTAssertEqual(app.state, .runningForeground, "the app should still be up after Undo")
     }
 }
