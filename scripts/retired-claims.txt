@@ -1,0 +1,36 @@
+# gate|phrase. docs/ssot-registry.md section 3.1 owns the gates.
+# Each always line is added by the commit that clears its last copy.
+always|save it as a PDF
+always|stored in your iCloud Photo Library
+always|Reset App&quot; in settings
+always|Photo access requires your explicit permission
+always|revoke photo access
+always|Built with iOS accessibility features
+always|Meets all Apple App Store Review Guidelines
+always|testimonial
+always|aggregateRating
+2.0|NO ACCOUNT, NO SERVER
+2.0|There's no server
+2.0|There is no server and no login
+2.0|Every feature works offline
+2.0|label: "Data collected"
+2.0|No server, no sign-up
+2.0|Your lists stay in your own iCloud
+2.0|everything in your iCloud
+2.0|go nowhere else
+site-submit|collect any personal data
+site-submit|collect personal data
+site-submit|talk to any server of ours
+site-submit|No third-party data sharing
+site-submit|only uses Apple
+site-submit|We do not collect, store, or access
+site-submit|No personal data collection
+site-submit|All your data is stored privately
+site-submit|All data stays in your iCloud
+site-submit|cannot access your information
+site-submit|cannot see, access, or retrieve
+site-submit|collect personal information
+site-release|Into your own iCloud account, and nowhere else
+site-release|There is no PacBag server
+site-release|no free tier and nothing held back
+site-release|No server, no sign-up
