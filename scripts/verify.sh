@@ -53,14 +53,14 @@ CD='Utilities/CoreDataManager\.swift'
 FMT='Utilities/WeightFormatter\.swift'
 TPL='Models/PackingTemplateData\.swift'
 
-rule item-create      5  'Item\(context:'                                   "$STORE"        'let i = Item(context: c)'                 "$S"
-rule save             28 '[cC]ontext\??\.save\(\)'                          "$CD"           'try viewContext.save()'                   "$S"
-rule fatal            5  'fatalError\(|preconditionFailure\('               'Utilities/Contract\.swift' 'fatalError("x")'              "$S"
-rule is-packed-write  16 '\.isPacked *=[^=]|\.isPacked\.toggle'             "$STORE"        'item.isPacked = true'                     "$S"
-rule item-field-write 36 '[iI]tem\.(id|createdAt|name|quantity|itemDescription|photoData|bag|categoryEntity|subcategoryEntity) *= |\.addToItems\(|\.removeFromItems\(' "$STORE|$ITEM" 'item.name = x' "$S"
+rule item-create      4  'Item\(context:'                                   "$STORE"        'let i = Item(context: c)'                 "$S"
+rule save             27 '[cC]ontext\??\.save\(\)'                          "$CD"           'try viewContext.save()'                   "$S"
+rule fatal            3  'fatalError\(|preconditionFailure\('               'Utilities/Contract\.swift' 'fatalError("x")'              "$S"
+rule is-packed-write  15 '\.isPacked *=[^=]|\.isPacked\.toggle'             "$STORE"        'item.isPacked = true'                     "$S"
+rule item-field-write 33 '[iI]tem\.(id|createdAt|name|quantity|itemDescription|photoData|bag|categoryEntity|subcategoryEntity) *= |\.addToItems\(|\.removeFromItems\(' "$STORE|$ITEM" 'item.name = x' "$S"
 rule item-delete      3  '\.delete\((item|newItem)\)'                       "$STORE|Utilities/DataReset\.swift" 'context.delete(item)'  "$S"
 rule source-write     0  '(weight|category)Source *=[^=]'                   "$ITEM"         'x.weightSource = y'                       "$S"
-rule mirror-write     11 '[a-zA-Z]*[iI]tem\.(category|subcategory) *=[^=]'  "$ITEM"         'newItem.category = x'                     "$S"
+rule mirror-write     10 '[a-zA-Z]*[iI]tem\.(category|subcategory) *=[^=]'  "$ITEM"         'newItem.category = x'                     "$S"
 rule current-weight   24 'currentWeight'                                    "$CD"           'bag.currentWeight'                        "$S"
 rule weight-multiply  9  '[wW]eight(Kg)? \* |knownKg \* '                   "$ITEM"         'weight * q'                               "$S"
 rule weight-format    58 '%\.[0-9]f'                                        "$FMT"          'String(format: "%.1f", x)'                "$S"
