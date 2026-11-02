@@ -64,6 +64,8 @@ export const askClaude: Ask = async (system, content, schema) => {
     inference_geo: "us",
     output_config: { effort: "low", format: { type: "json_schema", schema: schema as Record<string, unknown> } },
   });
+  // Counts only, so the bill can be checked. Never the text.
+  console.log("claude", MODEL, response.stop_reason, response.usage.input_tokens, response.usage.output_tokens);
   if (response.stop_reason === "refusal") return null;
   if (response.stop_reason === "max_tokens") throw new Error("output was cut off");
   const text = response.content.find(block => block.type === "text");
