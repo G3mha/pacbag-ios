@@ -7,7 +7,7 @@
          </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
-   <TestAction buildConfiguration = "Debug" selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB" shouldUseLaunchSchemeArgsEnv = "YES">
+   <TestAction buildConfiguration = "Debug" selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB" selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB" shouldUseLaunchSchemeArgsEnv = "YES" language = "en" region = "US">
       <Testables>
          <TestableReference skipped = "NO">
             <BuildableReference BuildableIdentifier = "primary" BlueprintIdentifier = "EB20C9142E03B3A7005DD652" BuildableName = "PacBagTests.xctest" BlueprintName = "PacBagTests" ReferencedContainer = "container:PacBag.xcodeproj"></BuildableReference>
