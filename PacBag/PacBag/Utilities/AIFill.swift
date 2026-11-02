@@ -68,7 +68,12 @@ final class AIFill: ObservableObject {
                 return
             }
             if isNewRow {
-                if let name = filled.name, !name.isEmpty { item.name = name }
+                guard let name = filled.name, !name.isEmpty else {
+                    QuickAdd.remove(item, in: context)
+                    notice = "PacBag couldn't find anything to pack in that photo."
+                    return
+                }
+                item.name = name
                 if let quantity = filled.quantity {
                     item.bag?.currentWeight -= item.totalWeight
                     item.quantity = Int32(quantity)
