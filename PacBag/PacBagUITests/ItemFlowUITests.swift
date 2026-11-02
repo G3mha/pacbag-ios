@@ -48,8 +48,11 @@ final class ItemFlowUITests: PacBagUITestCase {
         let delete = app.buttons["Delete Item"].firstMatch
         XCTAssertTrue(delete.waitForExistence(timeout: 5), "the context menu should offer Delete Item")
 
+        // XCTest files its own "crashed" issue only if the crash report turns up in time, so that issue is
+        // allowed but not required. The wait is the pin.
         let crash = XCTExpectedFailure.Options()
         crash.issueMatcher = { $0.compactDescription.contains("crashed") }
+        crash.isStrict = false
         XCTExpectFailure("Deleting a row reads Item.id from the deleted row", options: crash)
         delete.tap()
         XCTAssertTrue(app.wait(for: .notRunning, timeout: 15), "the delete no longer crashes, so this pin can flip")
