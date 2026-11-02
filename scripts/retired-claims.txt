@@ -10,6 +10,8 @@ always|Meets all Apple App Store Review Guidelines
 always|testimonial
 always|aggregateRating
 always|Usage Analytics
+always|iOS 17+
+always|intelligent organization
 2.0|NO ACCOUNT, NO SERVER
 2.0|There's no server
 2.0|There is no server and no login

@@ -407,7 +407,7 @@ struct AboutView: View {
                 }
                 
                 VStack(spacing: 16) {
-                    Text("PacBag helps you pack smart for any trip with intelligent organization, reminders, and analytics.")
+                    Text("PacBag keeps track of what's in each bag and what it weighs, with reminders before you leave.")
                         .font(.body)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
@@ -415,25 +415,9 @@ struct AboutView: View {
                     
                     HStack(spacing: 20) {
                         VStack {
-                            Text("📱")
-                                .font(.title2)
-                            Text("iOS 17+")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        VStack {
                             Text("☁️")
                                 .font(.title2)
                             Text("iCloud Sync")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        VStack {
-                            Text("📊")
-                                .font(.title2)
-                            Text("Analytics")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
