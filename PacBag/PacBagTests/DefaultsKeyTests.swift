@@ -1,0 +1,43 @@
+import XCTest
+@testable import PacBag
+
+/// A deliberate copy of each stored key. A renamed key silently resets someone's settings.
+final class DefaultsKeyTests: XCTestCase {
+    private let defaults = UserDefaults.standard
+
+    func testSettingsWriteToTheirStoredKeys() {
+        let settings = SettingsManager.shared
+        let saved = (settings.weightUnit, settings.appTheme, settings.defaultItemSortOrder, settings.sortAscending)
+        defer { (settings.weightUnit, settings.appTheme, settings.defaultItemSortOrder, settings.sortAscending) = saved }
+
+        settings.weightUnit = .pounds
+        XCTAssertEqual(defaults.string(forKey: "settings_weight_unit"), "lbs")
+        settings.weightUnit = .kilograms
+        XCTAssertEqual(defaults.string(forKey: "settings_weight_unit"), "kg")
+
+        settings.appTheme = .dark
+        XCTAssertEqual(defaults.string(forKey: "settings_app_theme"), "dark")
+
+        settings.defaultItemSortOrder = .weight
+        XCTAssertEqual(defaults.string(forKey: "settings_default_item_sort_order"), "weight")
+
+        settings.sortAscending = false
+        XCTAssertEqual(defaults.object(forKey: "settings_sort_ascending") as? Bool, false)
+    }
+
+    func testOnboardingWritesToItsStoredKey() {
+        let onboarding = OnboardingManager.shared
+        let saved = onboarding.hasCompletedOnboarding
+        defer { onboarding.hasCompletedOnboarding = saved }
+
+        onboarding.completeOnboarding()
+        XCTAssertEqual(defaults.object(forKey: "hasCompletedOnboarding") as? Bool, true)
+        onboarding.resetOnboarding()
+        XCTAssertEqual(defaults.object(forKey: "hasCompletedOnboarding") as? Bool, false)
+    }
+
+    func testWeightUnitRawValues() {
+        XCTAssertEqual(WeightUnit.kilograms.rawValue, "kg")
+        XCTAssertEqual(WeightUnit.pounds.rawValue, "lbs")
+    }
+}
