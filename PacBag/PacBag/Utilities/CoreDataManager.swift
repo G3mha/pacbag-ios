@@ -2,7 +2,7 @@ import CoreData
 import CloudKit
 
 class CoreDataManager {
-    static let shared = CoreDataManager()
+    static let shared = CoreDataManager(inMemory: LaunchOption.usesInMemoryStore)
 
     // Must match com.apple.developer.icloud-container-identifiers in
     // PacBag.entitlements. A container the app is not entitled for
