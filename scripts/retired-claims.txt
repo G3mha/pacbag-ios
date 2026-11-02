@@ -9,6 +9,7 @@ always|Built with iOS accessibility features
 always|Meets all Apple App Store Review Guidelines
 always|testimonial
 always|aggregateRating
+always|Usage Analytics
 2.0|NO ACCOUNT, NO SERVER
 2.0|There's no server
 2.0|There is no server and no login

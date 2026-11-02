@@ -1,6 +1,6 @@
 import Foundation
 
-// MARK: - Category Usage Analytics
+// MARK: - Category Analytics
 
 struct CategoryUsageAnalytics {
     let totalCategories: Int
