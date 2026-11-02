@@ -109,21 +109,6 @@ enum TripDuration: String, CaseIterable, Codable {
     case shortTrip = "4-7 Days"
     case longTrip = "1-2 Weeks"
     case extended = "2+ Weeks"
-    
-    var dayRange: ClosedRange<Int> {
-        switch self {
-        case .oneDay:
-            return 1...1
-        case .weekend:
-            return 2...3
-        case .shortTrip:
-            return 4...7
-        case .longTrip:
-            return 8...14
-        case .extended:
-            return 15...30
-        }
-    }
 }
 
 enum Season: String, CaseIterable, Codable {
@@ -379,10 +364,6 @@ class PackingTemplateManager: ObservableObject {
     
     func exportTemplate(_ template: PackingTemplate) -> Data? {
         return try? JSONEncoder().encode(template)
-    }
-    
-    func importTemplate(from data: Data) -> PackingTemplate? {
-        return try? JSONDecoder().decode(PackingTemplate.self, from: data)
     }
     
     func applyTemplate(_ template: PackingTemplate, to bag: Bag, context: NSManagedObjectContext) {

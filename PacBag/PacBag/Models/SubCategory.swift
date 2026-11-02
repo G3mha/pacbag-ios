@@ -28,19 +28,6 @@ extension SubCategory {
     var itemsArray: [Item] {
         return (items?.allObjects as? [Item]) ?? []
     }
-    
-    var fullName: String {
-        return "\(category.name) > \(name)"
-    }
-    
-    var isRecentlyUsed: Bool {
-        guard let lastUsed = lastUsedDate else { return false }
-        return Date().timeIntervalSince(lastUsed) < 7 * 24 * 60 * 60 // 7 days
-    }
-    
-    var isPopular: Bool {
-        return usageCount >= 3
-    }
 }
 
 // MARK: - Core Data Generated accessors for items

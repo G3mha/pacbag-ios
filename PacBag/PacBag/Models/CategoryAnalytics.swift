@@ -40,20 +40,4 @@ struct PackingInsights {
 
 // MARK: - Trip-Specific Analytics
 
-struct TripCategoryAnalytics {
-    let tripName: String
-    let categoriesUsed: [Category]
-    let mostPackedCategory: String?
-    let leastPackedCategory: String?
-    let totalItemsByCategory: [String: Int]
-    let completionRateByCategory: [String: Double]
-}
-
 // MARK: - Seasonal Analytics
-
-struct SeasonalCategoryAnalytics {
-    let season: String
-    let popularCategories: [Category]
-    let seasonalTrends: [String: Int]
-    let recommendedCategories: [Category]
-}

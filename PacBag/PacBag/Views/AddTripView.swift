@@ -12,8 +12,6 @@ struct AddTripView: View {
     @State private var tripDescription = ""
     @State private var createWithBag = false
     @State private var remindersEnabled = true
-    @State private var showingDatePicker = false
-    
     var body: some View {
         NavigationView {
             Form {

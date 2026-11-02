@@ -66,7 +66,7 @@ rule weight-multiply  9  '[wW]eight(Kg)? \* |knownKg \* '                   "$IT
 rule weight-format    55 '%\.[0-9]f'                                        "$FMT"          'String(format: "%.1f", x)'                "$S"
 rule kg-literal       28 '[0-9f ]kg[" )]'                                   "$FMT|$TPL"     '3.0 kg"'                                  "$S"
 rule slider           9  'Slider\('                                         ''              'Slider(value: $x)'                        "$S"
-rule no-cat-labels    19 '"(General|Uncategorized|Other)"'                  "$TPL"          'x = "General"'                            "$S"
+rule no-cat-labels    18 '"(General|Uncategorized|Other)"'                  "$TPL"          'x = "General"'                            "$S"
 rule image-decode     3  'UIImage\(data:|CGImageSourceCreate|CGImageDestinationCreate' 'Utilities/ImagePipeline\.swift' 'UIImage(data: d)' "$S"
 rule defaults-literal 2  'forKey: "'                                        ''              'set(1, forKey: "x")'                      "$S"
 rule web-url          0  'https?://'                                        'Utilities/AI/ProxyClient\.swift' 'let u = "https://x"'    "$S"
@@ -80,7 +80,7 @@ rule apply-ai         0  'applyAI\('                                        "Uti
 rule recipient-literal 0 'Anthropic|Claude|Railway'                         ''              'sent to Anthropic'                        "$S"
 rule name-compare     3  '\.lowercased\(\) *=='                             ''              'a.lowercased() == b'                      "$S"
 rule fallback-name    9 '"Unnamed'                                         "$ITEM|Models/Bag\.swift" 'x ?? "Unnamed Item"'            "$S"
-rule cat-separator    4  '\) > \\\('                                        "$ITEM"         '"\(a) > \(b)"'                            "$S"
+rule cat-separator    3  '\) > \\\('                                        "$ITEM"         '"\(a) > \(b)"'                            "$S"
 rule grams-conv       0  '/ 1000|\* 1000'                                   "$FMT"          'g / 1000'                                 "$S"
 rule_i sparkle        0  'sparkle|wand\.|magicwand|apple\.intelligence|"brain' ''           'Image(systemName: "sparkles")'            "$S"
 

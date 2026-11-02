@@ -60,16 +60,4 @@ extension Item {
         
         return "Uncategorized"
     }
-    
-    var hasSubcategory: Bool {
-        return subcategoryEntity != nil || (subcategory != nil && !(subcategory?.isEmpty ?? true))
-    }
-    
-    var effectiveCategoryName: String {
-        return categoryEntity?.name ?? category ?? "General"
-    }
-    
-    var effectiveSubcategoryName: String? {
-        return subcategoryEntity?.name ?? subcategory
-    }
 }

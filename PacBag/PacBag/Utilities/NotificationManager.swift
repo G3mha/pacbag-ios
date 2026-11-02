@@ -167,20 +167,6 @@ class NotificationManager: ObservableObject {
     }
     
     // MARK: - Utility Methods
-    
-    func getPendingNotifications() async -> [UNNotificationRequest] {
-        let center = UNUserNotificationCenter.current()
-        return await center.pendingNotificationRequests()
-    }
-    
-    func getScheduledReminders(for trip: Trip) async -> [UNNotificationRequest] {
-        let allNotifications = await getPendingNotifications()
-        let tripId = trip.id.uuidString
-        
-        return allNotifications.filter { notification in
-            notification.identifier.hasPrefix("trip-\(tripId)")
-        }
-    }
 }
 
 // MARK: - Supporting Types
