@@ -13,8 +13,8 @@ final class ScreenshotTests: XCTestCase {
         app = XCUIApplication()
         setupSnapshot(app)
         // CloudKit cannot resolve its container on a simulator with no iCloud
-        // account, and takes the app down with it. See CoreDataManager.
-        app.launchArguments += ["-PacBagDisableCloudKit"]
+        // account, and takes the app down with it. See LaunchOption.
+        app.launchArguments += [LaunchOption.disableCloudKit]
         app.launch()
     }
 

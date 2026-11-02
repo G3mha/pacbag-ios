@@ -58,6 +58,11 @@
 			path = PacBagUITests;
 			sourceTree = "<group>";
 		};
+		EB20C9F02E03B3A7005DD652 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = Shared;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -89,6 +94,7 @@
 			isa = PBXGroup;
 			children = (
 				EB20C9032E03B3A5005DD652 /* PacBag */,
+				EB20C9F02E03B3A7005DD652 /* Shared */,
 				EB20C9182E03B3A7005DD652 /* PacBagTests */,
 				EB20C9222E03B3A7005DD652 /* PacBagUITests */,
 				EB20C9022E03B3A5005DD652 /* Products */,
@@ -122,6 +128,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				EB20C9032E03B3A5005DD652 /* PacBag */,
+				EB20C9F02E03B3A7005DD652 /* Shared */,
 			);
 			name = PacBag;
 			packageProductDependencies = (
@@ -168,6 +175,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				EB20C9222E03B3A7005DD652 /* PacBagUITests */,
+				EB20C9F02E03B3A7005DD652 /* Shared */,
 			);
 			name = PacBagUITests;
 			packageProductDependencies = (

@@ -11,8 +11,8 @@ final class WeightTests: XCTestCase {
         continueAfterFailure = false
         app = XCUIApplication()
         // CloudKit cannot resolve its container on a simulator with no iCloud
-        // account and takes the app down with it. See CoreDataManager.
-        app.launchArguments += ["-PacBagDisableCloudKit"]
+        // account and takes the app down with it. See LaunchOption.
+        app.launchArguments += [LaunchOption.disableCloudKit]
         app.launch()
     }
 

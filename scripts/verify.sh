@@ -70,7 +70,7 @@ rule no-cat-labels    19 '"(General|Uncategorized|Other)"'                  "$TP
 rule image-decode     3  'UIImage\(data:|CGImageSourceCreate|CGImageDestinationCreate' 'Utilities/ImagePipeline\.swift' 'UIImage(data: d)' "$S"
 rule defaults-literal 2  'forKey: "'                                        ''              'set(1, forKey: "x")'                      "$S"
 rule web-url          0  'https?://'                                        'Utilities/AI/ProxyClient\.swift' 'let u = "https://x"'    "$S"
-rule launch-arg       6  'PacBagDisableCloudKit|PACBAG_DISABLE_CLOUDKIT'    'PacBag/Shared/' '-PacBagDisableCloudKit'                  "$P"
+rule launch-arg       0  'PacBagDisableCloudKit|PACBAG_DISABLE_CLOUDKIT'    'PacBag/Shared/' '-PacBagDisableCloudKit'                  "$P"
 rule a11y-literal     0  'accessibilityIdentifier\("'                       ''              '.accessibilityIdentifier("x")'            "$P"
 rule crisis-literal   0  '988'                                              ''              'tel:988'                                  "$S" 'backend/src/*'
 rule model-literal    0  'claude-(haiku|sonnet|opus)'                       'backend/src/ai/config\.ts' 'claude-opus-5-5'              "$S" 'backend/src/*.ts' 'backend/tools/*.ts'
