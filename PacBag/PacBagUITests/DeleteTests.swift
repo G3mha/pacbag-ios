@@ -63,6 +63,7 @@ final class DeleteTests: XCTestCase {
         tap(app.staticTexts[trip].firstMatch)
 
         pressAndChoose(app.staticTexts["Main Suitcase"].firstMatch, menuItem: "Delete Bag")
+        tap(app.alerts.buttons["Delete"].firstMatch)
 
         assertGone("Main Suitcase")
         XCTAssertTrue(app.buttons["Add Your First Bag"].firstMatch.waitForExistence(timeout: 5),
