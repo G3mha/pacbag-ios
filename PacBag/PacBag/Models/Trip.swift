@@ -41,13 +41,6 @@ extension Trip {
 
 // MARK: - Computed Properties
 extension Trip {
-    /// Reading `id`, `startDate` or `endDate` traps once this is true, and a view
-    /// observing the trip can still redraw after it's deleted. `isDeleted` alone
-    /// isn't enough, because it goes back to false once the delete is saved.
-    var isGone: Bool {
-        return isDeleted || managedObjectContext == nil
-    }
-
     var bagsArray: [Bag] {
         let set = bags as? Set<Bag> ?? []
         return set.sorted { $0.name < $1.name }

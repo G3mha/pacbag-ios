@@ -76,6 +76,17 @@ extension Bag {
         guard maxWeight > 0 else { return 0 }
         return totalWeight / maxWeight
     }
+
+    // Applies to the sub-bags too, so a fully packed bag reads as fully packed
+    func setAllItemsPacked(_ isPacked: Bool) {
+        for item in itemsArray {
+            item.isPacked = isPacked
+        }
+        currentWeight = itemsArray.reduce(0) { $0 + $1.totalWeight }
+        for subBag in subBagsArray {
+            subBag.setAllItemsPacked(isPacked)
+        }
+    }
 }
 
 // MARK: Generated accessors for items
