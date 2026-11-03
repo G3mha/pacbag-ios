@@ -51,9 +51,10 @@ final class WeightTests: XCTestCase {
         if start.waitForExistence(timeout: 10) { start.tap() }
     }
 
+    /// Not every keyboard has this key, and swiping down instead would close the sheet.
     private func dismissKeyboard() {
-        if app.keyboards.element.exists { app.keyboards.buttons["return"].firstMatch.tap() }
-        if app.keyboards.element.exists { app.swipeDown() }
+        let returnKey = app.keyboards.buttons["return"].firstMatch
+        if returnKey.exists { returnKey.tap() }
     }
 
     private func createTrip(name: String, destination: String) {

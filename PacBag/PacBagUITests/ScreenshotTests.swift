@@ -36,13 +36,12 @@ final class ScreenshotTests: XCTestCase {
 
     // MARK: - Steps
 
-    /// Typing leaves the keyboard up, which covers the screen being captured.
+    /// Not every keyboard has this key, and swiping down instead would close the sheet.
+    /// Any keyboard left up goes with the sheet, before the next screen is captured.
     private func dismissKeyboard() {
-        if app.keyboards.element.exists {
-            app.keyboards.buttons["return"].firstMatch.tap()
-        }
-        if app.keyboards.element.exists {
-            app.swipeDown()
+        let returnKey = app.keyboards.buttons["return"].firstMatch
+        if returnKey.exists {
+            returnKey.tap()
         }
     }
 
