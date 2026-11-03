@@ -75,7 +75,7 @@ final class WeightTests: XCTestCase {
 
     private func openTrip(_ name: String) {
         let trip = app.staticTexts[name].firstMatch
-        XCTAssertTrue(trip.waitForExistence(timeout: 10))
+        XCTAssertTrue(app.scrollUntilExists(trip))
         trip.tap()
     }
 

@@ -75,7 +75,7 @@ final class ScreenshotTests: XCTestCase {
 
     private func openFirstTrip() {
         let trip = app.staticTexts["Tokyo, March"].firstMatch
-        XCTAssertTrue(trip.waitForExistence(timeout: 10), "trip row never appeared")
+        XCTAssertTrue(app.scrollUntilExists(trip), "trip row never appeared")
         trip.tap()
     }
 
