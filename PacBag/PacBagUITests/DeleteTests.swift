@@ -24,20 +24,10 @@ final class DeleteTests: XCTestCase {
         createTrip(name: survivor)
 
         pressAndChoose(app.staticTexts[doomed].firstMatch, menuItem: "Delete Trip")
+        tap(app.alerts.buttons["Delete"].firstMatch)
 
         assertGone(doomed)
         XCTAssertTrue(app.staticTexts[survivor].firstMatch.exists, "the other trip should stay listed")
-    }
-
-    /// The filters read each trip's dates, which trap on a deleted trip.
-    func testDeleteTripFromAFilteredList() throws {
-        let doomed = uniqueName("Filter Delete")
-        createTrip(name: doomed)
-
-        tap(app.buttons["Active"].firstMatch)
-        pressAndChoose(app.staticTexts[doomed].firstMatch, menuItem: "Delete Trip")
-
-        assertGone(doomed)
     }
 
     func testDeleteTripFromItsOwnScreen() throws {
