@@ -453,7 +453,7 @@ struct BagsForTripView: View {
                 }
             } else {
                 LazyVStack(spacing: 12) {
-                    ForEach(trip.bagsArray) { bag in
+                    ForEach(trip.bagsArray, id: \.objectID) { bag in
                         NavigationLink(destination: BagDetailView(bag: bag)) {
                             TripBagCardView(bag: bag)
                         }
