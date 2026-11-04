@@ -141,6 +141,12 @@ struct TripHeaderView: View {
     @ObservedObject var trip: Trip
     
     var body: some View {
+        if !trip.isGone {
+            header
+        }
+    }
+    
+    private var header: some View {
         VStack(spacing: 16) {
             // Destination and status
             HStack {
