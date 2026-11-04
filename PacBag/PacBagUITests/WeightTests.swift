@@ -13,6 +13,8 @@ final class WeightTests: XCTestCase {
         // CloudKit cannot resolve its container on a simulator with no iCloud
         // account and takes the app down with it. See CoreDataManager.
         app.launchArguments += ["-PacBagDisableCloudKit"]
+        // These tests look for "3.0 kg", which is "3,0 kg" in a region with decimal commas.
+        app.launchArguments += ["-AppleLocale", "en_US"]
         app.launch()
     }
 
