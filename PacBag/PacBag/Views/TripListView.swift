@@ -141,8 +141,9 @@ struct TripListView: View {
     private func deleteTrip(_ trip: Trip) {
         withAnimation {
             // Clear any notifications for this trip
+            let tripID = trip.id
             Task {
-                await NotificationManager.shared.clearReminders(for: trip)
+                await NotificationManager.shared.clearReminders(forTripWithID: tripID)
             }
             
             // Delete the trip (Core Data will cascade delete bags and items)
@@ -160,13 +161,13 @@ struct TripListView: View {
 struct TripCardView: View {
     @ObservedObject var trip: Trip
     @State private var showingShareView = false
-    
+
     var body: some View {
         if !trip.isGone {
             card
         }
     }
-    
+
     private var card: some View {
         VStack(spacing: 16) {
             // Header with destination and status
