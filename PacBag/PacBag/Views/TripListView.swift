@@ -162,6 +162,12 @@ struct TripCardView: View {
     @State private var showingShareView = false
     
     var body: some View {
+        if !trip.isGone {
+            card
+        }
+    }
+    
+    private var card: some View {
         VStack(spacing: 16) {
             // Header with destination and status
             HStack {
