@@ -79,7 +79,7 @@ struct TripListView: View {
                 } else {
                     ScrollView {
                         LazyVStack(spacing: 16) {
-                            ForEach(filteredTrips) { trip in
+                            ForEach(filteredTrips, id: \.objectID) { trip in
                                 NavigationLink(destination: TripDetailView(trip: trip)) {
                                     TripCardView(trip: trip)
                                 }

@@ -519,7 +519,7 @@ struct ItemsListView: View {
                 )
             } else {
                 LazyVStack(spacing: 8) {
-                    ForEach(Array(zip(sortedItems.indices, sortedItems)), id: \.1.id) { index, item in
+                    ForEach(Array(zip(sortedItems.indices, sortedItems)), id: \.1.objectID) { index, item in
                         Group {
                             // Category header for category sorting
                             if sortOrder == .category {
