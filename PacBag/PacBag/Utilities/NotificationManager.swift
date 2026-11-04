@@ -63,9 +63,15 @@ class NotificationManager: ObservableObject {
     }
     
     func clearReminders(for trip: Trip) async {
+        await clearReminders(forTripWithID: trip.id)
+    }
+
+    /// Use this when the trip is being deleted. Capture the ID first, because
+    /// reading `id` from a deleted trip traps.
+    func clearReminders(forTripWithID id: UUID) async {
         let center = UNUserNotificationCenter.current()
-        let tripId = trip.id.uuidString
-        
+        let tripId = id.uuidString
+
         // Get all pending notifications
         let requests = await center.pendingNotificationRequests()
         
