@@ -10,8 +10,6 @@ struct SettingsView: View {
     @State private var showingNotificationSettings = false
     @State private var showingCategoryManagement = false
     @State private var showingCategoryAnalytics = false
-    @State private var showingDataExport = false
-    @State private var showingDataImport = false
     @State private var showingAbout = false
     @State private var showingDeleteConfirmation = false
     @State private var showingLandingPage = false
@@ -223,54 +221,6 @@ struct SettingsView: View {
                 
                 // Data Management Section
                 Section(header: Text("Data Management")) {
-                    Button(action: { showingDataExport = true }) {
-                        HStack {
-                            Image(systemName: "square.and.arrow.up")
-                                .foregroundColor(.blue)
-                                .frame(width: 24)
-                            
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Export Data")
-                                    .foregroundColor(.primary)
-                                
-                                Text("Backup trips and settings")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            
-                            Spacer()
-                            
-                            Image(systemName: "chevron.right")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                    
-                    Button(action: { showingDataImport = true }) {
-                        HStack {
-                            Image(systemName: "square.and.arrow.down")
-                                .foregroundColor(.green)
-                                .frame(width: 24)
-                            
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Import Data")
-                                    .foregroundColor(.primary)
-                                
-                                Text("Restore from backup")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            
-                            Spacer()
-                            
-                            Image(systemName: "chevron.right")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                    
                     // iCloud Sync Status
                     HStack {
                         Image(systemName: "icloud")
@@ -409,12 +359,6 @@ struct SettingsView: View {
         .sheet(isPresented: $showingCategoryAnalytics) {
             CategoryAnalyticsView()
         }
-        .sheet(isPresented: $showingDataExport) {
-            DataExportView()
-        }
-        .sheet(isPresented: $showingDataImport) {
-            DataImportView()
-        }
         .sheet(isPresented: $showingAbout) {
             AboutView()
         }
@@ -504,123 +448,6 @@ struct SettingsView: View {
 }
 
 // MARK: - Supporting Views
-
-struct DataExportView: View {
-    @Environment(\.dismiss) private var dismiss
-    @StateObject private var sharingManager = SharingManager.shared
-    @State private var selectedFormat: ExportFormat = .json
-    @State private var includeCategories = true
-    @State private var includeSettings = true
-    @State private var showingShareSheet = false
-    @State private var exportedData: Data?
-    
-    enum ExportFormat: String, CaseIterable {
-        case json = "JSON"
-        case csv = "CSV" 
-        case txt = "Text"
-        
-        var fileExtension: String {
-            switch self {
-            case .json: return "json"
-            case .csv: return "csv"
-            case .txt: return "txt"
-            }
-        }
-    }
-    
-    var body: some View {
-        NavigationView {
-            List {
-                Section(header: Text("Export Format")) {
-                    Picker("Format", selection: $selectedFormat) {
-                        ForEach(ExportFormat.allCases, id: \.self) { format in
-                            Text(format.rawValue).tag(format)
-                        }
-                    }
-                    .pickerStyle(SegmentedPickerStyle())
-                }
-                
-                Section(header: Text("Include")) {
-                    Toggle("Categories & Settings", isOn: $includeCategories)
-                    Toggle("App Preferences", isOn: $includeSettings)
-                }
-                
-                Section(header: Text("Export")) {
-                    Button("Export All Data") {
-                        exportData()
-                    }
-                    .disabled(exportedData != nil)
-                }
-            }
-            .navigationTitle("Export Data")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                }
-            }
-        }
-        .sheet(isPresented: $showingShareSheet) {
-            if let data = exportedData {
-                ShareSheet(items: [data])
-            }
-        }
-    }
-    
-    private func exportData() {
-        // Implementation would export data in selected format
-        // For now, just create placeholder data
-        let exportString = "PacBag Export Data"
-        exportedData = exportString.data(using: .utf8)
-        showingShareSheet = true
-    }
-}
-
-struct DataImportView: View {
-    @Environment(\.dismiss) private var dismiss
-    @State private var showingFilePicker = false
-    
-    var body: some View {
-        NavigationView {
-            VStack(spacing: 20) {
-                Spacer()
-                
-                Image(systemName: "square.and.arrow.down")
-                    .font(.system(size: 60))
-                    .foregroundColor(.green)
-                
-                VStack(spacing: 12) {
-                    Text("Import Data")
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                    
-                    Text("Select a PacBag backup file to restore your data")
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                }
-                
-                Button("Select File") {
-                    showingFilePicker = true
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                
-                Spacer()
-            }
-            .navigationTitle("Import Data")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                }
-            }
-        }
-    }
-}
 
 struct AboutView: View {
     @Environment(\.dismiss) private var dismiss

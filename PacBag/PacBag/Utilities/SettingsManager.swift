@@ -217,68 +217,6 @@ class SettingsManager: ObservableObject {
         return String(format: "%.1f - %.1f %@", min, max, weightUnit.symbol)
     }
     
-    // MARK: - Export/Import
-    
-    func exportSettings() -> [String: Any] {
-        return [
-            "weightUnit": weightUnit.rawValue,
-            "defaultBagWeight": defaultBagWeight,
-            "appTheme": appTheme.rawValue,
-            "defaultReminderDays": defaultReminderDays,
-            "autoPackingList": autoPackingList,
-            "smartSuggestions": smartSuggestions,
-            "showWeightInLists": showWeightInLists,
-            "defaultPackingDaysBeforeTrip": defaultPackingDaysBeforeTrip,
-            "defaultItemSortOrder": defaultItemSortOrder.rawValue,
-            "sortAscending": sortAscending
-        ]
-    }
-    
-    func importSettings(from data: [String: Any]) {
-        if let weightUnitString = data["weightUnit"] as? String,
-           let weightUnit = WeightUnit(rawValue: weightUnitString) {
-            self.weightUnit = weightUnit
-        }
-        
-        if let defaultBagWeight = data["defaultBagWeight"] as? Double {
-            self.defaultBagWeight = defaultBagWeight
-        }
-        
-        if let appThemeString = data["appTheme"] as? String,
-           let appTheme = AppTheme(rawValue: appThemeString) {
-            self.appTheme = appTheme
-        }
-        
-        if let defaultReminderDays = data["defaultReminderDays"] as? Int {
-            self.defaultReminderDays = defaultReminderDays
-        }
-        
-        if let autoPackingList = data["autoPackingList"] as? Bool {
-            self.autoPackingList = autoPackingList
-        }
-        
-        if let smartSuggestions = data["smartSuggestions"] as? Bool {
-            self.smartSuggestions = smartSuggestions
-        }
-        
-        if let showWeightInLists = data["showWeightInLists"] as? Bool {
-            self.showWeightInLists = showWeightInLists
-        }
-        
-        if let defaultPackingDaysBeforeTrip = data["defaultPackingDaysBeforeTrip"] as? Int {
-            self.defaultPackingDaysBeforeTrip = defaultPackingDaysBeforeTrip
-        }
-        
-        if let defaultItemSortOrderString = data["defaultItemSortOrder"] as? String,
-           let defaultItemSortOrder = ItemSortOrder(rawValue: defaultItemSortOrderString) {
-            self.defaultItemSortOrder = defaultItemSortOrder
-        }
-        
-        if let sortAscending = data["sortAscending"] as? Bool {
-            self.sortAscending = sortAscending
-        }
-    }
-    
     // MARK: - Private Methods
     
     private func updateAppearance() {
