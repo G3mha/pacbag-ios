@@ -75,42 +75,32 @@ struct ItemDetailView: View {
     }
     
     var body: some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                // Photo Section
-                PhotoDisplaySection(item: item, selectedPhoto: $selectedPhoto, isEditing: isEditing)
-                
-                // Item Details Section
-                ItemDetailsSection(
-                    item: item,
-                    isEditing: isEditing,
-                    editedName: $editedName,
-                    editedDescription: $editedDescription,
-                    editedWeight: $editedWeight,
-                    editedQuantity: $editedQuantity,
-                    editedCategory: $editedCategory,
-                    editedSubcategory: $editedSubcategory,
-                    selectedBag: $selectedBag,
-                    availableCategories: availableCategories,
-                    availableSubcategories: availableSubcategories,
-                    availableBags: availableBags,
-                    showingCustomCategory: $showingCustomCategory,
-                    customCategory: $customCategory
-                )
-                
-                // Stats Section
-                ItemStatsSection(item: item)
-                
-                // Actions Section
-                ItemActionsSection(
-                    item: item,
-                    showingDeleteAlert: $showingDeleteAlert
-                )
+        List {
+            if !item.isGone {
+                if isEditing {
+                    editingSections
+                } else {
+                    viewingSections
+                }
+
+                Section {
+                    Toggle("Packed", isOn: $item.isPacked)
+                        .onChange(of: item.isPacked) { _, _ in
+                            try? viewContext.save()
+                        }
+                }
+
+                Section {
+                    Button("Delete Item", role: .destructive) {
+                        showingDeleteAlert = true
+                    }
+                }
             }
-            .padding()
         }
+        .listStyle(.plain)
         .navigationTitle(item.name.isEmpty ? "Unnamed Item" : item.name)
         .navigationBarTitleDisplayMode(.large)
+        .navigationBarBackButtonHidden(isEditing)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(isEditing ? "Save" : "Edit") {
@@ -121,7 +111,7 @@ struct ItemDetailView: View {
                     }
                 }
             }
-            
+
             if isEditing {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancel") {
@@ -166,6 +156,130 @@ struct ItemDetailView: View {
         }
     }
     
+    @ViewBuilder
+    private var viewingSections: some View {
+        if item.hasPhoto {
+            Section {
+                photo
+            }
+        }
+
+        Section {
+            if let description = item.itemDescription, !description.isEmpty {
+                Text(description)
+            }
+
+            detailRow("Category", item.fullCategory)
+            detailRow("Quantity", "\(item.quantity)")
+            detailRow("Per item", "\(item.weight.oneDecimal) kg")
+            detailRow("Total", "\(item.totalWeight.oneDecimal) kg")
+            detailRow("Bag", item.bag.map(bagName) ?? "No bag")
+        }
+    }
+
+    @ViewBuilder
+    private var editingSections: some View {
+        Section {
+            TextField("Item Name", text: $editedName)
+
+            TextField("Description (optional)", text: $editedDescription, axis: .vertical)
+                .lineLimit(2...4)
+        }
+
+        Section {
+            Picker("Category", selection: $editedCategory) {
+                Text("Select Category").tag(nil as Category?)
+                ForEach(availableCategories, id: \.id) { category in
+                    Text(category.name).tag(category as Category?)
+                }
+            }
+            .pickerStyle(.menu)
+            .onChange(of: editedCategory) { _, newCategory in
+                // Reset subcategory when it doesn't belong to the new category
+                if editedSubcategory?.category != newCategory {
+                    editedSubcategory = nil
+                }
+            }
+
+            if !availableSubcategories.isEmpty {
+                Picker("Subcategory", selection: $editedSubcategory) {
+                    Text("None").tag(nil as SubCategory?)
+                    ForEach(availableSubcategories, id: \.id) { subcategory in
+                        Text(subcategory.name).tag(subcategory as SubCategory?)
+                    }
+                }
+                .pickerStyle(.menu)
+            }
+
+            Button("New Category") {
+                showingCustomCategory = true
+            }
+
+            if !availableSubcategories.isEmpty {
+                Button("New Subcategory") {
+                    customCategory = editedCategory?.name ?? ""
+                    showingCustomCategory = true
+                }
+            }
+        }
+
+        ItemWeightSection(quantity: $editedQuantity, weight: $editedWeight)
+
+        Section {
+            if availableBags.count > 1 {
+                Picker("Bag", selection: $selectedBag) {
+                    ForEach(availableBags, id: \.objectID) { bag in
+                        Text(bag.isSubBag ? "\(bagName(bag)) (sub-bag)" : bagName(bag))
+                            .tag(bag as Bag?)
+                    }
+                }
+                .pickerStyle(.menu)
+            } else {
+                detailRow("Bag", selectedBag.map(bagName) ?? "No bag")
+            }
+        }
+
+        Section("Photo") {
+            photo
+
+            PhotosPicker(item.hasPhoto ? "Change Photo" : "Add Photo", selection: $selectedPhoto, matching: .images)
+
+            if item.hasPhoto {
+                Button("Remove Photo", role: .destructive) {
+                    item.photoData = nil
+                    selectedPhoto = nil
+                    try? viewContext.save()
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var photo: some View {
+        if let photo = item.photo {
+            Image(uiImage: photo)
+                .resizable()
+                .scaledToFill()
+                .frame(height: 200)
+                .frame(maxWidth: .infinity)
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+        }
+    }
+
+    private func detailRow(_ title: String, _ value: String) -> some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text(title)
+            Spacer()
+            Text(value)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.trailing)
+        }
+    }
+
+    private func bagName(_ bag: Bag) -> String {
+        bag.name.isEmpty ? "Unnamed Bag" : bag.name
+    }
+
     private func saveChanges() {
         withAnimation {
             let newTotalWeight = editedWeight * Double(editedQuantity)
@@ -256,397 +370,6 @@ struct ItemDetailView: View {
                     self.item.photoData = data
                     try? self.viewContext.save()
                 }
-            }
-        }
-    }
-}
-
-struct PhotoDisplaySection: View {
-    @ObservedObject var item: Item
-    @Binding var selectedPhoto: PhotosPickerItem?
-    let isEditing: Bool
-    
-    var body: some View {
-        VStack(spacing: 12) {
-            if let photo = item.photo {
-                Image(uiImage: photo)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(height: 200)
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color(.systemGray4), lineWidth: 1)
-                    )
-            } else {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color(.systemGray6))
-                    .frame(height: 200)
-                    .overlay(
-                        VStack {
-                            Image(systemName: "photo")
-                                .font(.system(size: 40))
-                                .foregroundColor(.secondary)
-                            Text("No photo")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    )
-            }
-            
-            if isEditing {
-                HStack(spacing: 12) {
-                    PhotosPicker("Change Photo", selection: $selectedPhoto, matching: .images)
-                        .buttonStyle(.bordered)
-                    
-                    if item.hasPhoto {
-                        Button("Remove Photo") {
-                            item.photoData = nil
-                            try? item.managedObjectContext?.save()
-                        }
-                        .buttonStyle(.bordered)
-                        .foregroundColor(.red)
-                    }
-                }
-            }
-        }
-    }
-}
-
-struct ItemDetailsSection: View {
-    @ObservedObject var item: Item
-    let isEditing: Bool
-    @Binding var editedName: String
-    @Binding var editedDescription: String
-    @Binding var editedWeight: Double
-    @Binding var editedQuantity: Int
-    @Binding var editedCategory: Category?
-    @Binding var editedSubcategory: SubCategory?
-    @Binding var selectedBag: Bag?
-    let availableCategories: [Category]
-    let availableSubcategories: [SubCategory]
-    let availableBags: [Bag]
-    @Binding var showingCustomCategory: Bool
-    @Binding var customCategory: String
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Details")
-                .font(.title2)
-                .fontWeight(.bold)
-            
-            VStack(spacing: 12) {
-                // Name
-                HStack {
-                    Text("Name")
-                        .fontWeight(.medium)
-                        .frame(width: 80, alignment: .leading)
-                    
-                    if isEditing {
-                        TextField("Item name", text: $editedName)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                    } else {
-                        Text(item.name.isEmpty ? "Unnamed Item" : item.name)
-                            .foregroundColor(.primary)
-                        Spacer()
-                    }
-                }
-                
-                // Description
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Description")
-                        .fontWeight(.medium)
-                    
-                    if isEditing {
-                        TextField("Description (optional)", text: $editedDescription, axis: .vertical)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .lineLimit(2...4)
-                    } else {
-                        Text(item.itemDescription?.isEmpty == false ? item.itemDescription! : "No description")
-                            .foregroundColor(item.itemDescription?.isEmpty == false ? .primary : .secondary)
-                            .font(.body)
-                    }
-                }
-                
-                // Category
-                VStack(alignment: .leading, spacing: 8) {
-                    if isEditing {
-                        VStack(alignment: .leading, spacing: 12) {
-                            HStack {
-                                Picker("Category", selection: $editedCategory) {
-                                    Text("Select Category").tag(nil as Category?)
-                                    ForEach(availableCategories, id: \.id) { category in
-                                        HStack {
-                                            Image(systemName: category.icon)
-                                                .foregroundColor(category.color)
-                                            Text(category.name)
-                                        }
-                                        .tag(category as Category?)
-                                    }
-                                }
-                                .pickerStyle(MenuPickerStyle())
-                                .onChange(of: editedCategory) { _, newCategory in
-                                    // Reset subcategory when it doesn't belong to the new category
-                                    if editedSubcategory?.category != newCategory {
-                                        editedSubcategory = nil
-                                    }
-                                }
-                                
-                                Button(action: { showingCustomCategory = true }) {
-                                    Image(systemName: "plus.circle.fill")
-                                        .font(.title2)
-                                        .foregroundColor(.blue)
-                                }
-                                .buttonStyle(PlainButtonStyle())
-                            }
-                            
-                            if !availableSubcategories.isEmpty {
-                                VStack(alignment: .leading, spacing: 8) {
-                                    HStack {
-                                        Text("Subcategory")
-                                            .font(.subheadline)
-                                            .fontWeight(.medium)
-                                        Text("(optional)")
-                                            .font(.caption)
-                                            .foregroundColor(.secondary)
-                                        Spacer()
-                                    }
-                                    
-                                    HStack {
-                                        Picker("Subcategory", selection: $editedSubcategory) {
-                                            Text("None").tag(nil as SubCategory?)
-                                            ForEach(availableSubcategories, id: \.id) { subcategory in
-                                                Text(subcategory.name).tag(subcategory as SubCategory?)
-                                            }
-                                        }
-                                        .pickerStyle(MenuPickerStyle())
-                                        .padding(.vertical, 4)
-                                        .background(Color(.systemGray6))
-                                        .cornerRadius(8)
-                                        
-                                        Button(action: { 
-                                            // Pre-fill with current category when adding subcategory
-                                            if let currentCategory = editedCategory {
-                                                customCategory = currentCategory.name
-                                            }
-                                            showingCustomCategory = true 
-                                        }) {
-                                            Image(systemName: "plus.circle.fill")
-                                                .font(.title3)
-                                                .foregroundColor(.blue)
-                                        }
-                                        .buttonStyle(PlainButtonStyle())
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        HStack {
-                            Text("Category")
-                                .fontWeight(.medium)
-                                .frame(width: 80, alignment: .leading)
-                            
-                            Text(item.fullCategory)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Color.blue.opacity(0.2))
-                                .cornerRadius(6)
-                            Spacer()
-                        }
-                    }
-                }
-                
-                // Bag Selection
-                if isEditing {
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Text("Current Bag")
-                                .fontWeight(.medium)
-                                .frame(width: 80, alignment: .leading)
-                            
-                            if availableBags.count > 1 {
-                                Picker("Bag", selection: $selectedBag) {
-                                    ForEach(availableBags, id: \.id) { bag in
-                                        Text("\(bag.isSubBag ? "↳ " : "")\(bag.name.isEmpty ? "Unnamed \(bag.isSubBag ? "Sub-bag" : "Bag")" : bag.name)\(bag.isSubBag ? " (Sub-bag)" : "")")
-                                            .tag(bag)
-                                    }
-                                }
-                                .pickerStyle(MenuPickerStyle())
-                            } else {
-                                Text(selectedBag?.name.isEmpty == false ? selectedBag?.name ?? "No Bag" : "No Bag")
-                                    .padding(.horizontal, 8)
-                                    .padding(.vertical, 4)
-                                    .background(Color.gray.opacity(0.2))
-                                    .cornerRadius(6)
-                                Spacer()
-                            }
-                        }
-                        
-                        // Info message when only one bag is available
-                        if availableBags.count <= 1 {
-                            HStack {
-                                Image(systemName: "info.circle")
-                                    .foregroundColor(.gray)
-                                Text("Add more bags to this trip to enable transfers")
-                                    .font(.caption)
-                                    .foregroundColor(.gray)
-                                Spacer()
-                            }
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.gray.opacity(0.1))
-                            .cornerRadius(6)
-                        }
-                        
-                        if let selectedBag = selectedBag, selectedBag != item.bag {
-                            HStack {
-                                Image(systemName: "arrow.right.circle.fill")
-                                    .foregroundColor(.blue)
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text("Item will be moved to:")
-                                        .font(.caption2)
-                                        .foregroundColor(.blue)
-                                    HStack {
-                                        if selectedBag.isSubBag {
-                                            Text("↳ ")
-                                                .foregroundColor(.blue)
-                                        }
-                                        Text("\(selectedBag.name.isEmpty ? "Unnamed Bag" : selectedBag.name)")
-                                            .font(.caption)
-                                            .fontWeight(.medium)
-                                            .foregroundColor(.blue)
-                                        if selectedBag.isSubBag {
-                                            Text("(Sub-bag)")
-                                                .font(.caption2)
-                                                .foregroundColor(.blue.opacity(0.7))
-                                        }
-                                    }
-                                }
-                                Spacer()
-                            }
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 6)
-                            .background(Color.blue.opacity(0.1))
-                            .cornerRadius(6)
-                        }
-                    }
-                }
-                
-                // Quantity
-                HStack {
-                    Text("Quantity")
-                        .fontWeight(.medium)
-                        .frame(width: 80, alignment: .leading)
-                    
-                    if isEditing {
-                        Stepper("\(editedQuantity)", value: $editedQuantity, in: 1...99)
-                    } else {
-                        Text("\(item.quantity)")
-                            .foregroundColor(.primary)
-                        Spacer()
-                    }
-                }
-                
-                // Weight
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Text("Weight per item")
-                            .fontWeight(.medium)
-                        Spacer()
-                        Text("\(isEditing ? editedWeight : item.weight, specifier: "%.1f") kg")
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    if isEditing {
-                        Slider(value: $editedWeight, in: 0.1...10.0, step: 0.1)
-                    }
-                    
-                    HStack {
-                        Text("Total weight")
-                            .fontWeight(.medium)
-                        Spacer()
-                        Text("\(isEditing ? editedWeight * Double(editedQuantity) : item.totalWeight, specifier: "%.1f") kg")
-                            .fontWeight(.semibold)
-                            .foregroundColor(.primary)
-                    }
-                }
-            }
-            .padding()
-            .background(Color(.systemGray6))
-            .cornerRadius(12)
-        }
-    }
-}
-
-struct ItemStatsSection: View {
-    @ObservedObject var item: Item
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Status")
-                .font(.title2)
-                .fontWeight(.bold)
-            
-            HStack(spacing: 20) {
-                StatCard(
-                    title: "Status",
-                    value: item.isPacked ? "Packed" : "Unpacked",
-                    icon: item.isPacked ? "checkmark.circle.fill" : "circle",
-                    color: item.isPacked ? .green : .orange
-                )
-                
-                StatCard(
-                    title: "Bag",
-                    value: item.bag?.name ?? "No bag",
-                    icon: item.bag?.isSubBag == true ? "bag.fill" : "suitcase.fill",
-                    color: .blue
-                )
-            }
-        }
-    }
-}
-
-struct ItemActionsSection: View {
-    @ObservedObject var item: Item
-    @Binding var showingDeleteAlert: Bool
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Actions")
-                .font(.title2)
-                .fontWeight(.bold)
-            
-            VStack(spacing: 12) {
-                Button(action: {
-                    withAnimation {
-                        item.isPacked.toggle()
-                        try? item.managedObjectContext?.save()
-                    }
-                }) {
-                    HStack {
-                        Image(systemName: item.isPacked ? "circle" : "checkmark.circle.fill")
-                        Text(item.isPacked ? "Mark as Unpacked" : "Mark as Packed")
-                        Spacer()
-                    }
-                    .foregroundColor(item.isPacked ? .orange : .green)
-                    .padding()
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
-                }
-                .buttonStyle(PlainButtonStyle())
-                
-                Button(action: { showingDeleteAlert = true }) {
-                    HStack {
-                        Image(systemName: "trash")
-                        Text("Delete Item")
-                        Spacer()
-                    }
-                    .foregroundColor(.red)
-                    .padding()
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
-                }
-                .buttonStyle(PlainButtonStyle())
             }
         }
     }
