@@ -105,7 +105,8 @@ struct AddTripView: View {
                 let defaultBag = Bag(context: viewContext)
                 defaultBag.id = UUID()
                 defaultBag.name = "Main Suitcase"
-                defaultBag.maxWeight = 23.0 // Standard checked luggage weight
+                defaultBag.maxWeight = AddBagView.BagType.suitcase.defaultWeight
+                defaultBag.bagWeight = AddBagView.BagType.suitcase.defaultBagWeight
                 defaultBag.currentWeight = 0.0
                 defaultBag.trip = newTrip
             }
