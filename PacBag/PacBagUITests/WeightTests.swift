@@ -41,7 +41,12 @@ final class WeightTests: XCTestCase {
 
         // A tote is 0.5 kg empty where a suitcase is 4.5, so picking one has to
         // move both the bag weight and what is left for items.
-        app.buttons["Backpack"].firstMatch.tap()
+        let type = app.buttons["Type, Suitcase"].firstMatch
+        XCTAssertTrue(type.waitForExistence(timeout: 10), "the bag type menu never appeared")
+        type.tap()
+        let backpack = app.buttons["Backpack"].firstMatch
+        XCTAssertTrue(backpack.waitForExistence(timeout: 5), "the type menu never opened")
+        backpack.tap()
         XCTAssertTrue(app.staticTexts["1.5 kg"].firstMatch.waitForExistence(timeout: 5),
                       "a backpack should default to 1.5 kg empty")
     }
