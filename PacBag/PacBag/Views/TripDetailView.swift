@@ -61,7 +61,7 @@ struct TripDetailView: View {
                 }
                 .listRowSeparator(.hidden)
             } else {
-                Section("Bags") {
+                Section(header: Text("Bags").solidSectionHeader()) {
                     ForEach(trip.bagsArray, id: \.objectID) { bag in
                         bagRow(bag)
                     }

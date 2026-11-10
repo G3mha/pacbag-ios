@@ -85,7 +85,7 @@ struct TripListView: View {
     @ViewBuilder
     private func tripSection(_ title: String, trips: [Trip]) -> some View {
         if !trips.isEmpty {
-            Section(title) {
+            Section(header: Text(title).solidSectionHeader()) {
                 ForEach(trips, id: \.objectID) { trip in
                     NavigationLink(destination: TripDetailView(trip: trip)) {
                         TripRowView(trip: trip)
