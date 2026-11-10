@@ -357,7 +357,41 @@ struct SettingsView: View {
                         }
                     }
                     .buttonStyle(PlainButtonStyle())
-                    
+
+                    Link(destination: LegalLinks.privacyPolicy) {
+                        HStack {
+                            Image(systemName: "hand.raised")
+                                .foregroundColor(.gray)
+                                .frame(width: 24)
+
+                            Text("Privacy Policy")
+                                .foregroundColor(.primary)
+
+                            Spacer()
+
+                            Image(systemName: "arrow.up.right")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+
+                    Link(destination: LegalLinks.termsOfUse) {
+                        HStack {
+                            Image(systemName: "doc.text")
+                                .foregroundColor(.gray)
+                                .frame(width: 24)
+
+                            Text("Terms of Use")
+                                .foregroundColor(.primary)
+
+                            Spacer()
+
+                            Image(systemName: "arrow.up.right")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+
                     HStack {
                         Image(systemName: "number")
                             .foregroundColor(.gray)

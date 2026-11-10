@@ -476,6 +476,12 @@ struct FooterSection: View {
                 Text("Built by Enricco Gemha in São Paulo")
                     .font(.caption2)
                     .foregroundColor(.secondary)
+
+                HStack(spacing: 20) {
+                    Link("Privacy Policy", destination: LegalLinks.privacyPolicy)
+                    Link("Terms of Use", destination: LegalLinks.termsOfUse)
+                }
+                .font(.footnote)
             }
         }
         .padding(.vertical, 40)
