@@ -8,18 +8,19 @@ struct CustomCategoryView: View {
     @StateObject private var categoryManager = CategoryManager.shared
     @State private var showingDuplicateAlert = false
     @State private var duplicateMessage = ""
-    
+    @State private var isAddingSubcategory = false
+
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text(category.isEmpty ? "Create Category" : "Add Subcategory")) {
+                Section(header: Text(isAddingSubcategory ? "Add Subcategory" : "Create Category")) {
                     VStack(alignment: .leading, spacing: 12) {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("Category Name")
                                 .font(.subheadline)
                                 .fontWeight(.medium)
                             
-                            if category.isEmpty {
+                            if !isAddingSubcategory {
                                 TextField("e.g., Sports Equipment", text: $category)
                                     .textFieldStyle(RoundedBorderTextFieldStyle())
                             } else {
@@ -40,7 +41,7 @@ struct CustomCategoryView: View {
                         }
                         
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Subcategory\(category.isEmpty ? " (optional)" : "")")
+                            Text("Subcategory\(isAddingSubcategory ? "" : " (optional)")")
                                 .font(.subheadline)
                                 .fontWeight(.medium)
                             TextField("e.g., Running Gear", text: $subcategory)
@@ -81,7 +82,7 @@ struct CustomCategoryView: View {
                     .foregroundColor(.secondary)
                 }
             }
-            .navigationTitle(category.isEmpty ? "New Category" : "New Subcategory")
+            .navigationTitle(isAddingSubcategory ? "New Subcategory" : "New Category")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -111,6 +112,17 @@ struct CustomCategoryView: View {
             } message: {
                 Text(duplicateMessage)
             }
+        }
+        .onAppear {
+            // Decided once, when the sheet opens. The name field writes to `category`,
+            // so reading it later would switch modes on the first letter typed.
+            isAddingSubcategory = !category.isEmpty
+        }
+        .onDisappear {
+            // The caller keeps these between openings, and leftover text would
+            // make the next sheet open as a new subcategory.
+            category = ""
+            subcategory = ""
         }
     }
     
