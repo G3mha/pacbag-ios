@@ -385,9 +385,11 @@ struct ItemDetailsSection: View {
                                     }
                                 }
                                 .pickerStyle(MenuPickerStyle())
-                                .onChange(of: editedCategory) { _, _ in
-                                    // Reset subcategory when category changes
-                                    editedSubcategory = nil
+                                .onChange(of: editedCategory) { _, newCategory in
+                                    // Reset subcategory when it doesn't belong to the new category
+                                    if editedSubcategory?.category != newCategory {
+                                        editedSubcategory = nil
+                                    }
                                 }
                                 
                                 Button(action: { showingCustomCategory = true }) {

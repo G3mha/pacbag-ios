@@ -49,8 +49,10 @@ struct AddItemView: View {
                         }
                     }
                     .pickerStyle(.menu)
-                    .onChange(of: selectedCategory) { _, _ in
-                        selectedSubcategory = nil
+                    .onChange(of: selectedCategory) { _, newCategory in
+                        if selectedSubcategory?.category != newCategory {
+                            selectedSubcategory = nil
+                        }
                     }
 
                     if !availableSubcategories.isEmpty {
