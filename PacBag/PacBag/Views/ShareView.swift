@@ -4,72 +4,63 @@ import UniformTypeIdentifiers
 struct ShareView: View {
     let shareableItem: ShareableItem
     @State private var selectedFormat: ExportFormat = .plainText
-    @State private var showingShareSheet = false
     @State private var exportItem: ExportItem?
     @Environment(\.dismiss) private var dismiss
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 20) {
-                // Header
-                VStack(spacing: 12) {
-                    Image(systemName: shareableItem.icon)
-                        .font(.system(size: 50))
-                        .foregroundColor(.blue)
-                    
-                    VStack(spacing: 4) {
-                        Text("Share \(shareableItem.title)")
-                            .font(.title2)
-                            .fontWeight(.semibold)
-                        
-                        Text("Export your \(shareableItem.type) as a file or share directly")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                    }
-                }
-                .padding()
-                
-                // Format Selection
-                VStack(alignment: .leading, spacing: 16) {
-                    Text("Choose Format")
-                        .font(.headline)
-                        .fontWeight(.semibold)
-                    
-                    VStack(spacing: 12) {
-                        ForEach(ExportFormat.allCases, id: \.self) { format in
-                            FormatSelectionCard(
-                                format: format,
-                                isSelected: selectedFormat == format
-                            ) {
-                                selectedFormat = format
+            List {
+                Section {
+                    ForEach(ExportFormat.allCases, id: \.self) { format in
+                        Button {
+                            selectedFormat = format
+                        } label: {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(format.rawValue)
+                                        .foregroundColor(.primary)
+
+                                    Text(format.description)
+                                        .font(.subheadline)
+                                        .foregroundColor(.secondary)
+                                }
+
+                                Spacer()
+
+                                if selectedFormat == format {
+                                    Image(systemName: "checkmark")
+                                        .foregroundColor(.accentColor)
+                                }
                             }
+                            .contentShape(Rectangle())
                         }
+                        .buttonStyle(.plain)
+                        .accessibilityAddTraits(selectedFormat == format ? .isSelected : [])
                     }
+                } header: {
+                    Text("Format")
+                        .solidSectionHeader()
+                } footer: {
+                    Text("Shares \(shareableItem.title) as a file you can send or open in another app.")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
                 }
-                .padding(.horizontal)
-                
-                Spacer()
-                
-                // Action Buttons
-                VStack(spacing: 12) {
-                    Button("Share") {
-                        generateAndShare()
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
-                    .frame(maxWidth: .infinity)
-                    
-                    Button("Preview") {
-                        generatePreview()
-                    }
-                    .buttonStyle(.bordered)
-                    .controlSize(.large)
-                    .frame(maxWidth: .infinity)
-                }
-                .padding()
             }
-            .navigationTitle("Share")
+            .listStyle(.plain)
+            .safeAreaInset(edge: .bottom) {
+                Button {
+                    share()
+                } label: {
+                    Text("Share")
+                        .fontWeight(.semibold)
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .padding()
+                .background(Color(.systemBackground))
+            }
+            .navigationTitle("Share \(shareableItem.type.capitalized)")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -78,15 +69,14 @@ struct ShareView: View {
                     }
                 }
             }
-            .sheet(isPresented: $showingShareSheet) {
-                if let exportItem = exportItem {
-                    ShareSheetView(exportItem: exportItem)
-                }
+            .sheet(item: $exportItem) { exportItem in
+                ShareSheetView(exportItem: exportItem)
             }
         }
+        .plainFormSheet()
     }
     
-    private func generateAndShare() {
+    private func share() {
         let sharingManager = SharingManager.shared
         
         switch shareableItem {
@@ -95,63 +85,6 @@ struct ShareView: View {
         case .bag(let bag):
             exportItem = sharingManager.exportBag(bag, format: selectedFormat)
         }
-        
-        showingShareSheet = true
-    }
-    
-    private func generatePreview() {
-        let sharingManager = SharingManager.shared
-        
-        switch shareableItem {
-        case .trip(let trip):
-            exportItem = sharingManager.exportTrip(trip, format: selectedFormat)
-        case .bag(let bag):
-            exportItem = sharingManager.exportBag(bag, format: selectedFormat)
-        }
-        
-        // Show preview in a separate view
-        // For now, we'll just trigger the share sheet as a preview
-        showingShareSheet = true
-    }
-}
-
-struct FormatSelectionCard: View {
-    let format: ExportFormat
-    let isSelected: Bool
-    let action: () -> Void
-    
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 16) {
-                Image(systemName: format.systemImage)
-                    .font(.title2)
-                    .foregroundColor(isSelected ? .white : .blue)
-                    .frame(width: 30)
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(format.rawValue)
-                        .font(.headline)
-                        .fontWeight(.medium)
-                        .foregroundColor(isSelected ? .white : .primary)
-                    
-                    Text(format.description)
-                        .font(.caption)
-                        .foregroundColor(isSelected ? .white.opacity(0.8) : .secondary)
-                }
-                
-                Spacer()
-                
-                if isSelected {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.title3)
-                        .foregroundColor(.white)
-                }
-            }
-            .padding()
-            .background(isSelected ? Color.blue : Color(.systemGray6))
-            .cornerRadius(12)
-        }
-        .buttonStyle(PlainButtonStyle())
     }
 }
 
@@ -211,15 +144,6 @@ enum ShareableItem {
             return "bag"
         }
     }
-    
-    var icon: String {
-        switch self {
-        case .trip:
-            return "airplane"
-        case .bag:
-            return "suitcase"
-        }
-    }
 }
 
 #Preview {
@@ -235,4 +159,7 @@ enum ShareableItem {
         trip.remindersEnabled = true
         return trip
     }()))
+}
+extension ExportItem: Identifiable {
+    var id: String { fileName }
 }

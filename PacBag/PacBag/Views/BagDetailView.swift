@@ -72,7 +72,7 @@ struct BagDetailView: View {
             }
 
             if !bag.subBagsArray.isEmpty {
-                Section("Sub-bags") {
+                Section(header: Text("Sub-bags").solidSectionHeader()) {
                     ForEach(bag.subBagsArray.sorted { $0.name < $1.name }, id: \.objectID) { subBag in
                         NavigationLink(destination: SubBagDetailView(subBag: subBag)) {
                             BagRowView(bag: subBag)
@@ -97,6 +97,7 @@ struct BagDetailView: View {
                         // Untitled items need a heading to read apart from the sub-bags above them.
                         if let title = group.title ?? (bag.subBagsArray.isEmpty ? nil : "Items") {
                             Text(title)
+                                .solidSectionHeader()
                         }
                     }
                 }

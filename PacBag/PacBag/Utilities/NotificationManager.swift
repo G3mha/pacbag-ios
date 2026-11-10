@@ -48,13 +48,8 @@ class NotificationManager: ObservableObject {
         
         // Clear existing notifications for this trip
         await clearReminders(for: trip)
-        
-        let now = Date()
-        let tripStart = trip.startDate
-        
-        // Only schedule notifications for future trips
-        guard tripStart > now else { return }
-        
+
+        // Reminders whose time has passed are left out of the schedule.
         let reminders = generateReminderSchedule(for: trip)
         
         for reminder in reminders {
@@ -92,55 +87,29 @@ class NotificationManager: ObservableObject {
     // MARK: - Private Methods
     
     private func generateReminderSchedule(for trip: Trip) -> [PackingReminder] {
-        var reminders: [PackingReminder] = []
-        let now = Date()
-        let tripStart = trip.startDate
-        let calendar = Calendar.current
-        
-        // Calculate days until trip
-        let daysUntilTrip = calendar.dateComponents([.day], from: now, to: tripStart).day ?? 0
-        
-        // 1 week before (if trip is more than 7 days away)
-        if daysUntilTrip >= 7 {
-            let weekBefore = calendar.date(byAdding: .day, value: -7, to: tripStart)!
-            reminders.append(PackingReminder(
-                type: .oneWeekBefore,
-                date: weekBefore,
-                trip: trip
-            ))
+        Self.reminderDates(tripStart: trip.startDate, now: Date()).map {
+            PackingReminder(type: $0.type, date: $0.date, trip: trip)
         }
-        
-        // 3 days before (if trip is more than 3 days away)
-        if daysUntilTrip >= 3 {
-            let threeDaysBefore = calendar.date(byAdding: .day, value: -3, to: tripStart)!
-            reminders.append(PackingReminder(
-                type: .threeDaysBefore,
-                date: threeDaysBefore,
-                trip: trip
-            ))
+    }
+
+    /// When each reminder goes off. A trip's start date only says which day
+    /// the trip begins. Its clock time is whenever the trip was saved, so each
+    /// reminder is set to a fixed hour on its own day instead.
+    static func reminderDates(tripStart: Date, now: Date, calendar: Calendar = .current) -> [(type: ReminderType, date: Date)] {
+        let startDay = calendar.startOfDay(for: tripStart)
+        let schedule: [(type: ReminderType, daysBefore: Int, hour: Int)] = [
+            (.oneWeekBefore, 7, 9),
+            (.threeDaysBefore, 3, 9),
+            (.oneDayBefore, 1, 9),
+            (.dayOfTrip, 0, 8)
+        ]
+
+        return schedule.compactMap { entry in
+            guard let day = calendar.date(byAdding: .day, value: -entry.daysBefore, to: startDay),
+                  let date = calendar.date(bySettingHour: entry.hour, minute: 0, second: 0, of: day),
+                  date > now else { return nil }
+            return (entry.type, date)
         }
-        
-        // 1 day before (if trip is more than 1 day away)
-        if daysUntilTrip >= 1 {
-            let oneDayBefore = calendar.date(byAdding: .day, value: -1, to: tripStart)!
-            reminders.append(PackingReminder(
-                type: .oneDayBefore,
-                date: oneDayBefore,
-                trip: trip
-            ))
-        }
-        
-        // Day of trip (morning reminder)
-        let tripMorning = calendar.date(bySettingHour: 8, minute: 0, second: 0, of: tripStart)!
-        if tripMorning > now {
-            reminders.append(PackingReminder(
-                type: .dayOfTrip,
-                date: tripMorning,
-                trip: trip
-            ))
-        }
-        
-        return reminders.filter { $0.date > now }
     }
     
     private func scheduleNotification(for reminder: PackingReminder, trip: Trip) async {

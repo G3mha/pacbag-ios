@@ -28,97 +28,39 @@ struct EditTripView: View {
     
     var body: some View {
         NavigationView {
-            Form {
-                Section(header: Text("Trip Information")) {
+            List {
+                Section {
                     TextField("Trip Name", text: $tripName)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                    
+
                     TextField("Destination", text: $destination)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                    
-                    TextField("Description (Optional)", text: $tripDescription, axis: .vertical)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .lineLimit(3...6)
+
+                    TextField("Description (optional)", text: $tripDescription, axis: .vertical)
+                        .lineLimit(2...4)
                 }
-                
-                Section(header: Text("Dates")) {
-                    DatePicker("Start Date", selection: $startDate, displayedComponents: .date)
-                        .onChange(of: startDate) { _, newValue in
-                            // Ensure end date is after start date
-                            if endDate <= newValue {
-                                endDate = Calendar.current.date(byAdding: .day, value: 1, to: newValue) ?? newValue.addingTimeInterval(86400)
-                            }
-                        }
-                    
-                    DatePicker("End Date", selection: $endDate, in: startDate.addingTimeInterval(86400)..., displayedComponents: .date)
-                    
-                    HStack {
-                        Text("Duration")
-                            .foregroundColor(.secondary)
-                        
-                        Spacer()
-                        
-                        Text("\(duration) days")
-                            .foregroundColor(.primary)
-                            .fontWeight(.medium)
-                    }
-                }
-                
-                Section(header: Text("Settings")) {
+
+                TripDatesSection(startDate: $startDate, endDate: $endDate)
+
+                Section {
                     Toggle("Mark as Completed", isOn: $isCompleted)
-                    
-                    if isCompleted {
-                        Text("This trip will be marked as completed")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    
+
                     Toggle("Enable packing reminders", isOn: $remindersEnabled)
-                    
+                } footer: {
                     if remindersEnabled {
-                        Text("Get notified before your trip starts")
-                            .font(.caption)
+                        Text("Get notified 1 week, 3 days, and 1 day before your trip.")
+                            .font(.footnote)
                             .foregroundColor(.secondary)
                     }
                 }
-                
-                Section(header: Text("Trip Statistics")) {
-                    HStack {
-                        Text("Total Bags")
-                        Spacer()
-                        Text("\(trip.totalBags)")
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    HStack {
-                        Text("Total Items")
-                        Spacer()
-                        Text("\(trip.totalItems)")
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    HStack {
-                        Text("Packed Items")
-                        Spacer()
-                        Text("\(trip.packedItems)")
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    HStack {
-                        Text("Total Weight")
-                        Spacer()
-                        Text(String(format: "%.1fkg", trip.totalWeight))
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    HStack {
-                        Text("Packing Progress")
-                        Spacer()
-                        Text("\(Int(trip.packingProgress * 100))%")
-                            .foregroundColor(.secondary)
-                    }
+
+                Section(header: Text("Contents").solidSectionHeader()) {
+                    PackingProgressView(
+                        packed: trip.packedItems,
+                        total: trip.totalItems,
+                        weight: trip.totalWeight
+                    )
                 }
             }
+            .listStyle(.plain)
             .navigationTitle("Edit Trip")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -136,11 +78,7 @@ struct EditTripView: View {
                 }
             }
         }
-    }
-    
-    private var duration: Int {
-        let calendar = Calendar.current
-        return calendar.dateComponents([.day], from: startDate, to: endDate).day ?? 0
+        .plainFormSheet()
     }
     
     private var isFormValid: Bool {
@@ -152,7 +90,9 @@ struct EditTripView: View {
     private func saveTrip() {
         withAnimation {
             let wasRemindersEnabled = trip.remindersEnabled
-            
+            // Read before the trip is updated below, or the dates always look unchanged.
+            let startDateChanged = trip.startDate != startDate
+
             trip.name = tripName.trimmingCharacters(in: .whitespacesAndNewlines)
             trip.destination = destination.trimmingCharacters(in: .whitespacesAndNewlines)
             trip.startDate = startDate
@@ -166,7 +106,7 @@ struct EditTripView: View {
                 
                 // Handle notification changes
                 Task {
-                    if remindersEnabled && (!wasRemindersEnabled || startDate != trip.startDate) {
+                    if remindersEnabled && (!wasRemindersEnabled || startDateChanged) {
                         // Schedule new reminders if enabled or date changed
                         await NotificationManager.shared.schedulePackingReminders(for: trip)
                     } else if !remindersEnabled && wasRemindersEnabled {
