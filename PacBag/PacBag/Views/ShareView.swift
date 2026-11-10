@@ -59,13 +59,6 @@ struct ShareView: View {
                     .buttonStyle(.borderedProminent)
                     .controlSize(.large)
                     .frame(maxWidth: .infinity)
-                    
-                    Button("Preview") {
-                        generatePreview()
-                    }
-                    .buttonStyle(.bordered)
-                    .controlSize(.large)
-                    .frame(maxWidth: .infinity)
                 }
                 .padding()
             }
@@ -96,21 +89,6 @@ struct ShareView: View {
             exportItem = sharingManager.exportBag(bag, format: selectedFormat)
         }
         
-        showingShareSheet = true
-    }
-    
-    private func generatePreview() {
-        let sharingManager = SharingManager.shared
-        
-        switch shareableItem {
-        case .trip(let trip):
-            exportItem = sharingManager.exportTrip(trip, format: selectedFormat)
-        case .bag(let bag):
-            exportItem = sharingManager.exportBag(bag, format: selectedFormat)
-        }
-        
-        // Show preview in a separate view
-        // For now, we'll just trigger the share sheet as a preview
         showingShareSheet = true
     }
 }
