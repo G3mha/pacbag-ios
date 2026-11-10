@@ -150,6 +150,7 @@ struct EditTemplateView: View {
     
     private func saveChanges() {
         let updatedTemplate = PackingTemplate(
+            id: template.id,
             name: editedName.trimmingCharacters(in: .whitespacesAndNewlines),
             description: editedDescription,
             tripType: editedTripType,
