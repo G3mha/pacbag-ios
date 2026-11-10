@@ -206,7 +206,7 @@ struct PackingTemplatesView: View {
                 }
             }
             .sheet(item: $showingTemplateDetail) { template in
-                TemplateDetailView(template: template, bag: bag)
+                TemplateDetailView(template: template, bag: bag, onApplied: { dismiss() })
             }
             .sheet(isPresented: $showingCreateTemplate) {
                 CustomTemplateCreationView(sourceTrip: bag.trip, sourceBag: bag)
@@ -350,7 +350,9 @@ struct TemplateDetailView: View {
     
     let template: PackingTemplate
     @ObservedObject var bag: Bag
-    
+    /// Closes the template list as well. This view's own `dismiss` would only step back to it.
+    let onApplied: () -> Void
+
     @State private var showingApplyConfirmation = false
     @State private var selectedItems: Set<UUID> = []
     
@@ -439,7 +441,7 @@ struct TemplateDetailView: View {
     
     private func applyTemplate() {
         PackingTemplateManager.shared.applyTemplate(template, to: bag, context: viewContext)
-        dismiss()
+        onApplied()
     }
     
     private func applySelectedItems() {
@@ -465,7 +467,7 @@ struct TemplateDetailView: View {
         
         do {
             try viewContext.save()
-            dismiss()
+            onApplied()
         } catch {
             print("Failed to save template items: \(error)")
         }
