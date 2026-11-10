@@ -11,8 +11,7 @@ struct AddBagView: View {
     @State private var maxWeight = BagType.suitcase.defaultWeight
     @State private var bagWeight = BagType.suitcase.defaultBagWeight
     @State private var selectedBagType = BagType.suitcase
-    @State private var showingTemplates = false
-    @State private var createdBag: Bag?
+    @State private var bagToFill: Bag?
 
     init(trip: Trip? = nil) {
         self.trip = trip
@@ -90,11 +89,7 @@ struct AddBagView: View {
 
                 Section {
                     Button("Create with Template") {
-                        // First save the bag, then show templates
-                        createdBag = createBag()
-                        if createdBag != nil {
-                            showingTemplates = true
-                        }
+                        bagToFill = createBag()
                     }
                     .disabled(isNameEmpty)
                 } footer: {
@@ -120,15 +115,8 @@ struct AddBagView: View {
                     .disabled(isNameEmpty)
                 }
             }
-            .sheet(isPresented: $showingTemplates, onDismiss: {
-                // When template view is dismissed, close the add bag view too
-                if createdBag != nil {
-                    dismiss()
-                }
-            }) {
-                if let createdBag = createdBag {
-                    PackingTemplatesView(bag: createdBag)
-                }
+            .sheet(item: $bagToFill, onDismiss: { dismiss() }) { bag in
+                PackingTemplatesView(bag: bag)
             }
         }
         // On iPad the sheet's glass shows through a plain list's section headers.
