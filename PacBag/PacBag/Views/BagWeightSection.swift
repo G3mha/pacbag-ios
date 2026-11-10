@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// A bag's empty weight and limit as rows in a list.
-struct BagWeightRows: View {
+/// A bag's empty weight and limit as a section of a list.
+struct BagWeightSection: View {
     @Binding var bagWeight: Double
     @Binding var maxWeight: Double
 
@@ -10,14 +10,22 @@ struct BagWeightRows: View {
     }
 
     var body: some View {
-        WeightSliderRow(title: "Empty bag", weight: $bagWeight, range: 0...10, step: 0.5)
-        WeightSliderRow(title: "Weight limit", weight: $maxWeight, range: 1...50, step: 0.5)
+        Section {
+            WeightSliderRow(title: "Empty bag", weight: $bagWeight, range: 0...10, step: 0.5)
+            WeightSliderRow(title: "Weight limit", weight: $maxWeight, range: 1...50, step: 0.5)
 
-        HStack {
-            Text("Left for items")
-            Spacer()
-            Text("\(availableWeight.oneDecimal) kg")
-                .foregroundColor(maxWeight > bagWeight ? .secondary : .red)
+            HStack {
+                Text("Left for items")
+                Spacer()
+                Text("\(availableWeight.oneDecimal) kg")
+                    .foregroundColor(maxWeight > bagWeight ? .secondary : .red)
+            }
+        } header: {
+            Text("Weight")
+        } footer: {
+            Text("The limit counts the bag and everything in it.")
+                .font(.footnote)
+                .foregroundColor(.secondary)
         }
     }
 }

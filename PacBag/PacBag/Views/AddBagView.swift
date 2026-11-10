@@ -77,15 +77,7 @@ struct AddBagView: View {
                     }
                 }
 
-                Section {
-                    BagWeightRows(bagWeight: $bagWeight, maxWeight: $maxWeight)
-                } header: {
-                    Text("Weight")
-                } footer: {
-                    Text("The limit counts the bag and everything in it.")
-                        .font(.footnote)
-                        .foregroundColor(.secondary)
-                }
+                BagWeightSection(bagWeight: $bagWeight, maxWeight: $maxWeight)
 
                 Section {
                     Button("Create with Template") {
@@ -119,8 +111,7 @@ struct AddBagView: View {
                 PackingTemplatesView(bag: bag)
             }
         }
-        // On iPad the sheet's glass shows through a plain list's section headers.
-        .presentationBackground(Color(.systemBackground))
+        .plainFormSheet()
     }
 
     private func createBag() -> Bag? {
