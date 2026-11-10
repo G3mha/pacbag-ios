@@ -101,8 +101,12 @@ private func uses(_ count: Int32) -> String {
 private struct UsageSections: View {
     let analytics: CategoryUsageAnalytics
 
+    private var used: [CategoryUsageData] {
+        analytics.categoryUsageDistribution.filter { $0.category.usageCount > 0 }
+    }
+
     private var chartData: [CategoryChartData] {
-        analytics.categoryUsageDistribution
+        used
             .prefix(8)
             .map { CategoryChartData(name: $0.category.name, count: Int($0.category.usageCount)) }
     }
@@ -119,31 +123,35 @@ private struct UsageSections: View {
             Section(header: Text("Uses by Category").solidSectionHeader()) {
                 Chart(chartData, id: \.name) { data in
                     BarMark(
-                        x: .value("Category", data.name),
-                        y: .value("Uses", data.count)
+                        x: .value("Uses", data.count),
+                        y: .value("Category", data.name)
                     )
                     .foregroundStyle(Color.accentColor)
-                }
-                .frame(height: 200)
-                .chartXAxis {
-                    AxisMarks(values: .automatic) { _ in
-                        AxisValueLabel()
-                            .font(.caption2)
+                    .annotation(position: .trailing) {
+                        Text("\(data.count)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
                     }
                 }
-                .chartYAxis {
-                    AxisMarks(position: .leading)
-                }
+                .chartXAxis(.hidden)
+                .frame(height: CGFloat(chartData.count) * 32 + 8)
                 .padding(.vertical, 8)
             }
         }
 
         Section(header: Text("Top Categories").solidSectionHeader()) {
-            ForEach(Array(analytics.categoryUsageDistribution.prefix(3).enumerated()), id: \.offset) { index, data in
+            if used.isEmpty {
+                Text("No category has been used yet")
+                    .foregroundColor(.secondary)
+            }
+
+            ForEach(Array(used.prefix(3).enumerated()), id: \.offset) { index, data in
                 LabeledContent("\(index + 1). \(data.category.name)", value: uses(data.category.usageCount))
             }
 
-            if let leastUsed = analytics.leastUsedCategory {
+            if let leastUsed = analytics.leastUsedCategory,
+               leastUsed.usageCount > 0,
+               !used.prefix(3).contains(where: { $0.category.objectID == leastUsed.objectID }) {
                 LabeledContent("Least used: \(leastUsed.name)", value: uses(leastUsed.usageCount))
             }
         }
@@ -209,7 +217,7 @@ private struct TrendSection: View {
                         Text(category.name)
                         Spacer()
                         if let lastUsed = category.lastUsedDate {
-                            Text(lastUsed, style: .relative)
+                            Text("\(lastUsed, style: .relative) ago")
                                 .foregroundColor(.secondary)
                         } else {
                             Text("Never used")
@@ -238,7 +246,7 @@ private struct InsightsSections: View {
     }
 
     private var weights: [(String, Double)] {
-        insights.categoryWeightDistribution.sorted { $0.value > $1.value }.prefix(8).map { ($0.key, $0.value) }
+        insights.categoryWeightDistribution.filter { $0.value > 0 }.sorted { $0.value > $1.value }.prefix(8).map { ($0.key, $0.value) }
     }
 
     var body: some View {
@@ -249,7 +257,7 @@ private struct InsightsSections: View {
                 }
 
                 if let mostItems = insights.mostItemsCategory {
-                    LabeledContent("Most items", value: "\(mostItems.key), \(mostItems.value)")
+                    LabeledContent("Most items", value: "\(mostItems.key), \(mostItems.value == 1 ? "1 item" : "\(mostItems.value) items")")
                 }
             }
         }
