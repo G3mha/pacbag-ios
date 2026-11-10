@@ -34,31 +34,37 @@ struct CategoryManagementView: View {
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 0) {
-                // Search Bar
-                SearchBar(text: $searchText)
-                    .padding(.horizontal)
-                    .padding(.top, 8)
-                
-                // Segment Control
-                Picker("Filter", selection: $selectedSegment) {
-                    Text("All").tag(0)
-                    Text("Popular").tag(1)
-                    Text("Recent").tag(2)
+            List {
+                Section {
+                    Picker("Show", selection: $selectedSegment) {
+                        Text("All").tag(0)
+                        Text("Popular").tag(1)
+                        Text("Recent").tag(2)
+                    }
+                    .pickerStyle(.menu)
+
+                    Button {
+                        showingAnalytics = true
+                    } label: {
+                        HStack {
+                            Text("Category Analytics")
+                                .foregroundColor(.primary)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
                 }
-                .pickerStyle(SegmentedPickerStyle())
-                .padding(.horizontal)
-                .padding(.vertical, 8)
-                
-                // Analytics Summary
-                if selectedSegment == 0 {
-                    CategoryAnalyticsSummary(categoryManager: categoryManager)
-                        .padding(.horizontal)
-                        .padding(.bottom, 8)
-                }
-                
-                // Categories List
-                List {
+
+                Section {
+                    if filteredCategories.isEmpty {
+                        Text(searchText.isEmpty ? "No categories here yet" : "No categories match")
+                            .foregroundColor(.secondary)
+                    }
+
                     ForEach(filteredCategories, id: \.id) { category in
                         CategoryManagementRow(
                             category: category,
@@ -66,31 +72,35 @@ struct CategoryManagementView: View {
                             onDelete: { showingDeleteAlert = category }
                         )
                     }
+                } header: {
+                    Text("\(filteredCategories.count) Categories")
+                        .solidSectionHeader()
+                } footer: {
+                    Text("Swipe a category to edit or delete it. The default categories can't be deleted.")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
                 }
-                .listStyle(PlainListStyle())
             }
-            .navigationTitle("Category Management")
-            .navigationBarTitleDisplayMode(.large)
+            .listStyle(.plain)
+            .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search categories")
+            .navigationTitle("Categories")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Close") {
+                    Button("Done") {
                         dismiss()
                     }
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    HStack(spacing: 16) {
-                        Button(action: { showingAnalytics = true }) {
-                            Image(systemName: "chart.bar.fill")
-                        }
-                        
-                        Button(action: { showingAddCategory = true }) {
-                            Image(systemName: "plus")
-                        }
+                    Button(action: { showingAddCategory = true }) {
+                        Image(systemName: "plus")
                     }
+                    .accessibilityLabel("New Category")
                 }
             }
         }
+        .plainFormSheet()
         .sheet(isPresented: $showingAddCategory) {
             AddCategoryView()
         }
@@ -145,79 +155,51 @@ struct CategoryManagementRow: View {
     @ObservedObject var category: Category
     let onEdit: () -> Void
     let onDelete: () -> Void
+
+    private var details: String {
+        var parts: [String] = []
+        if category.isDefault {
+            parts.append("Default")
+        }
+        let subcategoryCount = category.subcategoriesArray.count
+        if subcategoryCount > 0 {
+            parts.append(subcategoryCount == 1 ? "1 subcategory" : "\(subcategoryCount) subcategories")
+        }
+        let itemCount = category.itemsArray.count
+        parts.append(itemCount == 1 ? "1 item" : "\(itemCount) items")
+        parts.append(category.usageCount == 1 ? "1 use" : "\(category.usageCount) uses")
+        return parts.joined(separator: " · ")
+    }
     
     var body: some View {
-        HStack(spacing: 12) {
-            // Category Icon and Color
-            Image(systemName: category.icon)
-                .foregroundColor(category.color)
-                .font(.title2)
-                .frame(width: 30)
-            
-            VStack(alignment: .leading, spacing: 4) {
-                // Category Name
-                HStack {
+        Button(action: onEdit) {
+            HStack(spacing: 12) {
+                Image(systemName: category.icon)
+                    .foregroundColor(category.color)
+                    .frame(width: 24)
+                    .accessibilityHidden(true)
+
+                VStack(alignment: .leading, spacing: 2) {
                     Text(category.name)
-                        .font(.headline)
-                        .fontWeight(.medium)
-                    
-                    if category.isDefault {
-                        Text("Default")
-                            .font(.caption2)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(Color.blue.opacity(0.2))
-                            .cornerRadius(4)
-                    }
-                    
-                    Spacer()
-                }
-                
-                // Subcategories
-                if !category.subcategoriesArray.isEmpty {
-                    Text("\(category.subcategoriesArray.count) subcategories")
-                        .font(.caption)
+                        .foregroundColor(.primary)
+
+                    Text(details)
+                        .font(.subheadline)
                         .foregroundColor(.secondary)
-                }
-                
-                // Usage Stats
-                HStack(spacing: 16) {
-                    Label("\(category.usageCount)", systemImage: "chart.bar.fill")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
-                    Label("\(category.itemsArray.count)", systemImage: "cube.box.fill")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    
+
                     if let lastUsed = category.lastUsedDate {
-                        Text("Last used: \(lastUsed, style: .relative)")
-                            .font(.caption2)
+                        Text("Last used \(lastUsed, style: .relative) ago")
+                            .font(.subheadline)
                             .foregroundColor(.secondary)
                     }
-                    
-                    Spacer()
                 }
+
+                Spacer()
             }
-            
-            // Action Buttons
-            HStack(spacing: 8) {
-                Button(action: onEdit) {
-                    Image(systemName: "pencil")
-                        .foregroundColor(.blue)
-                }
-                .buttonStyle(PlainButtonStyle())
-                
-                if !category.isDefault {
-                    Button(action: onDelete) {
-                        Image(systemName: "trash")
-                            .foregroundColor(.red)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                }
-            }
+            .contentShape(Rectangle())
+            .padding(.vertical, 2)
         }
-        .padding(.vertical, 4)
+        .buttonStyle(.plain)
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             if !category.isDefault {
                 Button("Delete", role: .destructive) {
@@ -233,146 +215,118 @@ struct CategoryManagementRow: View {
     }
 }
 
-struct CategoryAnalyticsSummary: View {
-    @ObservedObject var categoryManager: CategoryManager
-    @State private var showingFullAnalytics = false
-    
-    var totalCategories: Int {
-        categoryManager.categories.count
-    }
-    
-    var totalSubcategories: Int {
-        categoryManager.categories.reduce(0) { $0 + $1.subcategoriesArray.count }
-    }
-    
-    var totalUsage: Int32 {
-        categoryManager.categories.reduce(0) { $0 + $1.usageCount }
-    }
-    
-    var mostUsedCategory: Category? {
-        categoryManager.categories.max { $0.usageCount < $1.usageCount }
-    }
-    
+/// The icon and colour pickers shared by the new and edit category forms.
+struct CategoryAppearanceSection: View {
+    @Binding var icon: String
+    @Binding var color: Color
+
+    static let icons = [
+        "folder.fill", "tshirt.fill", "iphone", "drop.fill", "doc.fill",
+        "shoe.fill", "eyeglasses", "cross.fill", "camera.fill", "book.fill",
+        "music.note", "gamecontroller.fill", "car.fill", "airplane", "house.fill"
+    ]
+
+    static let colors: [Color] = [
+        .blue, .red, .green, .orange, .purple, .pink, .yellow, .indigo, .teal, .mint
+    ]
+
     var body: some View {
-        VStack(spacing: 12) {
-            HStack {
-                Text("Analytics")
-                    .font(.headline)
-                    .fontWeight(.semibold)
-                Spacer()
-                Button("View All") {
-                    showingFullAnalytics = true
+        Section(header: Text("Appearance").solidSectionHeader()) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Icon")
+
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 8) {
+                    ForEach(Self.icons, id: \.self) { option in
+                        Button(action: { icon = option }) {
+                            Image(systemName: option)
+                                .font(.title3)
+                                .foregroundColor(icon == option ? color : .secondary)
+                                .frame(width: 44, height: 44)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 6)
+                                        .stroke(icon == option ? color : Color.clear, lineWidth: 1.5)
+                                )
+                        }
+                        .buttonStyle(.borderless)
+                        .accessibilityLabel(option.replacingOccurrences(of: ".fill", with: "").replacingOccurrences(of: ".", with: " "))
+                        .accessibilityAddTraits(icon == option ? .isSelected : [])
+                    }
                 }
-                .font(.caption)
-                .foregroundColor(.blue)
             }
-            
-            HStack(spacing: 16) {
-                AnalyticsCard(
-                    title: "Categories",
-                    value: "\(totalCategories)",
-                    icon: "folder.fill",
-                    color: .blue
-                )
-                
-                AnalyticsCard(
-                    title: "Subcategories",
-                    value: "\(totalSubcategories)",
-                    icon: "folder.badge.plus",
-                    color: .green
-                )
-                
-                AnalyticsCard(
-                    title: "Total Usage",
-                    value: "\(totalUsage)",
-                    icon: "chart.bar.fill",
-                    color: .orange
-                )
-            }
-            
-            if let mostUsed = mostUsedCategory, mostUsed.usageCount > 0 {
-                HStack {
-                    Image(systemName: "star.fill")
-                        .foregroundColor(.yellow)
-                    Text("Most used: **\(mostUsed.name)** (\(mostUsed.usageCount) times)")
-                        .font(.caption)
-                    Spacer()
+            .padding(.vertical, 4)
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Colour")
+
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 8) {
+                    ForEach(Self.colors, id: \.self) { option in
+                        Button(action: { color = option }) {
+                            Circle()
+                                .fill(option)
+                                .frame(width: 28, height: 28)
+                                .overlay(
+                                    Circle()
+                                        .stroke(color == option ? Color.primary : Color.clear, lineWidth: 2)
+                                        .frame(width: 36, height: 36)
+                                )
+                                .frame(width: 44, height: 44)
+                        }
+                        .buttonStyle(.borderless)
+                        .accessibilityLabel(option.description)
+                        .accessibilityAddTraits(color == option ? .isSelected : [])
+                    }
                 }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(Color.yellow.opacity(0.1))
-                .cornerRadius(8)
             }
-        }
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
-        .sheet(isPresented: $showingFullAnalytics) {
-            CategoryAnalyticsView()
+            .padding(.vertical, 4)
         }
     }
 }
 
-struct AnalyticsCard: View {
+/// The subcategory list shared by the new and edit category forms.
+struct SubcategoriesSection: View {
     let title: String
-    let value: String
-    let icon: String
-    let color: Color
-    
-    var body: some View {
-        VStack(spacing: 4) {
-            Image(systemName: icon)
-                .foregroundColor(color)
-                .font(.title2)
-            
-            Text(value)
-                .font(.title3)
-                .fontWeight(.bold)
-            
-            Text(title)
-                .font(.caption)
-                .foregroundColor(.secondary)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 8)
-        .background(color.opacity(0.1))
-        .cornerRadius(8)
-    }
-}
+    @Binding var subcategories: [String]
+    var isEditable = true
 
-struct SearchBar: UIViewRepresentable {
-    @Binding var text: String
-    
-    func makeUIView(context: Context) -> UISearchBar {
-        let searchBar = UISearchBar()
-        searchBar.delegate = context.coordinator
-        searchBar.placeholder = "Search categories..."
-        searchBar.searchBarStyle = .minimal
-        return searchBar
+    @State private var newSubcategory = ""
+
+    private var trimmedNew: String {
+        newSubcategory.trimmingCharacters(in: .whitespacesAndNewlines)
     }
-    
-    func updateUIView(_ uiView: UISearchBar, context: Context) {
-        uiView.text = text
+
+    var body: some View {
+        Section(header: Text(title).solidSectionHeader()) {
+            ForEach(subcategories.indices, id: \.self) { index in
+                HStack {
+                    Text(subcategories[index])
+                    Spacer()
+                    if isEditable {
+                        Button("Remove") {
+                            subcategories.remove(at: index)
+                        }
+                        .buttonStyle(.borderless)
+                        .foregroundColor(.red)
+                    }
+                }
+            }
+
+            if isEditable {
+                HStack {
+                    TextField("Add subcategory", text: $newSubcategory)
+                        .onSubmit(add)
+
+                    Button("Add", action: add)
+                        .buttonStyle(.borderless)
+                        .disabled(trimmedNew.isEmpty)
+                }
+            }
+        }
     }
-    
-    func makeCoordinator() -> Coordinator {
-        Coordinator(self)
-    }
-    
-    class Coordinator: NSObject, UISearchBarDelegate {
-        let parent: SearchBar
-        
-        init(_ parent: SearchBar) {
-            self.parent = parent
-        }
-        
-        func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-            parent.text = searchText
-        }
-        
-        func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
-            searchBar.resignFirstResponder()
-        }
+
+    private func add() {
+        guard !trimmedNew.isEmpty else { return }
+        subcategories.append(trimmedNew)
+        newSubcategory = ""
     }
 }
 
@@ -385,118 +339,26 @@ struct AddCategoryView: View {
     @State private var selectedIcon = "folder.fill"
     @State private var selectedColor = Color.blue
     @State private var subcategories: [String] = []
-    @State private var newSubcategory = ""
-    
-    private let availableIcons = [
-        "folder.fill", "tshirt.fill", "iphone", "drop.fill", "doc.fill",
-        "shoe.fill", "eyeglasses", "cross.fill", "camera.fill", "book.fill",
-        "music.note", "gamecontroller.fill", "car.fill", "airplane", "house.fill"
-    ]
-    
-    private let availableColors: [Color] = [
-        .blue, .red, .green, .orange, .purple, .pink, .yellow, .indigo, .teal, .mint
-    ]
     
     var body: some View {
         NavigationView {
-            Form {
-                Section(header: Text("Category Details")) {
-                    TextField("Category Name", text: $categoryName)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                }
-                
-                Section(header: Text("Appearance")) {
-                    // Icon Selection
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Icon")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                        
-                        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 12) {
-                            ForEach(availableIcons, id: \.self) { icon in
-                                Button(action: { selectedIcon = icon }) {
-                                    Image(systemName: icon)
-                                        .font(.title2)
-                                        .foregroundColor(selectedIcon == icon ? selectedColor : .secondary)
-                                        .frame(width: 40, height: 40)
-                                        .background(selectedIcon == icon ? selectedColor.opacity(0.2) : Color.clear)
-                                        .cornerRadius(8)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 8)
-                                                .stroke(selectedIcon == icon ? selectedColor : Color.clear, lineWidth: 2)
-                                        )
-                                }
-                                .buttonStyle(PlainButtonStyle())
-                            }
-                        }
-                    }
-                    
-                    // Color Selection
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Color")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                        
-                        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 12) {
-                            ForEach(availableColors, id: \.self) { color in
-                                Button(action: { selectedColor = color }) {
-                                    Circle()
-                                        .fill(color)
-                                        .frame(width: 30, height: 30)
-                                        .overlay(
-                                            Circle()
-                                                .stroke(selectedColor == color ? Color.primary : Color.clear, lineWidth: 3)
-                                                .frame(width: 36, height: 36)
-                                        )
-                                }
-                                .buttonStyle(PlainButtonStyle())
-                            }
-                        }
-                    }
-                }
-                
-                Section(header: Text("Preview")) {
-                    HStack {
+            List {
+                Section {
+                    HStack(spacing: 12) {
                         Image(systemName: selectedIcon)
                             .foregroundColor(selectedColor)
-                            .font(.title2)
-                        
-                        Text(categoryName.isEmpty ? "New Category" : categoryName)
-                            .font(.headline)
-                        
-                        Spacer()
-                    }
-                    .padding()
-                    .background(selectedColor.opacity(0.1))
-                    .cornerRadius(8)
-                }
-                
-                Section(header: Text("Subcategories (Optional)")) {
-                    ForEach(subcategories.indices, id: \.self) { index in
-                        HStack {
-                            Text(subcategories[index])
-                            Spacer()
-                            Button("Remove") {
-                                subcategories.remove(at: index)
-                            }
-                            .foregroundColor(.red)
-                        }
-                    }
-                    
-                    HStack {
-                        TextField("Add subcategory", text: $newSubcategory)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                        
-                        Button("Add") {
-                            if !newSubcategory.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                                subcategories.append(newSubcategory.trimmingCharacters(in: .whitespacesAndNewlines))
-                                newSubcategory = ""
-                            }
-                        }
-                        .disabled(newSubcategory.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                            .frame(width: 24)
+                            .accessibilityHidden(true)
+
+                        TextField("Category Name", text: $categoryName)
                     }
                 }
+
+                CategoryAppearanceSection(icon: $selectedIcon, color: $selectedColor)
+
+                SubcategoriesSection(title: "Subcategories (Optional)", subcategories: $subcategories)
             }
+            .listStyle(.plain)
             .navigationTitle("New Category")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -514,6 +376,7 @@ struct AddCategoryView: View {
                 }
             }
         }
+        .plainFormSheet()
     }
     
     private func saveCategory() {
@@ -548,17 +411,6 @@ struct EditCategoryView: View {
     @State private var selectedIcon: String
     @State private var selectedColor: Color
     @State private var subcategories: [String]
-    @State private var newSubcategory = ""
-    
-    private let availableIcons = [
-        "folder.fill", "tshirt.fill", "iphone", "drop.fill", "doc.fill",
-        "shoe.fill", "eyeglasses", "cross.fill", "camera.fill", "book.fill",
-        "music.note", "gamecontroller.fill", "car.fill", "airplane", "house.fill"
-    ]
-    
-    private let availableColors: [Color] = [
-        .blue, .red, .green, .orange, .purple, .pink, .yellow, .indigo, .teal, .mint
-    ]
     
     init(category: Category) {
         self.category = category
@@ -570,136 +422,46 @@ struct EditCategoryView: View {
     
     var body: some View {
         NavigationView {
-            Form {
-                Section(header: Text("Category Details")) {
-                    TextField("Category Name", text: $categoryName)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .disabled(category.isDefault)
+            List {
+                Section {
+                    HStack(spacing: 12) {
+                        Image(systemName: selectedIcon)
+                            .foregroundColor(selectedColor)
+                            .frame(width: 24)
+                            .accessibilityHidden(true)
+
+                        TextField("Category Name", text: $categoryName)
+                            .disabled(category.isDefault)
+                    }
+                } footer: {
+                    if category.isDefault {
+                        Text("Default categories keep their name, icon and subcategories.")
+                            .font(.footnote)
+                            .foregroundColor(.secondary)
+                    }
                 }
                 
                 if !category.isDefault {
-                    Section(header: Text("Appearance")) {
-                        // Icon Selection
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Icon")
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-                            
-                            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 12) {
-                                ForEach(availableIcons, id: \.self) { icon in
-                                    Button(action: { selectedIcon = icon }) {
-                                        Image(systemName: icon)
-                                            .font(.title2)
-                                            .foregroundColor(selectedIcon == icon ? selectedColor : .secondary)
-                                            .frame(width: 40, height: 40)
-                                            .background(selectedIcon == icon ? selectedColor.opacity(0.2) : Color.clear)
-                                            .cornerRadius(8)
-                                            .overlay(
-                                                RoundedRectangle(cornerRadius: 8)
-                                                    .stroke(selectedIcon == icon ? selectedColor : Color.clear, lineWidth: 2)
-                                            )
-                                    }
-                                    .buttonStyle(PlainButtonStyle())
-                                }
-                            }
-                        }
-                        
-                        // Color Selection
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Color")
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-                            
-                            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 12) {
-                                ForEach(availableColors, id: \.self) { color in
-                                    Button(action: { selectedColor = color }) {
-                                        Circle()
-                                            .fill(color)
-                                            .frame(width: 30, height: 30)
-                                            .overlay(
-                                                Circle()
-                                                    .stroke(selectedColor == color ? Color.primary : Color.clear, lineWidth: 3)
-                                                    .frame(width: 36, height: 36)
-                                            )
-                                    }
-                                    .buttonStyle(PlainButtonStyle())
-                                }
-                            }
-                        }
-                    }
+                    CategoryAppearanceSection(icon: $selectedIcon, color: $selectedColor)
                 }
+
+                SubcategoriesSection(title: "Subcategories", subcategories: $subcategories, isEditable: !category.isDefault)
                 
-                Section(header: Text("Preview")) {
-                    HStack {
-                        Image(systemName: selectedIcon)
-                            .foregroundColor(selectedColor)
-                            .font(.title2)
-                        
-                        Text(categoryName.isEmpty ? "Category" : categoryName)
-                            .font(.headline)
-                        
-                        Spacer()
-                    }
-                    .padding()
-                    .background(selectedColor.opacity(0.1))
-                    .cornerRadius(8)
-                }
-                
-                Section(header: Text("Subcategories")) {
-                    ForEach(subcategories.indices, id: \.self) { index in
-                        HStack {
-                            Text(subcategories[index])
-                            Spacer()
-                            if !category.isDefault {
-                                Button("Remove") {
-                                    subcategories.remove(at: index)
-                                }
-                                .foregroundColor(.red)
-                            }
-                        }
-                    }
-                    
-                    if !category.isDefault {
-                        HStack {
-                            TextField("Add subcategory", text: $newSubcategory)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                            
-                            Button("Add") {
-                                if !newSubcategory.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                                    subcategories.append(newSubcategory.trimmingCharacters(in: .whitespacesAndNewlines))
-                                    newSubcategory = ""
-                                }
-                            }
-                            .disabled(newSubcategory.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                        }
-                    }
-                }
-                
-                Section(header: Text("Usage Statistics")) {
-                    HStack {
-                        Text("Times Used")
-                        Spacer()
-                        Text("\(category.usageCount)")
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    HStack {
-                        Text("Items Using Category")
-                        Spacer()
-                        Text("\(category.itemsArray.count)")
-                            .foregroundColor(.secondary)
-                    }
+                Section(header: Text("Usage").solidSectionHeader()) {
+                    LabeledContent("Times used", value: "\(category.usageCount)")
+                    LabeledContent("Items using it", value: "\(category.itemsArray.count)")
                     
                     if let lastUsed = category.lastUsedDate {
                         HStack {
-                            Text("Last Used")
+                            Text("Last used")
                             Spacer()
-                            Text(lastUsed, style: .relative)
+                            Text("\(lastUsed, style: .relative) ago")
                                 .foregroundColor(.secondary)
                         }
                     }
                 }
             }
+            .listStyle(.plain)
             .navigationTitle("Edit Category")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -717,6 +479,7 @@ struct EditCategoryView: View {
                 }
             }
         }
+        .plainFormSheet()
     }
     
     private func saveChanges() {
