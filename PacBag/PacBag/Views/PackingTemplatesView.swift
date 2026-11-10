@@ -43,159 +43,69 @@ struct PackingTemplatesView: View {
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 0) {
-                // Search and Filters
-                VStack(spacing: 16) {
-                    // Search Bar
-                    HStack {
-                        Image(systemName: "magnifyingglass")
-                            .foregroundColor(.secondary)
-                        
-                        TextField("Search templates...", text: $searchText)
-                            .textFieldStyle(PlainTextFieldStyle())
-                        
-                        if !searchText.isEmpty {
-                            Button("Clear") {
-                                searchText = ""
-                            }
-                            .font(.caption)
-                            .foregroundColor(.blue)
+            List {
+                Section {
+                    Picker("Trip Type", selection: $selectedTripType) {
+                        Text("All Types").tag(nil as TripType?)
+                        ForEach(TripType.allCases, id: \.self) { tripType in
+                            Text(tripType.rawValue).tag(tripType as TripType?)
                         }
                     }
-                    .padding()
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
-                    
-                    // Filter Chips
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 12) {
-                            FilterChip(
-                                title: "All Types",
-                                isSelected: selectedTripType == nil,
-                                action: { selectedTripType = nil }
-                            )
-                            
-                            ForEach(TripType.allCases, id: \.self) { tripType in
-                                FilterChip(
-                                    title: tripType.rawValue,
-                                    icon: tripType.icon,
-                                    isSelected: selectedTripType == tripType,
-                                    action: { selectedTripType = tripType }
-                                )
-                            }
+                    .pickerStyle(.menu)
+
+                    Picker("Duration", selection: $selectedDuration) {
+                        Text("All Durations").tag(nil as TripDuration?)
+                        ForEach(TripDuration.allCases, id: \.self) { duration in
+                            Text(duration.rawValue).tag(duration as TripDuration?)
                         }
-                        .padding(.horizontal)
                     }
-                    
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 12) {
-                            FilterChip(
-                                title: "All Durations",
-                                isSelected: selectedDuration == nil,
-                                action: { selectedDuration = nil }
-                            )
-                            
-                            ForEach(TripDuration.allCases, id: \.self) { duration in
-                                FilterChip(
-                                    title: duration.rawValue,
-                                    isSelected: selectedDuration == duration,
-                                    action: { selectedDuration = duration }
-                                )
+                    .pickerStyle(.menu)
+                }
+
+                if !customTemplates.isEmpty {
+                    Section {
+                        ForEach(customTemplates) { template in
+                            TemplateRowView(template: template) {
+                                showingTemplateDetail = template
                             }
                         }
-                        .padding(.horizontal)
+                    } header: {
+                        HStack {
+                            Text("My Templates")
+
+                            Spacer()
+
+                            Button("Manage") {
+                                showingCustomTemplateManagement = true
+                            }
+                            .font(.subheadline)
+                        }
                     }
                 }
-                .padding()
-                .background(Color(.systemBackground))
-                
-                Divider()
-                
-                // Templates Grid
-                ScrollView {
-                    LazyVStack(spacing: 24) {
-                        // Custom Templates Section
-                        if !customTemplates.isEmpty {
-                            VStack(alignment: .leading, spacing: 16) {
-                                HStack {
-                                    Text("My Templates")
-                                        .font(.title2)
-                                        .fontWeight(.bold)
-                                        .foregroundColor(.primary)
-                                    
-                                    Spacer()
-                                    
-                                    Button("Manage") {
-                                        showingCustomTemplateManagement = true
-                                    }
-                                    .font(.caption)
-                                    .foregroundColor(.blue)
-                                }
-                                .padding(.horizontal)
-                                
-                                LazyVGrid(columns: [
-                                    GridItem(.adaptive(minimum: 160), spacing: 16)
-                                ], spacing: 16) {
-                                    ForEach(customTemplates) { template in
-                                        TemplateCard(template: template) {
-                                            showingTemplateDetail = template
-                                        }
-                                    }
-                                }
-                                .padding(.horizontal)
-                            }
-                        }
-                        
-                        // Default Templates Section
-                        if !defaultTemplates.isEmpty {
-                            VStack(alignment: .leading, spacing: 16) {
-                                HStack {
-                                    Text(customTemplates.isEmpty ? "Templates" : "Default Templates")
-                                        .font(.title2)
-                                        .fontWeight(.bold)
-                                        .foregroundColor(.primary)
-                                    
-                                    Spacer()
-                                }
-                                .padding(.horizontal)
-                                
-                                LazyVGrid(columns: [
-                                    GridItem(.adaptive(minimum: 160), spacing: 16)
-                                ], spacing: 16) {
-                                    ForEach(defaultTemplates) { template in
-                                        TemplateCard(template: template) {
-                                            showingTemplateDetail = template
-                                        }
-                                    }
-                                }
-                                .padding(.horizontal)
-                            }
-                        }
-                        
-                        // Create Template Button
-                        if !customTemplates.isEmpty || !defaultTemplates.isEmpty {
-                            VStack(spacing: 16) {
-                                Divider()
-                                    .padding(.horizontal)
-                                
-                                Button("Create Custom Template") {
-                                    showingCreateTemplate = true
-                                }
-                                .font(.body)
-                                .foregroundColor(.blue)
-                                .padding()
+
+                if !defaultTemplates.isEmpty {
+                    Section(customTemplates.isEmpty ? "Templates" : "Default Templates") {
+                        ForEach(defaultTemplates) { template in
+                            TemplateRowView(template: template) {
+                                showingTemplateDetail = template
                             }
                         }
                     }
-                    .padding(.vertical)
                 }
-                
+
                 if filteredTemplates.isEmpty {
-                    Spacer()
                     EmptyTemplatesView(hasFilters: selectedTripType != nil || selectedDuration != nil || !searchText.isEmpty)
-                    Spacer()
+                        .listRowSeparator(.hidden)
+                } else {
+                    Section {
+                        Button("Create Custom Template") {
+                            showingCreateTemplate = true
+                        }
+                    }
                 }
             }
+            .listStyle(.plain)
+            .searchable(text: $searchText, placement: .navigationBarDrawer(displayMode: .always), prompt: "Search templates")
             .navigationTitle("Packing Templates")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
@@ -215,132 +125,58 @@ struct PackingTemplatesView: View {
                 CustomTemplateManagementView()
             }
         }
+        .plainFormSheet()
     }
 }
 
-struct FilterChip: View {
-    let title: String
-    let icon: String?
-    let isSelected: Bool
-    let action: () -> Void
-    
-    init(title: String, icon: String? = nil, isSelected: Bool, action: @escaping () -> Void) {
-        self.title = title
-        self.icon = icon
-        self.isSelected = isSelected
-        self.action = action
-    }
-    
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 4) {
-                if let icon = icon {
-                    Image(systemName: icon)
-                        .font(.caption)
-                }
-                Text(title)
-                    .font(.caption)
-                    .fontWeight(.medium)
-            }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .background(isSelected ? Color.blue : Color(.systemGray6))
-            .foregroundColor(isSelected ? .white : .primary)
-            .cornerRadius(16)
-        }
-        .buttonStyle(PlainButtonStyle())
-    }
-}
-
-struct TemplateCard: View {
+/// A template as a single line in a list.
+struct TemplateRowView: View {
     let template: PackingTemplate
     let action: () -> Void
-    
-    private var templateColor: Color {
-        return template.tripType.color
+
+    private var details: String {
+        var parts = ["\(template.items.count) items", template.duration.rawValue]
+        if template.season != .allSeason {
+            parts.append(template.season.rawValue)
+        }
+        return parts.joined(separator: " · ")
     }
-    
+
     var body: some View {
         Button(action: action) {
-            VStack(spacing: 12) {
-                // Header with icon
-                ZStack {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(templateColor.opacity(0.2))
-                        .frame(height: 80)
-                    
-                    VStack(spacing: 6) {
-                        Image(systemName: template.icon)
-                            .font(.largeTitle)
-                            .foregroundColor(templateColor)
-                        
-                        Text("\(template.items.count) items")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                    }
-                }
-                
-                VStack(spacing: 6) {
-                    Text(template.name)
-                        .font(.headline)
-                        .fontWeight(.semibold)
-                        .foregroundColor(.primary)
-                        .lineLimit(1)
-                    
-                    Text(template.description)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .lineLimit(2)
-                        .multilineTextAlignment(.center)
-                    
-                    HStack(spacing: 8) {
-                        Label(template.duration.rawValue, systemImage: "calendar")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                            .labelStyle(.iconOnly)
-                        
-                        Text(template.duration.rawValue)
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                        
-                        Spacer()
-                        
-                        if template.season != .allSeason {
-                            Image(systemName: template.season.icon)
-                                .font(.caption2)
-                                .foregroundColor(template.season.color)
-                        }
-                    }
-                }
+            VStack(alignment: .leading, spacing: 2) {
+                Text(template.name)
+                    .foregroundColor(.primary)
+
+                Text(template.description)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .lineLimit(2)
+
+                Text(details)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
             }
-            .padding()
-            .background(Color(.systemBackground))
-            .cornerRadius(16)
-            .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+            .padding(.vertical, 2)
         }
-        .buttonStyle(PlainButtonStyle())
     }
 }
 
 struct EmptyTemplatesView: View {
     let hasFilters: Bool
-    
+
     var body: some View {
-        VStack(spacing: 16) {
-            Image(systemName: "doc.text.magnifyingglass")
-                .font(.system(size: 48))
-                .foregroundColor(.secondary)
-            
+        VStack(spacing: 12) {
             Text(hasFilters ? "No templates found" : "No templates available")
                 .font(.headline)
-                .foregroundColor(.secondary)
-            
-            Text(hasFilters ? "Try adjusting your filters or search terms" : "Templates will appear here")
-                .font(.body)
+
+            Text(hasFilters ? "Try changing your filters or search." : "Templates will appear here.")
+                .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
         }
-        .padding()
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 32)
     }
 }
 
