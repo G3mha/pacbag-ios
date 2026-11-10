@@ -21,44 +21,6 @@ struct SettingsView: View {
             List {
                 // User Preferences Section
                 Section(header: Text("Preferences")) {
-                    // Weight Unit Setting
-                    HStack {
-                        Image(systemName: "scalemass")
-                            .foregroundColor(.blue)
-                            .frame(width: 24)
-                        
-                        Text("Weight Unit")
-                        
-                        Spacer()
-                        
-                        Picker("Weight Unit", selection: $settingsManager.weightUnit) {
-                            ForEach(WeightUnit.allCases, id: \.self) { unit in
-                                Text(unit.symbol).tag(unit)
-                            }
-                        }
-                        .pickerStyle(SegmentedPickerStyle())
-                        .frame(width: 120)
-                    }
-                    
-                    // Default Bag Weight
-                    HStack {
-                        Image(systemName: "bag")
-                            .foregroundColor(.green)
-                            .frame(width: 24)
-                        
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Default Bag Weight")
-                            Text("\(settingsManager.defaultBagWeight, specifier: "%.1f") \(settingsManager.weightUnit.symbol)")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        Spacer()
-                        
-                        Stepper("", value: $settingsManager.defaultBagWeight, in: 0.1...50.0, step: 0.1)
-                            .labelsHidden()
-                    }
-                    
                     // App Theme
                     HStack {
                         Image(systemName: "paintbrush")
@@ -147,25 +109,6 @@ struct SettingsView: View {
                         }
                     }
                     .buttonStyle(PlainButtonStyle())
-                    
-                    // Default reminder timing
-                    HStack {
-                        Image(systemName: "clock")
-                            .foregroundColor(.blue)
-                            .frame(width: 24)
-                        
-                        Text("Default Reminder")
-                        
-                        Spacer()
-                        
-                        Picker("Default Reminder", selection: $settingsManager.defaultReminderDays) {
-                            Text("1 day").tag(1)
-                            Text("3 days").tag(3)
-                            Text("1 week").tag(7)
-                            Text("2 weeks").tag(14)
-                        }
-                        .pickerStyle(MenuPickerStyle())
-                    }
                 }
                 
                 // Categories Section
