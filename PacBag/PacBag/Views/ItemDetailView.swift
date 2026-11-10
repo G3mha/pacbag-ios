@@ -239,7 +239,7 @@ struct ItemDetailView: View {
             }
         }
 
-        Section("Photo") {
+        Section(header: Text("Photo").solidSectionHeader()) {
             photo
 
             PhotosPicker(item.hasPhoto ? "Change Photo" : "Add Photo", selection: $selectedPhoto, matching: .images)

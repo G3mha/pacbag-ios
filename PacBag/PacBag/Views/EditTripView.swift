@@ -52,7 +52,7 @@ struct EditTripView: View {
                     }
                 }
 
-                Section("Contents") {
+                Section(header: Text("Contents").solidSectionHeader()) {
                     PackingProgressView(
                         packed: trip.packedItems,
                         total: trip.totalItems,

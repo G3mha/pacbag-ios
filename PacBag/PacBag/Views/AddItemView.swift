@@ -72,7 +72,7 @@ struct AddItemView: View {
 
                 ItemWeightSection(quantity: $quantity, weight: $weight)
 
-                Section("Photo") {
+                Section(header: Text("Photo").solidSectionHeader()) {
                     if let photoData, let image = UIImage(data: photoData) {
                         Image(uiImage: image)
                             .resizable()

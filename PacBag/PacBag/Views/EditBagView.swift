@@ -27,7 +27,7 @@ struct EditBagView: View {
 
                 BagWeightSection(bagWeight: $bagWeight, maxWeight: $maxWeight)
 
-                Section("Contents") {
+                Section(header: Text("Contents").solidSectionHeader()) {
                     PackingProgressView(
                         packed: bag.packedItemsCount,
                         total: bag.totalItemsCount,

@@ -22,6 +22,7 @@ struct BagWeightSection: View {
             }
         } header: {
             Text("Weight")
+                .solidSectionHeader()
         } footer: {
             Text("The limit counts the bag and everything in it.")
                 .font(.footnote)

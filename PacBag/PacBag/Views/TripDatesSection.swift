@@ -10,7 +10,7 @@ struct TripDatesSection: View {
     }
 
     var body: some View {
-        Section("Dates") {
+        Section(header: Text("Dates").solidSectionHeader()) {
             DatePicker("Start Date", selection: $startDate, displayedComponents: .date)
                 .onChange(of: startDate) { _, newValue in
                     // Ensure end date is after start date

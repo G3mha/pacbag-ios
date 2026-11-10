@@ -6,7 +6,7 @@ struct ItemWeightSection: View {
     @Binding var weight: Double
 
     var body: some View {
-        Section("Weight") {
+        Section(header: Text("Weight").solidSectionHeader()) {
             Stepper(value: $quantity, in: 1...99) {
                 HStack {
                     Text("Quantity")
