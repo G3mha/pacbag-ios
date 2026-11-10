@@ -12,76 +12,23 @@ struct CustomCategoryView: View {
 
     var body: some View {
         NavigationView {
-            Form {
-                Section(header: Text(isAddingSubcategory ? "Add Subcategory" : "Create Category")) {
-                    VStack(alignment: .leading, spacing: 12) {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Category Name")
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-                            
-                            if !isAddingSubcategory {
-                                TextField("e.g., Sports Equipment", text: $category)
-                                    .textFieldStyle(RoundedBorderTextFieldStyle())
-                            } else {
-                                // Show as read-only when adding subcategory to existing category
-                                HStack {
-                                    Text(category)
-                                        .foregroundColor(.primary)
-                                    Spacer()
-                                    Text("(existing)")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
-                                }
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 8)
-                                .background(Color(.systemGray6))
-                                .cornerRadius(8)
-                            }
-                        }
-                        
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Subcategory\(isAddingSubcategory ? "" : " (optional)")")
-                                .font(.subheadline)
-                                .fontWeight(.medium)
-                            TextField("e.g., Running Gear", text: $subcategory)
-                                .textFieldStyle(RoundedBorderTextFieldStyle())
-                        }
-                    }
-                }
-                
-                Section(header: Text("Preview")) {
-                    if !category.isEmpty {
+            List {
+                Section {
+                    if isAddingSubcategory {
                         HStack {
-                            Image(systemName: "folder.fill")
-                                .foregroundColor(.blue)
-                            
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Your new category:")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                
-                                Text(subcategory.isEmpty ? category : "\(category) > \(subcategory)")
-                                    .font(.subheadline)
-                                    .fontWeight(.medium)
-                            }
-                            
+                            Text("Category")
                             Spacer()
+                            Text(category)
+                                .foregroundColor(.secondary)
                         }
-                        .padding(.vertical, 4)
+                    } else {
+                        TextField("Category Name", text: $category)
                     }
-                }
-                
-                Section(header: Text("How it works")) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("• Create new categories that will be saved for future use")
-                        Text("• Add subcategories to organize items even better")
-                        Text("• Your custom categories will appear in the main category picker")
-                    }
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+
+                    TextField(isAddingSubcategory ? "Subcategory Name" : "Subcategory (optional)", text: $subcategory)
                 }
             }
+            .listStyle(.plain)
             .navigationTitle(isAddingSubcategory ? "New Subcategory" : "New Category")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -104,7 +51,7 @@ struct CustomCategoryView: View {
                             onSave(trimmedCategory, trimmedSubcategory)
                         }
                     }
-                    .disabled(category.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .disabled(isSaveDisabled)
                 }
             }
             .alert("Duplicate Entry", isPresented: $showingDuplicateAlert) {
@@ -113,6 +60,7 @@ struct CustomCategoryView: View {
                 Text(duplicateMessage)
             }
         }
+        .plainFormSheet()
         .onAppear {
             // Decided once, when the sheet opens. The name field writes to `category`,
             // so reading it later would switch modes on the first letter typed.
@@ -126,6 +74,12 @@ struct CustomCategoryView: View {
         }
     }
     
+    private var isSaveDisabled: Bool {
+        let categoryIsEmpty = category.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        let subcategoryIsEmpty = subcategory.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        return categoryIsEmpty || (isAddingSubcategory && subcategoryIsEmpty)
+    }
+
     private func validateCategoryAndSubcategory(category: String, subcategory: String) -> String? {
         // Check if we're creating a new category
         if category.isEmpty {
