@@ -145,7 +145,7 @@ final class DeleteTests: XCTestCase {
         }
 
         tap(app.buttons["Create"].firstMatch)
-        XCTAssertTrue(app.staticTexts[name].firstMatch.waitForExistence(timeout: 10), "\(name) was not created")
+        XCTAssertTrue(app.scrollUntilExists(app.staticTexts[name].firstMatch), "\(name) was not created")
     }
 
     private func addItem(name: String) {
