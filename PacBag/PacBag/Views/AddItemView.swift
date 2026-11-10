@@ -21,7 +21,6 @@ struct AddItemView: View {
     @State private var isPacked = false
     @State private var selectedPhoto: PhotosPickerItem?
     @State private var photoData: Data?
-    @State private var showingCamera = false
     
     private var availableCategories: [Category] {
         return categoryManager.categories
@@ -32,234 +31,88 @@ struct AddItemView: View {
         return categoryManager.subcategories(for: category)
     }
     
-    private var categorySelectionView: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Picker("Category", selection: $selectedCategory) {
-                    Text("Select Category").tag(nil as Category?)
-                    ForEach(availableCategories, id: \.id) { category in
-                        HStack {
-                            Image(systemName: category.icon)
-                                .foregroundColor(category.color)
-                            Text(category.name)
-                        }
-                        .tag(category as Category?)
-                    }
-                }
-                .pickerStyle(MenuPickerStyle())
-                .onChange(of: selectedCategory) { _, _ in
-                    selectedSubcategory = nil
-                }
-                
-                Button(action: { showingCustomCategory = true }) {
-                    Image(systemName: "plus.circle.fill")
-                        .font(.title2)
-                        .foregroundColor(.blue)
-                }
-                .buttonStyle(PlainButtonStyle())
-            }
-            
-            if !availableSubcategories.isEmpty {
-                subcategorySelectionView
-            }
-            
-            if let category = selectedCategory {
-                currentSelectionView(category: category)
-            }
-        }
-    }
-    
-    @ViewBuilder
-    private var subcategorySelectionView: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            subcategoryHeader
-            subcategoryGrid
-        }
-    }
-    
-    private var subcategoryHeader: some View {
-        HStack {
-            Text("Subcategory")
-                .font(.subheadline)
-                .fontWeight(.medium)
-            Text("(optional)")
-                .font(.caption)
-                .foregroundColor(.secondary)
-            Spacer()
-        }
-    }
-    
-    private var subcategoryGrid: some View {
-        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 8) {
-            ForEach(availableSubcategories, id: \.id) { subcategory in
-                subcategoryButton(for: subcategory)
-            }
-        }
-    }
-    
-    private func subcategoryButton(for subcategory: SubCategory) -> some View {
-        Button(action: {
-            if selectedSubcategory == subcategory {
-                selectedSubcategory = nil
-            } else {
-                selectedSubcategory = subcategory
-            }
-        }) {
-            HStack {
-                Image(systemName: subcategory.category.icon)
-                    .foregroundColor(subcategory.category.color)
-                Text(subcategory.name)
-                    .font(.caption)
-                Spacer()
-                if selectedSubcategory == subcategory {
-                    Image(systemName: "checkmark")
-                        .foregroundColor(.blue)
-                        .font(.caption)
-                }
-            }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(
-                RoundedRectangle(cornerRadius: 6)
-                    .fill(selectedSubcategory == subcategory ? subcategory.category.color.opacity(0.2) : Color.gray.opacity(0.1))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 6)
-                    .stroke(selectedSubcategory == subcategory ? subcategory.category.color : Color.clear, lineWidth: 1)
-            )
-        }
-        .buttonStyle(PlainButtonStyle())
-    }
-    
-    private func currentSelectionView(category: Category) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("Current Selection:")
-                .font(.caption)
-                .foregroundColor(.secondary)
-            
-            HStack {
-                Image(systemName: category.icon)
-                    .foregroundColor(category.color)
-                Text(selectedSubcategory == nil ? category.name : "\(category.name) > \(selectedSubcategory?.name ?? "Unknown")")
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-            }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(category.color.opacity(0.1))
-            .cornerRadius(6)
-        }
-    }
-    
     var body: some View {
         NavigationView {
-            Form {
-                Section(header: Text("Item Details")) {
-                    HStack(spacing: 12) {
-                        Image(systemName: "cube.box.fill")
-                            .foregroundColor(.blue)
-                            .frame(width: 24)
-                        TextField("Item Name", text: $itemName)
-                    }
-                    .padding(12)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
+            List {
+                Section {
+                    TextField("Item Name", text: $itemName)
 
-                    HStack(alignment: .top, spacing: 12) {
-                        Image(systemName: "text.alignleft")
-                            .foregroundColor(.gray)
-                            .frame(width: 24)
-                            .padding(.top, 4)
-                        TextField("Description (optional)", text: $itemDescription, axis: .vertical)
-                            .lineLimit(2...4)
-                    }
-                    .padding(12)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
-
-                    categorySelectionView
+                    TextField("Description (optional)", text: $itemDescription, axis: .vertical)
+                        .lineLimit(2...4)
                 }
-                
-                Section(header: Text("Quantity & Weight")) {
+
+                Section {
+                    Picker("Category", selection: $selectedCategory) {
+                        Text("Select Category").tag(nil as Category?)
+                        ForEach(availableCategories, id: \.id) { category in
+                            Text(category.name).tag(category as Category?)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .onChange(of: selectedCategory) { _, _ in
+                        selectedSubcategory = nil
+                    }
+
+                    if !availableSubcategories.isEmpty {
+                        Picker("Subcategory", selection: $selectedSubcategory) {
+                            Text("None").tag(nil as SubCategory?)
+                            ForEach(availableSubcategories, id: \.id) { subcategory in
+                                Text(subcategory.name).tag(subcategory as SubCategory?)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                    }
+
+                    Button("New Category") {
+                        showingCustomCategory = true
+                    }
+                }
+
+                Section("Weight") {
+                    Stepper(value: $quantity, in: 1...99) {
+                        HStack {
+                            Text("Quantity")
+                            Spacer()
+                            Text("\(quantity)")
+                                .foregroundColor(.secondary)
+                        }
+                    }
+
+                    WeightSliderRow(title: "Per item", weight: $weight, range: 0.1...10.0, step: 0.1)
+
                     HStack {
-                        Image(systemName: "number")
-                            .foregroundColor(.purple)
-                            .frame(width: 24)
-                        Text("Quantity")
+                        Text("Total")
                         Spacer()
-                        Text("\(quantity)")
-                            .font(.headline)
-                            .foregroundColor(.purple)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 4)
-                            .background(Color.purple.opacity(0.15))
-                            .cornerRadius(8)
-                        Stepper("", value: $quantity, in: 1...99)
-                            .labelsHidden()
+                        Text("\((weight * Double(quantity)).oneDecimal) kg")
+                            .foregroundColor(.secondary)
+                    }
+                }
+
+                Section("Photo") {
+                    if let photoData, let image = UIImage(data: photoData) {
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(height: 120)
+                            .frame(maxWidth: .infinity)
+                            .clipShape(RoundedRectangle(cornerRadius: 8))
                     }
 
-                    VStack(alignment: .leading, spacing: 12) {
-                        HStack {
-                            Image(systemName: "scalemass")
-                                .foregroundColor(.orange)
-                                .frame(width: 24)
-                            Text("Weight per item")
-                            Spacer()
-                            Text("\(weight, specifier: "%.1f") kg")
-                                .font(.headline)
-                                .foregroundColor(.orange)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 4)
-                                .background(Color.orange.opacity(0.15))
-                                .cornerRadius(8)
-                        }
+                    PhotosPicker(photoData == nil ? "Add Photo" : "Change Photo", selection: $selectedPhoto, matching: .images)
 
-                        Slider(value: $weight, in: 0.1...10.0, step: 0.1)
-                            .tint(.orange)
-
-                        HStack {
-                            Image(systemName: "sum")
-                                .foregroundColor(.green)
-                                .frame(width: 24)
-                            Text("Total weight")
-                            Spacer()
-                            Text("\(weight * Double(quantity), specifier: "%.1f") kg")
-                                .font(.headline)
-                                .foregroundColor(.green)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 4)
-                                .background(Color.green.opacity(0.15))
-                                .cornerRadius(8)
+                    if photoData != nil {
+                        Button("Remove Photo", role: .destructive) {
+                            photoData = nil
+                            selectedPhoto = nil
                         }
                     }
-                    .padding(.vertical, 4)
                 }
-                
-                Section(header: Text("Photo")) {
-                    PhotoSectionView(
-                        photoData: $photoData,
-                        selectedPhoto: $selectedPhoto,
-                        showingCamera: $showingCamera
-                    )
-                }
-                
-                Section(header: Text("Packing")) {
+
+                Section {
                     Toggle("Already Packed", isOn: $isPacked)
                 }
-                
-                Section(header: Text("Preview")) {
-                    EnhancedItemPreview(
-                        name: itemName.isEmpty ? "New Item" : itemName,
-                        description: itemDescription,
-                        weight: weight,
-                        quantity: quantity,
-                        category: selectedCategory?.name ?? "General",
-                        subcategory: selectedSubcategory?.name ?? "",
-                        photoData: photoData,
-                        isPacked: isPacked
-                    )
-                }
             }
+            .listStyle(.plain)
             .navigationTitle("Add Item")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -277,6 +130,7 @@ struct AddItemView: View {
                 }
             }
         }
+        .plainFormSheet()
         .onChange(of: selectedPhoto) { _, newValue in
             loadPhoto(from: newValue)
         }
@@ -356,173 +210,5 @@ struct AddItemView: View {
                 }
             }
         }
-    }
-}
-
-struct PhotoSectionView: View {
-    @Binding var photoData: Data?
-    @Binding var selectedPhoto: PhotosPickerItem?
-    @Binding var showingCamera: Bool
-    
-    var body: some View {
-        VStack(spacing: 12) {
-            if let photoData = photoData, let image = UIImage(data: photoData) {
-                Image(uiImage: image)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-                    .frame(height: 120)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(Color(.systemGray4), lineWidth: 1)
-                    )
-            } else {
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color(.systemGray6))
-                    .frame(height: 120)
-                    .overlay(
-                        VStack {
-                            Image(systemName: "photo")
-                                .font(.largeTitle)
-                                .foregroundColor(.secondary)
-                            Text("No photo selected")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    )
-            }
-            
-            HStack(spacing: 12) {
-                PhotosPicker("Select Photo", selection: $selectedPhoto, matching: .images)
-                    .buttonStyle(.bordered)
-                
-                if photoData != nil {
-                    Button("Remove Photo") {
-                        photoData = nil
-                        selectedPhoto = nil
-                    }
-                    .buttonStyle(.bordered)
-                    .foregroundColor(.red)
-                }
-            }
-        }
-    }
-}
-
-struct EnhancedItemPreview: View {
-    let name: String
-    let description: String
-    let weight: Double
-    let quantity: Int
-    let category: String
-    let subcategory: String
-    let photoData: Data?
-    let isPacked: Bool
-    
-    private var fullCategory: String {
-        if !category.isEmpty {
-            if !subcategory.isEmpty {
-                return "\(category) > \(subcategory)"
-            }
-            return category
-        }
-        return "General"
-    }
-    
-    var body: some View {
-        VStack(spacing: 12) {
-            HStack(spacing: 12) {
-                // Photo thumbnail
-                if let photoData = photoData, let image = UIImage(data: photoData) {
-                    Image(uiImage: image)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(width: 50, height: 50)
-                        .clipShape(RoundedRectangle(cornerRadius: 6))
-                } else {
-                    RoundedRectangle(cornerRadius: 6)
-                        .fill(Color(.systemGray5))
-                        .frame(width: 50, height: 50)
-                        .overlay(
-                            Image(systemName: "photo")
-                                .foregroundColor(.secondary)
-                        )
-                }
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack {
-                        Image(systemName: isPacked ? "checkmark.circle.fill" : "circle")
-                            .foregroundColor(isPacked ? .green : .gray)
-                        
-                        Text(name)
-                            .font(.headline)
-                            .strikethrough(isPacked)
-                            .foregroundColor(isPacked ? .secondary : .primary)
-                        
-                        Spacer()
-                        
-                        if quantity > 1 {
-                            Text("×\(quantity)")
-                                .font(.caption)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 2)
-                                .background(Color.orange.opacity(0.2))
-                                .cornerRadius(4)
-                        }
-                    }
-                    
-                    if !description.isEmpty {
-                        Text(description)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                            .lineLimit(2)
-                    }
-                    
-                    HStack {
-                        Text(fullCategory)
-                            .font(.caption)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 2)
-                            .background(Color.blue.opacity(0.2))
-                            .cornerRadius(4)
-                        
-                        Spacer()
-                        
-                        Text("\(weight, specifier: "%.1f")kg")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                        
-                        if quantity > 1 {
-                            Text("= \(weight * Double(quantity), specifier: "%.1f")kg")
-                                .font(.caption)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.primary)
-                        }
-                    }
-                }
-            }
-        }
-        .padding(.vertical, 8)
-    }
-}
-
-// Legacy preview for compatibility
-struct ItemPreview: View {
-    let name: String
-    let weight: Double
-    let category: String
-    let isPacked: Bool
-    
-    var body: some View {
-        EnhancedItemPreview(
-            name: name,
-            description: "",
-            weight: weight,
-            quantity: 1,
-            category: category,
-            subcategory: "",
-            photoData: nil,
-            isPacked: isPacked
-        )
     }
 }
