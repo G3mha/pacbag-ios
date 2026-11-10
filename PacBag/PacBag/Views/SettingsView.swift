@@ -162,28 +162,6 @@ struct SettingsView: View {
                     .buttonStyle(PlainButtonStyle())
                 }
                 
-                // Data Management Section
-                Section(header: Text("Data Management")) {
-                    // iCloud Sync Status
-                    HStack {
-                        Image(systemName: "icloud")
-                            .foregroundColor(.blue)
-                            .frame(width: 24)
-                        
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("iCloud Sync")
-                            Text(iCloudSyncStatus)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        Spacer()
-                        
-                        Image(systemName: iCloudSyncIcon)
-                            .foregroundColor(iCloudSyncColor)
-                    }
-                }
-                
                 // Privacy & Security Section
                 Section(header: Text("Privacy & Security")) {
                     Button("Reset All Data", role: .destructive) {
@@ -340,19 +318,6 @@ struct SettingsView: View {
         default:
             return "Unknown"
         }
-    }
-    
-    private var iCloudSyncStatus: String {
-        // This would be determined by Core Data CloudKit status
-        return "Syncing"
-    }
-    
-    private var iCloudSyncIcon: String {
-        return "checkmark.circle.fill"
-    }
-    
-    private var iCloudSyncColor: Color {
-        return .green
     }
     
     private var appVersion: String {
