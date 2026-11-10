@@ -10,6 +10,7 @@ struct EditBagView: View {
     @State private var bagName: String
     @State private var maxWeight: Double
     @State private var bagWeight: Double
+    @State private var showingDeleteAllConfirmation = false
 
     init(bag: Bag) {
         self.bag = bag
@@ -42,8 +43,9 @@ struct EditBagView: View {
                     }
 
                     Button("Delete All Items", role: .destructive) {
-                        deleteAllItems()
+                        showingDeleteAllConfirmation = true
                     }
+                    .disabled(bag.itemsArray.isEmpty)
                 }
             }
             .listStyle(.plain)
@@ -65,6 +67,21 @@ struct EditBagView: View {
             }
         }
         .plainFormSheet()
+        .alert("Delete All Items", isPresented: $showingDeleteAllConfirmation) {
+            Button("Delete", role: .destructive) {
+                deleteAllItems()
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text(deleteAllMessage)
+        }
+    }
+
+    private var deleteAllMessage: String {
+        let count = bag.itemsArray.count
+        let items = count == 1 ? "the 1 item" : "all \(count) items"
+        let subBags = bag.subBagsArray.isEmpty ? "" : " Sub-bags and what's in them stay."
+        return "This deletes \(items) in \(bag.name).\(subBags) This can't be undone."
     }
     
     private func saveBag() {
