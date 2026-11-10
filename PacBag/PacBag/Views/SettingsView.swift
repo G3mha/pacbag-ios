@@ -293,21 +293,6 @@ struct SettingsView: View {
                 
                 // Privacy & Security Section
                 Section(header: Text("Privacy & Security")) {
-                    Toggle(isOn: $settingsManager.analyticsEnabled) {
-                        HStack {
-                            Image(systemName: "chart.line.uptrend.xyaxis")
-                                .foregroundColor(.purple)
-                                .frame(width: 24)
-                            
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Usage Analytics")
-                                Text("Help improve PacBag")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                    }
-                    
                     Button("Reset All Data", role: .destructive) {
                         showingDeleteConfirmation = true
                     }
@@ -357,7 +342,41 @@ struct SettingsView: View {
                         }
                     }
                     .buttonStyle(PlainButtonStyle())
-                    
+
+                    Link(destination: LegalLinks.privacyPolicy) {
+                        HStack {
+                            Image(systemName: "hand.raised")
+                                .foregroundColor(.gray)
+                                .frame(width: 24)
+
+                            Text("Privacy Policy")
+                                .foregroundColor(.primary)
+
+                            Spacer()
+
+                            Image(systemName: "arrow.up.right")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+
+                    Link(destination: LegalLinks.termsOfUse) {
+                        HStack {
+                            Image(systemName: "doc.text")
+                                .foregroundColor(.gray)
+                                .frame(width: 24)
+
+                            Text("Terms of Use")
+                                .foregroundColor(.primary)
+
+                            Spacer()
+
+                            Image(systemName: "arrow.up.right")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+
                     HStack {
                         Image(systemName: "number")
                             .foregroundColor(.gray)

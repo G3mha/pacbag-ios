@@ -98,12 +98,6 @@ class SettingsManager: ObservableObject {
         }
     }
     
-    @Published var analyticsEnabled: Bool {
-        didSet {
-            userDefaults.set(analyticsEnabled, forKey: Keys.analyticsEnabled)
-        }
-    }
-    
     @Published var autoPackingList: Bool {
         didSet {
             userDefaults.set(autoPackingList, forKey: Keys.autoPackingList)
@@ -147,7 +141,6 @@ class SettingsManager: ObservableObject {
         static let defaultBagWeight = "settings_default_bag_weight"
         static let appTheme = "settings_app_theme"
         static let defaultReminderDays = "settings_default_reminder_days"
-        static let analyticsEnabled = "settings_analytics_enabled"
         static let autoPackingList = "settings_auto_packing_list"
         static let smartSuggestions = "settings_smart_suggestions"
         static let showWeightInLists = "settings_show_weight_in_lists"
@@ -166,7 +159,6 @@ class SettingsManager: ObservableObject {
         self.defaultBagWeight = userDefaults.object(forKey: Keys.defaultBagWeight) as? Double ?? 2.0
         self.appTheme = AppTheme(rawValue: userDefaults.string(forKey: Keys.appTheme) ?? "") ?? .system
         self.defaultReminderDays = userDefaults.object(forKey: Keys.defaultReminderDays) as? Int ?? 3
-        self.analyticsEnabled = userDefaults.object(forKey: Keys.analyticsEnabled) as? Bool ?? true
         self.autoPackingList = userDefaults.object(forKey: Keys.autoPackingList) as? Bool ?? true
         self.smartSuggestions = userDefaults.object(forKey: Keys.smartSuggestions) as? Bool ?? true
         self.showWeightInLists = userDefaults.object(forKey: Keys.showWeightInLists) as? Bool ?? true
@@ -191,7 +183,6 @@ class SettingsManager: ObservableObject {
         defaultBagWeight = 2.0
         appTheme = .system
         defaultReminderDays = 3
-        analyticsEnabled = true
         autoPackingList = true
         smartSuggestions = true
         showWeightInLists = true
@@ -234,7 +225,6 @@ class SettingsManager: ObservableObject {
             "defaultBagWeight": defaultBagWeight,
             "appTheme": appTheme.rawValue,
             "defaultReminderDays": defaultReminderDays,
-            "analyticsEnabled": analyticsEnabled,
             "autoPackingList": autoPackingList,
             "smartSuggestions": smartSuggestions,
             "showWeightInLists": showWeightInLists,
@@ -261,10 +251,6 @@ class SettingsManager: ObservableObject {
         
         if let defaultReminderDays = data["defaultReminderDays"] as? Int {
             self.defaultReminderDays = defaultReminderDays
-        }
-        
-        if let analyticsEnabled = data["analyticsEnabled"] as? Bool {
-            self.analyticsEnabled = analyticsEnabled
         }
         
         if let autoPackingList = data["autoPackingList"] as? Bool {
