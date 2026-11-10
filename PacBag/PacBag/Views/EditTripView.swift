@@ -90,7 +90,9 @@ struct EditTripView: View {
     private func saveTrip() {
         withAnimation {
             let wasRemindersEnabled = trip.remindersEnabled
-            
+            // Read before the trip is updated below, or the dates always look unchanged.
+            let startDateChanged = trip.startDate != startDate
+
             trip.name = tripName.trimmingCharacters(in: .whitespacesAndNewlines)
             trip.destination = destination.trimmingCharacters(in: .whitespacesAndNewlines)
             trip.startDate = startDate
@@ -104,7 +106,7 @@ struct EditTripView: View {
                 
                 // Handle notification changes
                 Task {
-                    if remindersEnabled && (!wasRemindersEnabled || startDate != trip.startDate) {
+                    if remindersEnabled && (!wasRemindersEnabled || startDateChanged) {
                         // Schedule new reminders if enabled or date changed
                         await NotificationManager.shared.schedulePackingReminders(for: trip)
                     } else if !remindersEnabled && wasRemindersEnabled {
