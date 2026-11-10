@@ -70,25 +70,7 @@ struct AddItemView: View {
                     }
                 }
 
-                Section("Weight") {
-                    Stepper(value: $quantity, in: 1...99) {
-                        HStack {
-                            Text("Quantity")
-                            Spacer()
-                            Text("\(quantity)")
-                                .foregroundColor(.secondary)
-                        }
-                    }
-
-                    WeightSliderRow(title: "Per item", weight: $weight, range: 0.1...10.0, step: 0.1)
-
-                    HStack {
-                        Text("Total")
-                        Spacer()
-                        Text("\((weight * Double(quantity)).oneDecimal) kg")
-                            .foregroundColor(.secondary)
-                    }
-                }
+                ItemWeightSection(quantity: $quantity, weight: $weight)
 
                 Section("Photo") {
                     if let photoData, let image = UIImage(data: photoData) {
