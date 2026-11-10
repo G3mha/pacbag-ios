@@ -11,7 +11,6 @@ struct AddBagView: View {
     @State private var maxWeight = 20.0
     @State private var bagWeight = 3.0
     @State private var selectedBagType = BagType.suitcase
-    @State private var showingTemplates = false
     @State private var createdBag: Bag?
     
     init(trip: Trip? = nil) {
@@ -181,9 +180,6 @@ struct AddBagView: View {
                         Button("Create with Template") {
                             // First save the bag, then show templates
                             createdBag = createBag()
-                            if createdBag != nil {
-                                showingTemplates = true
-                            }
                         }
                         .buttonStyle(.borderedProminent)
                         .frame(maxWidth: .infinity)
@@ -221,15 +217,11 @@ struct AddBagView: View {
                     .disabled(bagName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }
-            .sheet(isPresented: $showingTemplates, onDismiss: {
-                // When template view is dismissed, close the add bag view too
-                if createdBag != nil {
-                    dismiss()
-                }
-            }) {
-                if let createdBag = createdBag {
-                    PackingTemplatesView(bag: createdBag)
-                }
+            .sheet(item: $createdBag, onDismiss: {
+                // The bag is saved by now, so this form has nothing left to do
+                dismiss()
+            }) { bag in
+                PackingTemplatesView(bag: bag)
             }
         }
     }

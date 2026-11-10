@@ -58,6 +58,24 @@ final class TemplateTests: XCTestCase {
                       "cancelling should step back to the template list")
     }
 
+    func testApplyingATemplateToANewBagReturnsToTheTrip() throws {
+        createTrip(named: "New Bag Check \(runID)")
+        tapAddFirstBag()
+        type("Carry-on", into: "Bag Name")
+        dismissKeyboard()
+
+        tapAfterScrolling(app.buttons["Create with Template"])
+        openTemplateDetail()
+        tapAfterScrolling(app.buttons["Apply Selected Items Only"])
+
+        XCTAssertTrue(app.navigationBars["Packing Templates"].waitForNonExistence(timeout: 5),
+                      "applying should close the template list")
+        XCTAssertTrue(app.navigationBars["Add Bag to Trip"].waitForNonExistence(timeout: 5),
+                      "the new bag's form should close with the template list")
+        XCTAssertTrue(app.staticTexts[essentialItems].firstMatch.waitForExistence(timeout: 5),
+                      "the trip should count the template's items")
+    }
+
     // MARK: - Steps
 
     private func dismissOnboardingIfPresent() {
@@ -96,12 +114,15 @@ final class TemplateTests: XCTestCase {
         row.tap()
     }
 
-    private func openTemplateListFromEmptyBag(trip: String) {
-        createTrip(named: trip)
-
+    private func tapAddFirstBag() {
         let addBag = app.buttons["Add Your First Bag"].firstMatch
         XCTAssertTrue(addBag.waitForExistence(timeout: 10), "a new trip should offer to add a bag")
         addBag.tap()
+    }
+
+    private func openTemplateListFromEmptyBag(trip: String) {
+        createTrip(named: trip)
+        tapAddFirstBag()
         type("Carry-on", into: "Bag Name")
         dismissKeyboard()
         app.buttons["Save"].firstMatch.tap()
