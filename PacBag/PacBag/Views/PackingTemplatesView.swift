@@ -80,16 +80,20 @@ struct PackingTemplatesView: View {
                             }
                             .font(.subheadline)
                         }
+                        .solidSectionHeader()
                     }
                 }
 
                 if !defaultTemplates.isEmpty {
-                    Section(customTemplates.isEmpty ? "Templates" : "Default Templates") {
+                    Section {
                         ForEach(defaultTemplates) { template in
                             TemplateRowView(template: template) {
                                 showingTemplateDetail = template
                             }
                         }
+                    } header: {
+                        Text(customTemplates.isEmpty ? "Templates" : "Default Templates")
+                            .solidSectionHeader()
                     }
                 }
 
@@ -351,6 +355,7 @@ struct TemplateItemsSection: View {
                 }
                 .font(.subheadline)
             }
+            .solidSectionHeader()
         }
     }
 }
