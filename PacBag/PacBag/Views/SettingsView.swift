@@ -222,66 +222,22 @@ struct AboutView: View {
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 24) {
-                Spacer()
-                
-                Image(systemName: "suitcase.fill")
-                    .font(.system(size: 80))
-                    .foregroundColor(.blue)
-                
-                VStack(spacing: 12) {
+            List {
+                VStack(alignment: .leading, spacing: 2) {
                     Text("PacBag")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                    
+                        .font(.title2)
+                        .fontWeight(.semibold)
+
                     Text("Smart Travel Packing")
-                        .font(.title3)
-                        .foregroundColor(.secondary)
-                    
-                    Text("Version \(appVersion)")
-                        .font(.caption)
                         .foregroundColor(.secondary)
                 }
-                
-                VStack(spacing: 16) {
-                    Text("PacBag helps you pack smart for any trip with intelligent organization, reminders, and analytics.")
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                    
-                    HStack(spacing: 20) {
-                        VStack {
-                            Text("📱")
-                                .font(.title2)
-                            Text("iOS 17+")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        VStack {
-                            Text("☁️")
-                                .font(.title2)
-                            Text("iCloud Sync")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        VStack {
-                            Text("📊")
-                                .font(.title2)
-                            Text("Analytics")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    .padding()
-                    .background(Color(.systemGray6))
-                    .cornerRadius(12)
-                }
-                
-                Spacer()
+                .listRowSeparator(.hidden, edges: .top)
+
+                Text("PacBag helps you pack smart for any trip with intelligent organization, reminders, and analytics.")
+
+                LabeledContent("Version", value: appVersion)
             }
+            .listStyle(.plain)
             .navigationTitle("About")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -292,6 +248,7 @@ struct AboutView: View {
                 }
             }
         }
+        .plainFormSheet()
     }
     
     private var appVersion: String {
