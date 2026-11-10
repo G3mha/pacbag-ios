@@ -8,8 +8,8 @@ struct AddBagView: View {
     let trip: Trip?
 
     @State private var bagName = ""
-    @State private var maxWeight = 20.0
-    @State private var bagWeight = 3.0
+    @State private var maxWeight = BagType.suitcase.defaultWeight
+    @State private var bagWeight = BagType.suitcase.defaultBagWeight
     @State private var selectedBagType = BagType.suitcase
     @State private var showingTemplates = false
     @State private var createdBag: Bag?
