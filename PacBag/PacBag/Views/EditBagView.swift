@@ -20,136 +20,33 @@ struct EditBagView: View {
     
     var body: some View {
         NavigationView {
-            Form {
-                Section(header: Text("Bag Information")) {
-                    HStack(spacing: 12) {
-                        Image(systemName: "bag.fill")
-                            .foregroundColor(.blue)
-                            .frame(width: 24)
-                        TextField("Bag Name", text: $bagName)
-                    }
-                    .padding(12)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(10)
+            List {
+                Section {
+                    TextField("Bag Name", text: $bagName)
                 }
 
-                Section(header: Text("Weight Settings")) {
-                    VStack(alignment: .leading, spacing: 12) {
-                        HStack {
-                            Image(systemName: "scalemass")
-                                .foregroundColor(.orange)
-                                .frame(width: 24)
-                            Text("Bag Weight (Empty)")
-                            Spacer()
-                            Text("\(bagWeight, specifier: "%.1f") kg")
-                                .font(.headline)
-                                .foregroundColor(.orange)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 4)
-                                .background(Color.orange.opacity(0.15))
-                                .cornerRadius(8)
-                        }
+                BagWeightSection(bagWeight: $bagWeight, maxWeight: $maxWeight)
 
-                        Slider(value: $bagWeight, in: 0...10, step: 0.5)
-                            .tint(.orange)
-
-                        Text("Weight of the empty bag itself")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    .padding(.vertical, 4)
-
-                    VStack(alignment: .leading, spacing: 12) {
-                        HStack {
-                            Image(systemName: "gauge.with.dots.needle.bottom.50percent")
-                                .foregroundColor(.blue)
-                                .frame(width: 24)
-                            Text("Maximum Total Weight")
-                            Spacer()
-                            Text("\(maxWeight, specifier: "%.1f") kg")
-                                .font(.headline)
-                                .foregroundColor(.blue)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 4)
-                                .background(Color.blue.opacity(0.15))
-                                .cornerRadius(8)
-                        }
-
-                        Slider(value: $maxWeight, in: 1...50, step: 0.5)
-                            .tint(.blue)
-
-                        Text("Airline weight limit (bag + items)")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    .padding(.vertical, 4)
-
-                    // Available capacity display
-                    HStack {
-                        Image(systemName: "arrow.up.left.and.arrow.down.right")
-                            .foregroundColor(maxWeight > bagWeight ? .green : .red)
-                            .frame(width: 24)
-                        Text("Available for Items")
-                        Spacer()
-                        Text("\(max(0, maxWeight - bagWeight), specifier: "%.1f") kg")
-                            .font(.headline)
-                            .foregroundColor(maxWeight > bagWeight ? .green : .red)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 4)
-                            .background((maxWeight > bagWeight ? Color.green : Color.red).opacity(0.15))
-                            .cornerRadius(8)
-                    }
-                    .padding(.vertical, 8)
+                Section("Contents") {
+                    PackingProgressView(
+                        packed: bag.packedItemsCount,
+                        total: bag.totalItemsCount,
+                        weight: bagWeight + bag.itemsWeight,
+                        maxWeight: maxWeight
+                    )
                 }
-                
-                Section(header: Text("Current Status")) {
-                    HStack {
-                        Text("Bag Weight")
-                        Spacer()
-                        Text("\(bag.bagWeight, specifier: "%.1f") kg")
-                            .foregroundColor(.secondary)
-                    }
 
-                    HStack {
-                        Text("Items Weight")
-                        Spacer()
-                        Text("\(bag.itemsWeight, specifier: "%.1f") kg")
-                            .foregroundColor(.secondary)
-                    }
-
-                    HStack {
-                        Text("Total Weight")
-                        Spacer()
-                        Text("\(bag.totalWeight, specifier: "%.1f") kg")
-                            .foregroundColor(bag.totalWeight > bag.maxWeight ? .red : .green)
-                            .fontWeight(.semibold)
-                    }
-
-                    HStack {
-                        Text("Items Count")
-                        Spacer()
-                        Text("\(bag.totalItemsCount)")
-                            .foregroundColor(.secondary)
-                    }
-
-                    HStack {
-                        Text("Packed Items")
-                        Spacer()
-                        Text("\(bag.packedItemsCount)")
-                            .foregroundColor(.secondary)
-                    }
-                }
-                
-                Section(header: Text("Actions")) {
-                    Button("Delete All Items", role: .destructive) {
-                        deleteAllItems()
-                    }
-                    
+                Section {
                     Button("Reset Packing Status") {
                         resetPackingStatus()
                     }
+
+                    Button("Delete All Items", role: .destructive) {
+                        deleteAllItems()
+                    }
                 }
             }
+            .listStyle(.plain)
             .navigationTitle("Edit Bag")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -167,6 +64,7 @@ struct EditBagView: View {
                 }
             }
         }
+        .plainFormSheet()
     }
     
     private func saveBag() {
