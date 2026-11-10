@@ -19,250 +19,72 @@ struct SettingsView: View {
     var body: some View {
         NavigationView {
             List {
-                // User Preferences Section
-                Section(header: Text("Preferences")) {
-                    // App Theme
-                    HStack {
-                        Image(systemName: "paintbrush")
-                            .foregroundColor(.purple)
-                            .frame(width: 24)
-                        
-                        Text("Appearance")
-                        
-                        Spacer()
-                        
-                        Picker("Appearance", selection: $settingsManager.appTheme) {
-                            ForEach(AppTheme.allCases, id: \.self) { theme in
-                                Text(theme.displayName).tag(theme)
-                            }
+                Section(header: Text("Preferences").solidSectionHeader()) {
+                    Picker("Appearance", selection: $settingsManager.appTheme) {
+                        ForEach(AppTheme.allCases, id: \.self) { theme in
+                            Text(theme.displayName).tag(theme)
                         }
-                        .pickerStyle(SegmentedPickerStyle())
-                        .frame(width: 160)
                     }
-                    
-                    // Item Sort Order
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Image(systemName: "arrow.up.arrow.down")
-                                .foregroundColor(.blue)
-                                .frame(width: 24)
-                            
-                            Text("Default Item Sorting")
-                            
-                            Spacer()
+                    .pickerStyle(.menu)
+
+                    Picker("Sort Items By", selection: $settingsManager.defaultItemSortOrder) {
+                        ForEach(ItemSortOrder.allCases, id: \.self) { order in
+                            Text(order.displayName).tag(order)
                         }
-                        
-                        HStack {
-                            Text("Sort by:")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                            
-                            Spacer()
-                            
-                            Picker("Sort Order", selection: $settingsManager.defaultItemSortOrder) {
-                                ForEach(ItemSortOrder.allCases, id: \.self) { order in
-                                    Text(order.displayName).tag(order)
-                                }
-                            }
-                            .pickerStyle(MenuPickerStyle())
-                        }
-                        
-                        HStack {
-                            Text("Direction:")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                            
-                            Spacer()
-                            
-                            Picker("Sort Direction", selection: $settingsManager.sortAscending) {
-                                Text("Ascending (A→Z)").tag(true)
-                                Text("Descending (Z→A)").tag(false)
-                            }
-                            .pickerStyle(SegmentedPickerStyle())
-                            .frame(width: 180)
-                        }
+                    }
+                    .pickerStyle(.menu)
+
+                    Picker("Sort Direction", selection: $settingsManager.sortAscending) {
+                        Text("Ascending").tag(true)
+                        Text("Descending").tag(false)
+                    }
+                    .pickerStyle(.menu)
+
+                    sheetRow("Notification Settings", value: notificationStatusText) {
+                        showingNotificationSettings = true
                     }
                 }
-                
-                // Notifications Section
-                Section(header: Text("Notifications")) {
-                    Button(action: { showingNotificationSettings = true }) {
-                        HStack {
-                            Image(systemName: "bell")
-                                .foregroundColor(.orange)
-                                .frame(width: 24)
-                            
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Notification Settings")
-                                    .foregroundColor(.primary)
-                                
-                                Text(notificationStatusText)
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            
-                            Spacer()
-                            
-                            Image(systemName: "chevron.right")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
+
+                Section(header: Text("Categories").solidSectionHeader()) {
+                    sheetRow("Manage Categories", value: "\(CategoryManager.shared.categories.count)") {
+                        showingCategoryManagement = true
                     }
-                    .buttonStyle(PlainButtonStyle())
+
+                    sheetRow("Category Analytics") {
+                        showingCategoryAnalytics = true
+                    }
                 }
-                
-                // Categories Section
-                Section(header: Text("Categories")) {
-                    Button(action: { showingCategoryManagement = true }) {
-                        HStack {
-                            Image(systemName: "folder.badge.gearshape")
-                                .foregroundColor(.indigo)
-                                .frame(width: 24)
-                            
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Manage Categories")
-                                    .foregroundColor(.primary)
-                                
-                                Text("\(CategoryManager.shared.categories.count) categories")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            
-                            Spacer()
-                            
-                            Image(systemName: "chevron.right")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                    
-                    Button(action: { showingCategoryAnalytics = true }) {
-                        HStack {
-                            Image(systemName: "chart.bar")
-                                .foregroundColor(.green)
-                                .frame(width: 24)
-                            
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Category Analytics")
-                                    .foregroundColor(.primary)
-                                
-                                Text("Usage insights and trends")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            
-                            Spacer()
-                            
-                            Image(systemName: "chevron.right")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                }
-                
-                // Privacy & Security Section
-                Section(header: Text("Privacy & Security")) {
+
+                Section(header: Text("Privacy & Security").solidSectionHeader()) {
                     Button("Reset All Data", role: .destructive) {
                         showingDeleteConfirmation = true
                     }
                 }
-                
-                // Developer Section
-                Section(header: Text("Developer")) {
-                    Button(action: { showingLandingPage = true }) {
-                        HStack {
-                            Image(systemName: "star.fill")
-                                .foregroundColor(.yellow)
-                                .frame(width: 24)
-                            
-                            Text("View Landing Page")
-                                .foregroundColor(.primary)
-                            
-                            Spacer()
-                            
-                            Image(systemName: "chevron.right")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
+
+                Section(header: Text("Developer").solidSectionHeader()) {
+                    sheetRow("View Landing Page") {
+                        showingLandingPage = true
                     }
-                    .buttonStyle(PlainButtonStyle())
-                    
+
                     Button("Reset App", role: .destructive) {
                         showingResetConfirmation = true
                     }
                 }
-                
-                // About Section
-                Section(header: Text("About")) {
-                    Button(action: { showingAbout = true }) {
-                        HStack {
-                            Image(systemName: "info.circle")
-                                .foregroundColor(.gray)
-                                .frame(width: 24)
-                            
-                            Text("About PacBag")
-                                .foregroundColor(.primary)
-                            
-                            Spacer()
-                            
-                            Image(systemName: "chevron.right")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    .buttonStyle(PlainButtonStyle())
 
-                    Link(destination: LegalLinks.privacyPolicy) {
-                        HStack {
-                            Image(systemName: "hand.raised")
-                                .foregroundColor(.gray)
-                                .frame(width: 24)
-
-                            Text("Privacy Policy")
-                                .foregroundColor(.primary)
-
-                            Spacer()
-
-                            Image(systemName: "arrow.up.right")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
+                Section(header: Text("About").solidSectionHeader()) {
+                    sheetRow("About PacBag") {
+                        showingAbout = true
                     }
 
-                    Link(destination: LegalLinks.termsOfUse) {
-                        HStack {
-                            Image(systemName: "doc.text")
-                                .foregroundColor(.gray)
-                                .frame(width: 24)
+                    linkRow("Privacy Policy", destination: LegalLinks.privacyPolicy)
+                    linkRow("Terms of Use", destination: LegalLinks.termsOfUse)
 
-                            Text("Terms of Use")
-                                .foregroundColor(.primary)
-
-                            Spacer()
-
-                            Image(systemName: "arrow.up.right")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-
-                    HStack {
-                        Image(systemName: "number")
-                            .foregroundColor(.gray)
-                            .frame(width: 24)
-                        
-                        Text("Version")
-                        
-                        Spacer()
-                        
-                        Text(appVersion)
-                            .foregroundColor(.secondary)
-                    }
+                    LabeledContent("Version", value: appVersion)
                 }
             }
+            .listStyle(.plain)
             .navigationTitle("Settings")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {
@@ -271,6 +93,7 @@ struct SettingsView: View {
                 }
             }
         }
+        .plainFormSheet()
         .sheet(isPresented: $showingNotificationSettings) {
             NotificationSettingsView()
         }
@@ -307,6 +130,43 @@ struct SettingsView: View {
         }
     }
     
+    private func sheetRow(_ title: String, value: String? = nil, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack {
+                Text(title)
+                    .foregroundColor(.primary)
+
+                Spacer()
+
+                if let value {
+                    Text(value)
+                        .foregroundColor(.secondary)
+                }
+
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func linkRow(_ title: String, destination: URL) -> some View {
+        Link(destination: destination) {
+            HStack {
+                Text(title)
+                    .foregroundColor(.primary)
+
+                Spacer()
+
+                Image(systemName: "arrow.up.right")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+        }
+    }
+
     private var notificationStatusText: String {
         switch notificationManager.authorizationStatus {
         case .authorized:
