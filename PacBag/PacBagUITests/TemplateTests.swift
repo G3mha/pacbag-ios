@@ -70,7 +70,7 @@ final class TemplateTests: XCTestCase {
 
         XCTAssertTrue(app.navigationBars["Packing Templates"].waitForNonExistence(timeout: 5),
                       "applying should close the template list")
-        XCTAssertTrue(app.navigationBars["Add Bag to Trip"].waitForNonExistence(timeout: 5),
+        XCTAssertTrue(app.navigationBars["New Bag"].waitForNonExistence(timeout: 5),
                       "the new bag's form should close with the template list")
         XCTAssertTrue(app.staticTexts[essentialItems].firstMatch.waitForExistence(timeout: 5),
                       "the trip should count the template's items")
