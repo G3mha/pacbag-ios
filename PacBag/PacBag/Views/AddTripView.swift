@@ -25,24 +25,7 @@ struct AddTripView: View {
                         .lineLimit(2...4)
                 }
 
-                Section("Dates") {
-                    DatePicker("Start Date", selection: $startDate, displayedComponents: .date)
-                        .onChange(of: startDate) { _, newValue in
-                            // Ensure end date is after start date
-                            if endDate <= newValue {
-                                endDate = Calendar.current.date(byAdding: .day, value: 1, to: newValue) ?? newValue.addingTimeInterval(86400)
-                            }
-                        }
-
-                    DatePicker("End Date", selection: $endDate, in: startDate.addingTimeInterval(86400)..., displayedComponents: .date)
-
-                    HStack {
-                        Text("Duration")
-                        Spacer()
-                        Text(duration == 1 ? "1 day" : "\(duration) days")
-                            .foregroundColor(.secondary)
-                    }
-                }
+                TripDatesSection(startDate: $startDate, endDate: $endDate)
 
                 Section {
                     Toggle("Create with first bag", isOn: $createWithBag)
@@ -75,11 +58,6 @@ struct AddTripView: View {
             }
         }
         .plainFormSheet()
-    }
-    
-    private var duration: Int {
-        let calendar = Calendar.current
-        return calendar.dateComponents([.day], from: startDate, to: endDate).day ?? 0
     }
     
     private var isFormValid: Bool {
