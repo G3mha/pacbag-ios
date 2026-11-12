@@ -17,6 +17,14 @@ final class PacBagUITestsLaunchTests: XCTestCase {
         continueAfterFailure = false
     }
 
+    /// Each run sets its own orientation, and the last one can be landscape.
+    /// Put the simulator back so later tests and people find it upright.
+    override func tearDownWithError() throws {
+        MainActor.assumeIsolated {
+            XCUIDevice.shared.orientation = .portrait
+        }
+    }
+
     @MainActor
     func testLaunch() throws {
         let app = XCUIApplication()
