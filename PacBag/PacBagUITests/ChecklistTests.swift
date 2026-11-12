@@ -12,6 +12,9 @@ final class ChecklistTests: XCTestCase {
 
     override func setUpWithError() throws {
         continueAfterFailure = false
+        // The launch tests also run in landscape, and the simulator keeps
+        // whatever orientation the last test left it in.
+        XCUIDevice.shared.orientation = .portrait
         app = XCUIApplication()
         // CloudKit cannot resolve its container on a simulator with no iCloud
         // account and takes the app down with it. See CoreDataManager.
