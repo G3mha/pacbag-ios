@@ -16,8 +16,8 @@ struct PackingTemplate: Identifiable, Codable {
     let color: String
     let isDefault: Bool
     
-    init(name: String, description: String, tripType: TripType, duration: TripDuration, season: Season, items: [TemplateItem], icon: String, color: String, isDefault: Bool = true) {
-        self.id = UUID()
+    init(id: UUID = UUID(), name: String, description: String, tripType: TripType, duration: TripDuration, season: Season, items: [TemplateItem], icon: String, color: String, isDefault: Bool = true) {
+        self.id = id
         self.name = name
         self.description = description
         self.tripType = tripType

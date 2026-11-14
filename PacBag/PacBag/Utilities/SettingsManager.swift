@@ -3,39 +3,6 @@ import Foundation
 
 // MARK: - Enums
 
-enum WeightUnit: String, CaseIterable {
-    case kilograms = "kg"
-    case pounds = "lbs"
-    
-    var symbol: String {
-        return rawValue
-    }
-    
-    var displayName: String {
-        switch self {
-        case .kilograms:
-            return "Kilograms"
-        case .pounds:
-            return "Pounds"
-        }
-    }
-    
-    func convert(from value: Double, to targetUnit: WeightUnit) -> Double {
-        if self == targetUnit {
-            return value
-        }
-        
-        switch (self, targetUnit) {
-        case (.kilograms, .pounds):
-            return value * 2.20462
-        case (.pounds, .kilograms):
-            return value / 2.20462
-        default:
-            return value
-        }
-    }
-}
-
 enum AppTheme: String, CaseIterable {
     case system = "system"
     case light = "light"
@@ -68,7 +35,6 @@ enum AppTheme: String, CaseIterable {
 
 /// Every stored key. The strings can't change, because a renamed key resets someone's settings.
 enum DefaultsKey {
-    static let weightUnit = "settings_weight_unit"
     static let appTheme = "settings_app_theme"
     static let defaultItemSortOrder = "settings_default_item_sort_order"
     static let sortAscending = "settings_sort_ascending"
@@ -76,7 +42,7 @@ enum DefaultsKey {
     static let hasCompletedOnboarding = "hasCompletedOnboarding"
     static let customPackingTemplates = "CustomPackingTemplates"
     static let aiConsent = "ai_consent"
-    static let retired = ["settings_analytics_enabled", "settings_auto_packing_list",
+    static let retired = ["settings_weight_unit", "settings_analytics_enabled", "settings_auto_packing_list",
         "settings_smart_suggestions", "settings_show_weight_in_lists",
         "settings_default_packing_days_before_trip", "settings_default_bag_weight",
         "settings_default_reminder_days", "settings_first_launch", "settings_onboarding_completed",
@@ -91,12 +57,6 @@ class SettingsManager: ObservableObject {
     private let userDefaults = UserDefaults.standard
     
     // MARK: - Published Properties
-    
-    @Published var weightUnit: WeightUnit {
-        didSet {
-            userDefaults.set(weightUnit.rawValue, forKey: DefaultsKey.weightUnit)
-        }
-    }
     
     @Published var appTheme: AppTheme {
         didSet {
@@ -128,7 +88,6 @@ class SettingsManager: ObservableObject {
     
     private init() {
         // Load saved values or set defaults
-        self.weightUnit = WeightUnit(rawValue: userDefaults.string(forKey: DefaultsKey.weightUnit) ?? "") ?? .kilograms
         self.appTheme = AppTheme(rawValue: userDefaults.string(forKey: DefaultsKey.appTheme) ?? "") ?? .system
         self.defaultItemSortOrder = ItemSortOrder(rawValue: userDefaults.string(forKey: DefaultsKey.defaultItemSortOrder) ?? "") ?? .category
         self.sortAscending = userDefaults.object(forKey: DefaultsKey.sortAscending) as? Bool ?? true
@@ -144,7 +103,6 @@ class SettingsManager: ObservableObject {
     // MARK: - Public Methods
     
     func resetToDefaults() {
-        weightUnit = .kilograms
         appTheme = .system
         defaultItemSortOrder = .category
         sortAscending = true

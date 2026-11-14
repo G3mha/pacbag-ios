@@ -10,44 +10,22 @@ struct AddTripView: View {
     @State private var startDate = Date()
     @State private var endDate = Date().addingTimeInterval(86400 * 7) // 7 days from now
     @State private var tripDescription = ""
+    
     var body: some View {
         NavigationView {
-            Form {
-                Section(header: Text("Trip Information")) {
+            List {
+                Section {
                     TextField("Trip Name", text: $tripName)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                    
+
                     TextField("Destination", text: $destination)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                    
-                    TextField("Description (Optional)", text: $tripDescription, axis: .vertical)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .lineLimit(3...6)
+
+                    TextField("Description (optional)", text: $tripDescription, axis: .vertical)
+                        .lineLimit(2...4)
                 }
-                
-                Section(header: Text("Dates")) {
-                    DatePicker("Start Date", selection: $startDate, displayedComponents: .date)
-                        .onChange(of: startDate) { _, newValue in
-                            // Ensure end date is after start date
-                            if endDate <= newValue {
-                                endDate = Calendar.current.date(byAdding: .day, value: 1, to: newValue) ?? newValue.addingTimeInterval(86400)
-                            }
-                        }
-                    
-                    DatePicker("End Date", selection: $endDate, in: startDate.addingTimeInterval(86400)..., displayedComponents: .date)
-                    
-                    HStack {
-                        Text("Duration")
-                            .foregroundColor(.secondary)
-                        
-                        Spacer()
-                        
-                        Text("\(duration) days")
-                            .foregroundColor(.primary)
-                            .fontWeight(.medium)
-                    }
-                }
+
+                TripDatesSection(startDate: $startDate, endDate: $endDate)
             }
+            .listStyle(.plain)
             .navigationTitle("New Trip")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -65,11 +43,7 @@ struct AddTripView: View {
                 }
             }
         }
-    }
-    
-    private var duration: Int {
-        let calendar = Calendar.current
-        return calendar.dateComponents([.day], from: startDate, to: endDate).day ?? 0
+        .plainFormSheet()
     }
     
     private var isFormValid: Bool {

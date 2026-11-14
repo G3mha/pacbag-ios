@@ -2,9 +2,6 @@ import SwiftUI
 import CoreData
 
 struct SettingsView: View {
-    @ObservedObject private var aiConsent = AIConsent.shared
-    @ObservedObject private var syncMonitor = SyncMonitor.shared
-    @State private var showingAIConsent = false
     @Environment(\.dismiss) private var dismiss
     @Environment(\.managedObjectContext) private var viewContext
     @StateObject private var settingsManager = SettingsManager.shared
@@ -18,280 +15,106 @@ struct SettingsView: View {
     @State private var showingLandingPage = false
     @State private var showingResetConfirmation = false
     @StateObject private var onboardingManager = OnboardingManager.shared
+    @ObservedObject private var aiConsent = AIConsent.shared
+    @ObservedObject private var syncMonitor = SyncMonitor.shared
+    @State private var showingAIConsent = false
     
     var body: some View {
         NavigationView {
             List {
-                // User Preferences Section
-                Section(header: Text("Preferences")) {
-                    // Weight Unit Setting
-                    HStack {
-                        Image(systemName: "scalemass")
-                            .foregroundColor(.blue)
-                            .frame(width: 24)
-                        
-                        Text("Weight Unit")
-                        
-                        Spacer()
-                        
-                        Picker("Weight Unit", selection: $settingsManager.weightUnit) {
-                            ForEach(WeightUnit.allCases, id: \.self) { unit in
-                                Text(unit.symbol).tag(unit)
-                            }
-                        }
-                        .pickerStyle(SegmentedPickerStyle())
-                        .frame(width: 120)
-                    }
-                    
-                    // App Theme
-                    HStack {
-                        Image(systemName: "paintbrush")
-                            .foregroundColor(.purple)
-                            .frame(width: 24)
-                        
-                        Text("Appearance")
-                        
-                        Spacer()
-                        
-                        Picker("Appearance", selection: $settingsManager.appTheme) {
-                            ForEach(AppTheme.allCases, id: \.self) { theme in
-                                Text(theme.displayName).tag(theme)
-                            }
-                        }
-                        .pickerStyle(SegmentedPickerStyle())
-                        .frame(width: 160)
-                    }
-                    
-                    // Item Sort Order
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Image(systemName: "arrow.up.arrow.down")
-                                .foregroundColor(.blue)
-                                .frame(width: 24)
-                            
-                            Text("Default Item Sorting")
-                            
-                            Spacer()
-                        }
-                        
-                        HStack {
-                            Text("Sort by:")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                            
-                            Spacer()
-                            
-                            Picker("Sort Order", selection: $settingsManager.defaultItemSortOrder) {
-                                ForEach(ItemSortOrder.allCases, id: \.self) { order in
-                                    Text(order.displayName).tag(order)
-                                }
-                            }
-                            .pickerStyle(MenuPickerStyle())
-                        }
-                        
-                        HStack {
-                            Text("Direction:")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                            
-                            Spacer()
-                            
-                            Picker("Sort Direction", selection: $settingsManager.sortAscending) {
-                                Text("Ascending (A→Z)").tag(true)
-                                Text("Descending (Z→A)").tag(false)
-                            }
-                            .pickerStyle(SegmentedPickerStyle())
-                            .frame(width: 180)
+                Section(header: Text("Preferences").solidSectionHeader()) {
+                    Picker("Appearance", selection: $settingsManager.appTheme) {
+                        ForEach(AppTheme.allCases, id: \.self) { theme in
+                            Text(theme.displayName).tag(theme)
                         }
                     }
+                    .pickerStyle(.menu)
+
+                    Picker("Sort Items By", selection: $settingsManager.defaultItemSortOrder) {
+                        ForEach(ItemSortOrder.allCases, id: \.self) { order in
+                            Text(order.displayName).tag(order)
+                        }
+                    }
+                    .pickerStyle(.menu)
+
+                    Picker("Sort Direction", selection: $settingsManager.sortAscending) {
+                        Text("Ascending").tag(true)
+                        Text("Descending").tag(false)
+                    }
+                    .pickerStyle(.menu)
+
                 }
-                
-                // Notifications Section
-                Section(
-                    header: Text("Notifications"),
-                    footer: Text("Get notified 1 week, 3 days and 1 day before each trip, and on the morning it starts.")
-                ) {
+
+                Section {
                     Toggle("Packing reminders", isOn: $settingsManager.remindersEnabled)
                         .onChange(of: settingsManager.remindersEnabled) { _, _ in
                             Task { await notificationManager.applyReminderSetting() }
                         }
-                    
-                    Button(action: { showingNotificationSettings = true }) {
-                        HStack {
-                            Image(systemName: "bell")
-                                .foregroundColor(.orange)
-                                .frame(width: 24)
-                            
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Notification Settings")
-                                    .foregroundColor(.primary)
-                                
-                                Text(notificationStatusText)
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            
-                            Spacer()
-                            
-                            Image(systemName: "chevron.right")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
+
+                    sheetRow("Notification Settings", value: notificationStatusText) {
+                        showingNotificationSettings = true
                     }
-                    .buttonStyle(PlainButtonStyle())
-                    
+                } header: {
+                    Text("Notifications").solidSectionHeader()
+                } footer: {
+                    Text("Get notified 1 week, 3 days and 1 day before each trip, and on the morning it starts.")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
                 }
-                
-                // Categories Section
-                Section(header: Text("Categories")) {
-                    Button(action: { showingCategoryManagement = true }) {
-                        HStack {
-                            Image(systemName: "folder.badge.gearshape")
-                                .foregroundColor(.indigo)
-                                .frame(width: 24)
-                            
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Manage Categories")
-                                    .foregroundColor(.primary)
-                                
-                                Text("\(CategoryManager.shared.categories.count) categories")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            
-                            Spacer()
-                            
-                            Image(systemName: "chevron.right")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
+
+                Section(header: Text("Categories").solidSectionHeader()) {
+                    sheetRow("Manage Categories", value: "\(CategoryManager.shared.categories.count)") {
+                        showingCategoryManagement = true
                     }
-                    .buttonStyle(PlainButtonStyle())
-                    
-                    Button(action: { showingCategoryAnalytics = true }) {
-                        HStack {
-                            Image(systemName: "chart.bar")
-                                .foregroundColor(.green)
-                                .frame(width: 24)
-                            
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text("Category Analytics")
-                                    .foregroundColor(.primary)
-                                
-                                Text("Usage insights and trends")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            
-                            Spacer()
-                            
-                            Image(systemName: "chevron.right")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                }
-                
-                // Data Management Section
-                Section(header: Text("Data Management")) {
-                    // iCloud Sync Status
-                    HStack {
-                        Image(systemName: "icloud")
-                            .foregroundColor(.blue)
-                            .frame(width: 24)
-                        
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("iCloud Sync")
-                            Text(iCloudSyncStatus)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        Spacer()
-                        
-                        Image(systemName: iCloudSyncIcon)
-                            .foregroundColor(iCloudSyncColor)
+
+                    sheetRow("Category Analytics") {
+                        showingCategoryAnalytics = true
                     }
                 }
-                
-                // Privacy & Security Section
-                Section(header: Text("Privacy & Security")) {
+
+                Section(header: Text("iCloud").solidSectionHeader()) {
+                    LabeledContent("Sync", value: syncMonitor.text)
+                }
+
+                Section(header: Text("Privacy & Security").solidSectionHeader()) {
                     Toggle("AI estimates", isOn: Binding(
-                        get: { AIConsent.shared.isGranted },
+                        get: { aiConsent.isGranted },
                         set: { isOn in
-                            if isOn { showingAIConsent = true } else { AIConsent.shared.decline() }
+                            if isOn { showingAIConsent = true } else { aiConsent.decline() }
                         }
                     ))
-                    .sheet(isPresented: $showingAIConsent) { ConsentSheet() }
-                    
+
                     Button("Reset All Data", role: .destructive) {
                         showingDeleteConfirmation = true
                     }
                 }
-                
-                // Developer Section
+
                 #if DEBUG
-                Section(header: Text("Developer")) {
-                    Button(action: { showingLandingPage = true }) {
-                        HStack {
-                            Image(systemName: "star.fill")
-                                .foregroundColor(.yellow)
-                                .frame(width: 24)
-                            
-                            Text("View Landing Page")
-                                .foregroundColor(.primary)
-                            
-                            Spacer()
-                            
-                            Image(systemName: "chevron.right")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
+                Section(header: Text("Developer").solidSectionHeader()) {
+                    sheetRow("View Landing Page") {
+                        showingLandingPage = true
                     }
-                    .buttonStyle(PlainButtonStyle())
-                    
+
                     Button("Reset App", role: .destructive) {
                         showingResetConfirmation = true
                     }
                 }
                 #endif
-                
-                // About Section
-                Section(header: Text("About")) {
-                    Button(action: { showingAbout = true }) {
-                        HStack {
-                            Image(systemName: "info.circle")
-                                .foregroundColor(.gray)
-                                .frame(width: 24)
-                            
-                            Text("About PacBag")
-                                .foregroundColor(.primary)
-                            
-                            Spacer()
-                            
-                            Image(systemName: "chevron.right")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
+
+                Section(header: Text("About").solidSectionHeader()) {
+                    sheetRow("About PacBag") {
+                        showingAbout = true
                     }
-                    .buttonStyle(PlainButtonStyle())
-                    
-                    HStack {
-                        Image(systemName: "number")
-                            .foregroundColor(.gray)
-                            .frame(width: 24)
-                        
-                        Text("Version")
-                        
-                        Spacer()
-                        
-                        Text(appVersion)
-                            .foregroundColor(.secondary)
-                    }
+
+                    linkRow("Privacy Policy", destination: LegalLinks.privacyPolicy)
+                    linkRow("Terms of Use", destination: LegalLinks.termsOfUse)
+
+                    LabeledContent("Version", value: appVersion)
                 }
             }
+            .listStyle(.plain)
             .navigationTitle("Settings")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Done") {
@@ -299,6 +122,16 @@ struct SettingsView: View {
                     }
                 }
             }
+        }
+        .plainFormSheet()
+        .sheet(isPresented: $showingAIConsent) {
+            ConsentSheet()
+        }
+        .task {
+            await syncMonitor.refresh(
+                cloudKitIsOn: CoreDataManager.shared.storeDescription.cloudKitContainerOptions != nil,
+                containerID: CoreDataManager.cloudKitContainerID
+            )
         }
         .sheet(isPresented: $showingNotificationSettings) {
             NotificationSettingsView()
@@ -331,17 +164,48 @@ struct SettingsView: View {
         } message: {
             Text("This will reset the app to its initial state and show the onboarding flow again.")
         }
-        .task {
-            await syncMonitor.refresh(
-                cloudKitIsOn: CoreDataManager.shared.storeDescription.cloudKitContainerOptions != nil,
-                containerID: CoreDataManager.cloudKitContainerID
-            )
-        }
         .onAppear {
             notificationManager.checkAuthorizationStatus()
         }
     }
     
+    private func sheetRow(_ title: String, value: String? = nil, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack {
+                Text(title)
+                    .foregroundColor(.primary)
+
+                Spacer()
+
+                if let value {
+                    Text(value)
+                        .foregroundColor(.secondary)
+                }
+
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func linkRow(_ title: String, destination: URL) -> some View {
+        Link(destination: destination) {
+            HStack {
+                Text(title)
+                    .foregroundColor(.primary)
+
+                Spacer()
+
+                Image(systemName: "arrow.up.right")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+        }
+    }
+
     private var notificationStatusText: String {
         switch notificationManager.authorizationStatus {
         case .authorized:
@@ -353,18 +217,6 @@ struct SettingsView: View {
         default:
             return "Unknown"
         }
-    }
-    
-    private var iCloudSyncStatus: String {
-        return syncMonitor.text
-    }
-    
-    private var iCloudSyncIcon: String {
-        return syncMonitor.icon
-    }
-    
-    private var iCloudSyncColor: Color {
-        return syncMonitor.color
     }
     
     private var appVersion: String {
@@ -409,50 +261,22 @@ struct AboutView: View {
     
     var body: some View {
         NavigationView {
-            VStack(spacing: 24) {
-                Spacer()
-                
-                Image(systemName: "suitcase.fill")
-                    .font(.system(size: 80))
-                    .foregroundColor(.blue)
-                
-                VStack(spacing: 12) {
+            List {
+                VStack(alignment: .leading, spacing: 2) {
                     Text("PacBag")
-                        .font(.largeTitle)
-                        .fontWeight(.bold)
-                    
-                    Text("Smart Travel Packing")
-                        .font(.title3)
-                        .foregroundColor(.secondary)
-                    
-                    Text("Version \(appVersion)")
-                        .font(.caption)
+                        .font(.title2)
+                        .fontWeight(.semibold)
+
+                    Text("Travel packing lists")
                         .foregroundColor(.secondary)
                 }
-                
-                VStack(spacing: 16) {
-                    Text("PacBag keeps track of what's in each bag and what it weighs, with reminders before you leave.")
-                        .font(.body)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                    
-                    HStack(spacing: 20) {
-                        VStack {
-                            Text("☁️")
-                                .font(.title2)
-                            Text("iCloud Sync")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    .padding()
-                    .background(Color(.systemGray6))
-                    .cornerRadius(12)
-                }
-                
-                Spacer()
+                .listRowSeparator(.hidden, edges: .top)
+
+                Text("PacBag keeps your packing lists, weights and reminders for each trip.")
+
+                LabeledContent("Version", value: appVersion)
             }
+            .listStyle(.plain)
             .navigationTitle("About")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -463,6 +287,7 @@ struct AboutView: View {
                 }
             }
         }
+        .plainFormSheet()
     }
     
     private var appVersion: String {

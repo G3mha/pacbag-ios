@@ -7,13 +7,8 @@ final class DefaultsKeyTests: XCTestCase {
 
     func testSettingsWriteToTheirStoredKeys() {
         let settings = SettingsManager.shared
-        let saved = (settings.weightUnit, settings.appTheme, settings.defaultItemSortOrder, settings.sortAscending)
-        defer { (settings.weightUnit, settings.appTheme, settings.defaultItemSortOrder, settings.sortAscending) = saved }
-
-        settings.weightUnit = .pounds
-        XCTAssertEqual(defaults.string(forKey: "settings_weight_unit"), "lbs")
-        settings.weightUnit = .kilograms
-        XCTAssertEqual(defaults.string(forKey: "settings_weight_unit"), "kg")
+        let saved = (settings.appTheme, settings.defaultItemSortOrder, settings.sortAscending)
+        defer { (settings.appTheme, settings.defaultItemSortOrder, settings.sortAscending) = saved }
 
         settings.appTheme = .dark
         XCTAssertEqual(defaults.string(forKey: "settings_app_theme"), "dark")
@@ -37,7 +32,6 @@ final class DefaultsKeyTests: XCTestCase {
     }
 
     func testKeysEqualTheirStoredStrings() {
-        XCTAssertEqual(DefaultsKey.weightUnit, "settings_weight_unit")
         XCTAssertEqual(DefaultsKey.appTheme, "settings_app_theme")
         XCTAssertEqual(DefaultsKey.defaultItemSortOrder, "settings_default_item_sort_order")
         XCTAssertEqual(DefaultsKey.sortAscending, "settings_sort_ascending")
@@ -48,15 +42,10 @@ final class DefaultsKeyTests: XCTestCase {
 
     func testRetiredKeysStayRetired() {
         XCTAssertEqual(Set(DefaultsKey.retired), [
-            "settings_analytics_enabled", "settings_auto_packing_list", "settings_smart_suggestions",
+            "settings_weight_unit", "settings_analytics_enabled", "settings_auto_packing_list", "settings_smart_suggestions",
             "settings_show_weight_in_lists", "settings_default_packing_days_before_trip",
             "settings_default_bag_weight", "settings_default_reminder_days", "settings_first_launch",
             "settings_onboarding_completed", "CustomPackingCategories",
         ])
-    }
-
-    func testWeightUnitRawValues() {
-        XCTAssertEqual(WeightUnit.kilograms.rawValue, "kg")
-        XCTAssertEqual(WeightUnit.pounds.rawValue, "lbs")
     }
 }

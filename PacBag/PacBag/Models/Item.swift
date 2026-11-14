@@ -35,11 +35,6 @@ extension Item {
     @NSManaged public var categoryEntity: Category?
     @NSManaged public var subcategoryEntity: SubCategory?
     
-    /// A deleted item's `id` and `name` read as nil, which traps in these non-optional properties.
-    var isGone: Bool {
-        return isDeleted || managedObjectContext == nil
-    }
-    
     // Computed properties for convenience
     var totalWeight: Double {
         return weight * Double(quantity)
