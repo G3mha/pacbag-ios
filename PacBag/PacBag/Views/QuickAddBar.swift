@@ -79,7 +79,9 @@ struct QuickAddBar: View {
         .background(.bar)
         .contentShape(Rectangle())
         .onTapGesture { isFocused = true }
-        .task(id: bag.itemsArray.count) { await fill.fillMissing(in: bag, context: viewContext) }
+        // Detached from the view: leaving the bag would cancel a request the server already paid for,
+        // free its items, and opening the bag again would send the same request twice.
+        .task(id: bag.itemsArray.count) { Task { await fill.fillMissing(in: bag, context: viewContext) } }
         .onChange(of: pickedPhoto) { _, newPhoto in
             guard let newPhoto else { return }
             pickedPhoto = nil
