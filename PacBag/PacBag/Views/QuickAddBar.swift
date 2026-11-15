@@ -31,6 +31,11 @@ struct QuickAddBar: View {
                         .textInputAutocapitalization(.sentences)
                         .accessibilityIdentifier(AccessibilityID.quickAddField)
                         .onChange(of: text) { _, newText in
+                            // Focusing the field can leave a lone space in it, which hides the placeholder for good.
+                            if !newText.isEmpty && newText.allSatisfy({ $0 == " " }) {
+                                text = ""
+                                return
+                            }
                             guard newText.contains(where: \.isNewline) else { return }
                             commit(newText)
                         }
