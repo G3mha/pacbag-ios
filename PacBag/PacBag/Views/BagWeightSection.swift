@@ -14,12 +14,15 @@ struct BagWeightSection: View {
             WeightSliderRow(title: "Empty bag", weight: $bagWeight, range: 0...10, step: 0.5)
             WeightSliderRow(title: "Weight limit", weight: $maxWeight, range: 1...50, step: 0.5)
 
-            HStack {
-                Text("Left for items")
-                Spacer()
-                Text("\(availableWeight.oneDecimal)kg")
-                    .foregroundColor(maxWeight > bagWeight ? .secondary : .red)
-            }
+            Equation(
+                left: .init(value: "\(maxWeight.oneDecimal)kg", caption: "limit"),
+                sign: "−",
+                right: .init(value: "\(bagWeight.oneDecimal)kg", caption: "empty bag"),
+                result: .init(value: "\(availableWeight.oneDecimal)kg", caption: "for items"),
+                resultTint: maxWeight > bagWeight ? .accentColor : .red,
+                spokenText: "\(maxWeight.oneDecimal) kilogram limit, minus \(bagWeight.oneDecimal) for the empty bag, "
+                    + "leaves \(availableWeight.oneDecimal) kilograms for items"
+            )
         } header: {
             Text("Weight")
                 .solidSectionHeader()
