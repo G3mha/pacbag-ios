@@ -11,4 +11,15 @@ extension View {
         }
     }
 
+    /// A glass capsule button, or a bordered one before iOS 26. Color it with `.tint`.
+    @ViewBuilder func glassButtonStyle() -> some View {
+        Group {
+            if #available(iOS 26, *) {
+                buttonStyle(.glass)
+            } else {
+                buttonStyle(.bordered)
+            }
+        }
+        .buttonBorderShape(.capsule)
+    }
 }
