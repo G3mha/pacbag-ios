@@ -175,11 +175,11 @@ struct TripDetailView: View {
             BagRowView(bag: bag)
         }
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-            Button("Delete", role: .destructive) {
+            Button("Delete", systemImage: "trash", role: .destructive) {
                 bagToDelete = bag
             }
 
-            Button("Share") {
+            Button("Share", systemImage: "square.and.arrow.up") {
                 bagToShare = bag
             }
         }

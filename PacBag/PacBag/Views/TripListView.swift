@@ -87,11 +87,11 @@ struct TripListView: View {
                         TripRowView(trip: trip)
                     }
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                        Button("Delete", role: .destructive) {
+                        Button("Delete", systemImage: "trash", role: .destructive) {
                             tripToDelete = trip
                         }
 
-                        Button("Share") {
+                        Button("Share", systemImage: "square.and.arrow.up") {
                             tripToShare = trip
                         }
                     }
