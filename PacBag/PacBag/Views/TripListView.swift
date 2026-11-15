@@ -45,15 +45,11 @@ struct TripListView: View {
             .navigationTitle("My Trips")
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: { showingSettings = true }) {
-                        Image(systemName: "gearshape")
-                    }
+                    Button("Settings", systemImage: "gearshape") { showingSettings = true }
                 }
 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { showingAddTrip = true }) {
-                        Image(systemName: "plus")
-                    }
+                    Button("Add", systemImage: "plus") { showingAddTrip = true }
                 }
             }
             .sheet(isPresented: $showingAddTrip) {

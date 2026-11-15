@@ -33,13 +33,13 @@ struct CustomCategoryView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
+                    Button("Cancel", systemImage: "xmark") {
                         dismiss()
                     }
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
+                    Button("Save", systemImage: "checkmark") {
                         let trimmedCategory = category.trimmingCharacters(in: .whitespacesAndNewlines)
                         let trimmedSubcategory = subcategory.trimmingCharacters(in: .whitespacesAndNewlines)
                         

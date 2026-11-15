@@ -46,13 +46,13 @@ struct CustomTemplateCreationView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
+                    Button("Cancel", systemImage: "xmark") {
                         dismiss()
                     }
                 }
 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
+                    Button("Save", systemImage: "checkmark") {
                         saveTemplate()
                     }
                     .disabled(templateName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
@@ -229,7 +229,7 @@ struct CustomTemplateManagementView: View {
             .navigationTitle("Custom Templates")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
+                    Button("Done", systemImage: "checkmark") {
                         dismiss()
                     }
                 }

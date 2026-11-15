@@ -103,7 +103,7 @@ struct ItemDetailView: View {
         .navigationBarBackButtonHidden(isEditing)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button(isEditing ? "Save" : "Edit") {
+                Button(isEditing ? "Save" : "Edit", systemImage: isEditing ? "checkmark" : "pencil") {
                     if isEditing {
                         saveChanges()
                     } else {
@@ -114,7 +114,7 @@ struct ItemDetailView: View {
 
             if isEditing {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
+                    Button("Cancel", systemImage: "xmark") {
                         cancelEditing()
                     }
                 }
