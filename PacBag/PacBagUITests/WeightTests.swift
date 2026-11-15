@@ -16,7 +16,7 @@ final class WeightTests: XCTestCase {
         // CloudKit cannot resolve its container on a simulator with no iCloud
         // account and takes the app down with it. See CoreDataManager.
         app.launchArguments += ["-PacBagDisableCloudKit"]
-        // These tests look for "4.5 kg", which is "4,5 kg" in a region with decimal commas.
+        // These tests look for "4.5kg", which is "4,5kg" in a region with decimal commas.
         app.launchArguments += ["-AppleLocale", "en_US"]
         app.launch()
     }
@@ -27,13 +27,13 @@ final class WeightTests: XCTestCase {
         openTrip("Weight Check")
         openAddBag()
 
-        // Defaults for a suitcase: 4.5 kg empty against a 23.0 kg limit.
-        XCTAssertTrue(app.staticTexts["4.5 kg"].firstMatch.waitForExistence(timeout: 10),
-                      "empty bag weight did not default to 4.5 kg")
-        XCTAssertTrue(app.staticTexts["23.0 kg"].firstMatch.exists,
-                      "maximum total weight did not default to 23.0 kg")
-        XCTAssertTrue(app.staticTexts["18.5 kg"].firstMatch.exists,
-                      "available capacity should be 23.0 - 4.5 = 18.5 kg")
+        // Defaults for a suitcase: 4.5kg empty against a 23.0kg limit.
+        XCTAssertTrue(app.staticTexts["4.5kg"].firstMatch.waitForExistence(timeout: 10),
+                      "empty bag weight did not default to 4.5kg")
+        XCTAssertTrue(app.staticTexts["23.0kg"].firstMatch.exists,
+                      "maximum total weight did not default to 23.0kg")
+        XCTAssertTrue(app.staticTexts["18.5kg"].firstMatch.exists,
+                      "available capacity should be 23.0 - 4.5 = 18.5kg")
     }
 
     func testBagTypeChangesTheEmptyWeight() throws {
@@ -42,7 +42,7 @@ final class WeightTests: XCTestCase {
         openTrip("Type Check")
         openAddBag()
 
-        // A tote is 0.5 kg empty where a suitcase is 4.5, so picking one has to
+        // A tote is 0.5kg empty where a suitcase is 4.5, so picking one has to
         // move both the bag weight and what is left for items.
         let type = app.buttons["Type, Suitcase"].firstMatch
         XCTAssertTrue(type.waitForExistence(timeout: 10), "the bag type menu never appeared")
@@ -50,8 +50,8 @@ final class WeightTests: XCTestCase {
         let backpack = app.buttons["Backpack"].firstMatch
         XCTAssertTrue(backpack.waitForExistence(timeout: 5), "the type menu never opened")
         backpack.tap()
-        XCTAssertTrue(app.staticTexts["1.5 kg"].firstMatch.waitForExistence(timeout: 5),
-                      "a backpack should default to 1.5 kg empty")
+        XCTAssertTrue(app.staticTexts["1.5kg"].firstMatch.waitForExistence(timeout: 5),
+                      "a backpack should default to 1.5kg empty")
     }
 
     // MARK: - Steps

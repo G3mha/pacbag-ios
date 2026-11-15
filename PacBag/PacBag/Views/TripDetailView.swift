@@ -269,7 +269,7 @@ struct BagRowView: View {
                 Text("\(packedText) · ")
                     .foregroundColor(.secondary)
 
-                Text(isOverLimit ? "\(bag.totalWeight.oneDecimal) kg, over limit" : "\(bag.totalWeight.oneDecimal) kg")
+                Text(isOverLimit ? "\(bag.totalWeight.oneDecimal)kg, over limit" : "\(bag.totalWeight.oneDecimal)kg")
                     .foregroundColor(isOverLimit ? .red : .secondary)
             }
             .font(.subheadline)

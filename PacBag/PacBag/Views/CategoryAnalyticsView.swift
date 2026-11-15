@@ -253,7 +253,7 @@ private struct InsightsSections: View {
         if insights.heaviestCategory != nil || insights.mostItemsCategory != nil {
             Section(header: Text("Highlights").solidSectionHeader()) {
                 if let heaviest = insights.heaviestCategory {
-                    LabeledContent("Heaviest", value: "\(heaviest.key), \(heaviest.value.oneDecimal) kg")
+                    LabeledContent("Heaviest", value: "\(heaviest.key), \(heaviest.value.oneDecimal)kg")
                 }
 
                 if let mostItems = insights.mostItemsCategory {
@@ -284,7 +284,7 @@ private struct InsightsSections: View {
         if !weights.isEmpty {
             Section(header: Text("Weight by Category").solidSectionHeader()) {
                 ForEach(weights, id: \.0) { category, weight in
-                    LabeledContent(category, value: "\(weight.oneDecimal) kg")
+                    LabeledContent(category, value: "\(weight.oneDecimal)kg")
                 }
             }
         }

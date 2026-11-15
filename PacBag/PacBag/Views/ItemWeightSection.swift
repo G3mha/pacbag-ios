@@ -21,7 +21,7 @@ struct ItemWeightSection: View {
             HStack {
                 Text("Total")
                 Spacer()
-                Text("\((weight * Double(quantity)).oneDecimal) kg")
+                Text("\((weight * Double(quantity)).oneDecimal)kg")
                     .foregroundColor(.secondary)
             }
         }

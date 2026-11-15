@@ -225,7 +225,7 @@ struct TemplateDetailView: View {
 
                     LabeledContent("Items", value: "\(template.items.count)")
                     LabeledContent("Essential", value: "\(essentialItems.count)")
-                    LabeledContent("Estimated Weight", value: "\(totalWeight.oneDecimal) kg")
+                    LabeledContent("Estimated Weight", value: "\(totalWeight.oneDecimal)kg")
                 }
 
                 if !essentialItems.isEmpty {
@@ -367,7 +367,7 @@ struct TemplateItemRow: View {
 
     private var details: String {
         guard item.quantity > 1 else { return item.category }
-        return "\(item.category) · \(item.weight.oneDecimal) kg each"
+        return "\(item.category) · \(item.weight.oneDecimal)kg each"
     }
 
     var body: some View {
@@ -403,7 +403,7 @@ struct TemplateItemRow: View {
 
                 Spacer()
 
-                Text("\((item.weight * Double(item.quantity)).oneDecimal) kg")
+                Text("\((item.weight * Double(item.quantity)).oneDecimal)kg")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
             }

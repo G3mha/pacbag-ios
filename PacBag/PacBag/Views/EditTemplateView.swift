@@ -140,7 +140,7 @@ struct EditableTemplateItemRow: View {
     let onDelete: () -> Void
 
     private var details: String {
-        var parts = [item.category, "\((item.weight * Double(item.quantity)).oneDecimal) kg"]
+        var parts = [item.category, "\((item.weight * Double(item.quantity)).oneDecimal)kg"]
         if item.isEssential {
             parts.append("Essential")
         }

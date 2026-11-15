@@ -17,7 +17,7 @@ struct BagWeightSection: View {
             HStack {
                 Text("Left for items")
                 Spacer()
-                Text("\(availableWeight.oneDecimal) kg")
+                Text("\(availableWeight.oneDecimal)kg")
                     .foregroundColor(maxWeight > bagWeight ? .secondary : .red)
             }
         } header: {
@@ -42,13 +42,13 @@ struct WeightSliderRow: View {
             HStack {
                 Text(title)
                 Spacer()
-                Text("\(weight.oneDecimal) kg")
+                Text("\(weight.oneDecimal)kg")
                     .foregroundColor(.secondary)
             }
 
             Slider(value: $weight, in: range, step: step)
                 .accessibilityLabel(title)
-                .accessibilityValue("\(weight.oneDecimal) kg")
+                .accessibilityValue("\(weight.oneDecimal)kg")
         }
         .padding(.vertical, 2)
     }

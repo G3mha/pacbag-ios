@@ -19,8 +19,8 @@ struct PackingProgressView: View {
     }
 
     private var weightText: String {
-        guard let maxWeight, maxWeight > 0 else { return "\(weight.oneDecimal) kg" }
-        let text = "\(weight.oneDecimal) / \(maxWeight.oneDecimal) kg"
+        guard let maxWeight, maxWeight > 0 else { return "\(weight.oneDecimal)kg" }
+        let text = "\(weight.oneDecimal) / \(maxWeight.oneDecimal)kg"
         return isOverLimit ? "\(text), over limit" : text
     }
 

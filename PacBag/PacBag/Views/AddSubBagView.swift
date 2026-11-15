@@ -45,7 +45,7 @@ struct AddSubBagView: View {
                     HStack {
                         Text("Free in \(parentBag.name)")
                         Spacer()
-                        Text("\(availableWeight.oneDecimal) kg")
+                        Text("\(availableWeight.oneDecimal)kg")
                             .foregroundColor(fitsInParent ? .secondary : .red)
                     }
                 } header: {
@@ -54,7 +54,7 @@ struct AddSubBagView: View {
                 } footer: {
                     Text(fitsInParent
                          ? "The sub-bag's limit has to fit in what's left of \(parentBag.name)."
-                         : "Lower the limit to \(availableWeight.oneDecimal) kg or less to save.")
+                         : "Lower the limit to \(availableWeight.oneDecimal)kg or less to save.")
                         .font(.footnote)
                         .foregroundColor(.secondary)
                 }

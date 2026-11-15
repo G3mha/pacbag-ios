@@ -178,8 +178,8 @@ struct ItemDetailView: View {
 
             detailRow("Category", item.fullCategory)
             detailRow("Quantity", "\(item.quantity)")
-            detailRow("Per item", item.isWeighed ? "\(item.weight.oneDecimal) kg" : "not weighed")
-            detailRow("Total", "\(item.totalWeight.oneDecimal) kg")
+            detailRow("Per item", item.isWeighed ? "\(item.weight.oneDecimal)kg" : "not weighed")
+            detailRow("Total", "\(item.totalWeight.oneDecimal)kg")
             detailRow("Bag", item.bag.map(bagName) ?? "No bag")
         }
     }
