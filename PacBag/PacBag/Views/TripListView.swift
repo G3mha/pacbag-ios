@@ -55,7 +55,7 @@ struct TripListView: View {
                             .foregroundStyle(.white)
                     }
                     .accessibilityLabel("Add")
-                    .buttonStyle(.borderedProminent)
+                    .glassButtonStyle(prominent: true, shape: .circle)
                 }
             }
             .sheet(isPresented: $showingAddTrip) {
@@ -185,7 +185,7 @@ struct EmptyTripsView: View {
             Button("Create Your First Trip") {
                 onAddTrip()
             }
-            .buttonStyle(.borderedProminent)
+            .glassButtonStyle(prominent: true)
             .padding(.top, 4)
         }
         .padding()

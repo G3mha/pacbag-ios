@@ -80,7 +80,7 @@ struct TripDetailView: View {
                         .foregroundStyle(.white)
                 }
                 .accessibilityLabel("Add Bag")
-                .buttonStyle(.borderedProminent)
+                .glassButtonStyle(prominent: true, shape: .circle)
             }
 
             ToolbarItem(placement: .navigationBarTrailing) {
@@ -294,7 +294,7 @@ struct EmptyBagsForTripView: View {
             Button("Add Your First Bag") {
                 onAddBag()
             }
-            .buttonStyle(.borderedProminent)
+            .glassButtonStyle(prominent: true)
             .padding(.top, 4)
         }
         .frame(maxWidth: .infinity)
