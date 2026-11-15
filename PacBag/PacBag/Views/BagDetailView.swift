@@ -90,6 +90,7 @@ struct BagDetailView: View {
                         NavigationLink(destination: SubBagDetailView(subBag: subBag)) {
                             BagRowView(bag: subBag)
                         }
+                        .cardRow()
                     }
                 }
             }

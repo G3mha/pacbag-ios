@@ -146,6 +146,7 @@ struct TripDetailView: View {
         NavigationLink(destination: BagDetailView(bag: bag)) {
             BagRowView(bag: bag)
         }
+        .cardRow()
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             Button("Delete", systemImage: "trash", role: .destructive) {
                 bagToDelete = bag
@@ -214,35 +215,6 @@ struct TripDetailView: View {
         } catch {
             print("Failed to save context: \(error)")
         }
-    }
-}
-
-/// A bag as a single line in a list. Trips use it for their bags and bags for their sub-bags.
-struct BagRowView: View {
-    @ObservedObject var bag: Bag
-
-    private var isOverLimit: Bool {
-        bag.maxWeight > 0 && bag.totalWeight > bag.maxWeight
-    }
-
-    private var packedText: String {
-        bag.totalItemsCount > 0 ? "\(bag.packedItemsCount) of \(bag.totalItemsCount) packed" : "No items yet"
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(bag.name.isEmpty ? "Unnamed Bag" : bag.name)
-
-            HStack(spacing: 0) {
-                Text("\(packedText) · ")
-                    .foregroundColor(.secondary)
-
-                Text(isOverLimit ? "\(bag.totalWeight.oneDecimal)kg, over limit" : "\(bag.totalWeight.oneDecimal)kg")
-                    .foregroundColor(isOverLimit ? .red : .secondary)
-            }
-            .font(.subheadline)
-        }
-        .padding(.vertical, 2)
     }
 }
 
