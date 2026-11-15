@@ -23,7 +23,9 @@ final class TemplateTests: XCTestCase {
         app = XCUIApplication()
         // CloudKit cannot resolve its container on a simulator with no iCloud
         // account and takes the app down with it. See CoreDataManager.
-        app.launchArguments += ["-PacBagDisableCloudKit"]
+        // Each launch starts on an empty store, so trips left by earlier runs
+        // can't push a new trip below where scrolling reaches.
+        app.launchArguments += [LaunchOption.disableCloudKit, LaunchOption.inMemoryStore]
         app.launch()
         dismissOnboardingIfPresent()
     }
