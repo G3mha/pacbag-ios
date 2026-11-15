@@ -19,66 +19,52 @@ struct QuickAddBar: View {
     @FocusState private var isFocused: Bool
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            if !stillAdded.isEmpty {
-                HStack {
-                    Text(addedSummary)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .lineLimit(1)
+        VStack(spacing: 8) {
+            banner
 
-                    Spacer()
+            HStack(alignment: .bottom, spacing: 10) {
+                HStack(alignment: .bottom, spacing: 10) {
+                    TextField("Add an item, like 2 socks", text: $text, axis: .vertical)
+                        .lineLimit(1...4)
+                        .focused($isFocused)
+                        .textInputAutocapitalization(.sentences)
+                        .accessibilityIdentifier(AccessibilityID.quickAddField)
+                        .onChange(of: text) { _, newText in
+                            guard newText.contains(where: \.isNewline) else { return }
+                            commit(newText)
+                        }
 
-                    Button("Undo", action: undo)
-                        .font(.caption)
-                        .accessibilityIdentifier(AccessibilityID.quickAddUndo)
+                    photoButton
                 }
-            }
+                .padding(.leading, 16)
+                .padding(.trailing, 14)
+                .padding(.vertical, 11)
+                .frame(minHeight: Self.height)
+                .surface(in: RoundedRectangle(cornerRadius: Self.height / 2, style: .continuous))
 
-            if consent.shouldOffer && !AIFill.waiting(in: bag).isEmpty {
-                Button(offerText) { showingConsent = true }
-                    .font(.caption)
-                    .accessibilityIdentifier(AccessibilityID.quickAddOffer)
-            }
-
-            HStack(alignment: .top, spacing: 12) {
-                TextField("Add an item, like 2 socks", text: $text, axis: .vertical)
-                    .lineLimit(1...4)
-                    .focused($isFocused)
-                    .textInputAutocapitalization(.sentences)
-                    .accessibilityIdentifier(AccessibilityID.quickAddField)
-                    .onChange(of: text) { _, newText in
-                        guard newText.contains(where: \.isNewline) else { return }
-                        commit(newText)
-                    }
-
-                if consent.isGranted {
-                    PhotosPicker(selection: $pickedPhoto, matching: .images) {
-                        Image(systemName: "camera")
-                    }
-                    .accessibilityLabel("Add from a photo")
-                    .accessibilityIdentifier(AccessibilityID.quickAddPhoto)
-                } else if consent.shouldOffer {
-                    Button { showingConsent = true } label: {
-                        Image(systemName: "camera")
-                    }
-                    .accessibilityLabel("Add from a photo")
-                    .accessibilityIdentifier(AccessibilityID.quickAddPhoto)
+                // Empty, it opens the full form. With text, it adds what's typed, the same as Return.
+                Button(action: hasText ? { commit(text) } : onAddItem) {
+                    Image(systemName: hasText ? "arrow.up" : "plus")
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(.white)
+                        .frame(width: Self.height, height: Self.height)
+                        .background(Color.accentColor, in: Circle())
+                        .contentTransition(.symbolEffect(.replace))
                 }
-
-                Button(action: onAddItem) {
-                    Image(systemName: "plus")
-                }
-                .buttonStyle(.borderedProminent)
-                .accessibilityLabel("Add Item")
+                .buttonStyle(.plain)
+                .accessibilityLabel(hasText ? "Add" : "Add Item")
                 .accessibilityIdentifier(AccessibilityID.bagDetailAddItem)
             }
         }
         .padding(.horizontal)
-        .padding(.vertical, 14)
-        .background(.bar)
-        .contentShape(Rectangle())
-        .onTapGesture { isFocused = true }
+        .padding(.bottom, 8)
+        .animation(.snappy, value: bannerKind)
+        .animation(.snappy, value: hasText)
+        .task(id: lastAdded.map(\.objectID)) {
+            // The undo pill steps aside on its own after a few seconds.
+            guard !lastAdded.isEmpty, (try? await Task.sleep(for: .seconds(5))) != nil else { return }
+            lastAdded = []
+        }
         // Detached from the view: leaving the bag would cancel a request the server already paid for,
         // free its items, and opening the bag again would send the same request twice.
         .task(id: bag.itemsArray.count) { Task { await fill.fillMissing(in: bag, context: viewContext) } }
@@ -101,6 +87,61 @@ struct QuickAddBar: View {
             Button("OK", role: .cancel) { fill.notice = nil }
         } message: {
             Text(fill.notice ?? "")
+        }
+    }
+
+    private static let height: CGFloat = 44
+
+    private var hasText: Bool {
+        !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+    }
+
+    private enum BannerKind { case none, added, offer }
+
+    /// One pill at a time, so the undo and the AI offer never draw over each other.
+    private var bannerKind: BannerKind {
+        if !stillAdded.isEmpty { return .added }
+        if consent.shouldOffer && !AIFill.waiting(in: bag).isEmpty { return .offer }
+        return .none
+    }
+
+    @ViewBuilder private var banner: some View {
+        switch bannerKind {
+        case .added:
+            HStack(spacing: 12) {
+                Text(addedSummary)
+                    .foregroundStyle(.secondary)
+                    .lineLimit(1)
+                Button("Undo", action: undo)
+                    .fontWeight(.semibold)
+                    .accessibilityIdentifier(AccessibilityID.quickAddUndo)
+            }
+            .pill()
+        case .offer:
+            Button(offerText) { showingConsent = true }
+                .multilineTextAlignment(.center)
+                .pill()
+                .accessibilityIdentifier(AccessibilityID.quickAddOffer)
+        case .none:
+            EmptyView()
+        }
+    }
+
+    @ViewBuilder private var photoButton: some View {
+        if consent.isGranted {
+            PhotosPicker(selection: $pickedPhoto, matching: .images) {
+                Image(systemName: "camera")
+            }
+            .foregroundStyle(.secondary)
+            .accessibilityLabel("Add from a photo")
+            .accessibilityIdentifier(AccessibilityID.quickAddPhoto)
+        } else if consent.shouldOffer {
+            Button { showingConsent = true } label: {
+                Image(systemName: "camera")
+            }
+            .foregroundStyle(.secondary)
+            .accessibilityLabel("Add from a photo")
+            .accessibilityIdentifier(AccessibilityID.quickAddPhoto)
         }
     }
 
@@ -159,5 +200,24 @@ struct QuickAddBar: View {
             stillAdded.forEach { QuickAdd.remove($0, in: viewContext) }
             lastAdded = []
         }
+    }
+}
+
+private extension View {
+    /// The system's glass on iOS 26, to match the navigation buttons, and a material before it.
+    @ViewBuilder func surface<S: Shape>(in shape: S) -> some View {
+        if #available(iOS 26, *) {
+            glassEffect(.regular.interactive(), in: shape)
+        } else {
+            background(.regularMaterial, in: shape)
+        }
+    }
+
+    func pill() -> some View {
+        font(.footnote)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .surface(in: Capsule())
+            .transition(.move(edge: .bottom).combined(with: .opacity))
     }
 }
