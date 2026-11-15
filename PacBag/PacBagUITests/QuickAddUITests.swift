@@ -34,5 +34,19 @@ final class QuickAddUITests: PacBagUITestCase {
         let gone = NSPredicate(format: "exists == false")
         XCTAssertEqual(XCTWaiter().wait(for: [expectation(for: gone, evaluatedWith: app.staticTexts["not weighed"].firstMatch)], timeout: 20), .completed, "Undo should remove the row")
         XCTAssertEqual(app.state, .runningForeground, "the app should still be up after Undo")
+
+        // Opening an item with the field focused, then coming back, used to leave the keyboard up
+        // with the field hidden under it.
+        field.tap()
+        XCTAssertEqual(field.value(forKey: "hasKeyboardFocus") as? Bool, true)
+        app.staticTexts["socks"].firstMatch.tap()
+        let detail = app.navigationBars["socks"]
+        XCTAssertTrue(detail.waitForExistence(timeout: 10), "the item should open")
+        detail.buttons.element(boundBy: 0).tap()
+        XCTAssertTrue(detail.waitForNonExistence(timeout: 10))
+        XCTAssertTrue(field.waitForExistence(timeout: 10))
+        Thread.sleep(forTimeInterval: 1)
+        XCTAssertEqual(field.value(forKey: "hasKeyboardFocus") as? Bool, false,
+                       "the field should let go of the keyboard after coming back from an item")
     }
 }
