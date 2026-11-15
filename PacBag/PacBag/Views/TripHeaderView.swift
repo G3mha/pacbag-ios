@@ -99,6 +99,9 @@ struct TripHeaderView: View {
 struct ProgressRing: View {
     let packed: Int
     let total: Int
+    var lineWidth: CGFloat = 10
+    /// Off for a small ring next to text that already says the count.
+    var showsLabel = true
 
     private var progress: Double { total > 0 ? Double(packed) / Double(total) : 0 }
     private var isDone: Bool { total > 0 && packed == total }
@@ -106,12 +109,19 @@ struct ProgressRing: View {
     var body: some View {
         ZStack {
             Circle()
-                .stroke(Color(.secondarySystemBackground), lineWidth: 10)
+                .stroke(Color(.tertiarySystemFill), lineWidth: lineWidth)
             Circle()
                 .trim(from: 0, to: progress)
-                .stroke(isDone ? Color.green : .accentColor, style: StrokeStyle(lineWidth: 10, lineCap: .round))
+                .stroke(isDone ? Color.green : .accentColor, style: StrokeStyle(lineWidth: lineWidth, lineCap: .round))
                 .rotationEffect(.degrees(-90))
 
+            if showsLabel { label }
+        }
+        .animation(.snappy, value: packed)
+        .animation(.snappy, value: total)
+    }
+
+    private var label: some View {
             VStack(spacing: 0) {
                 if isDone {
                     Image(systemName: "checkmark")
@@ -130,8 +140,5 @@ struct ProgressRing: View {
             }
             .padding(12)
             .minimumScaleFactor(0.6)
-        }
-        .animation(.snappy, value: packed)
-        .animation(.snappy, value: total)
     }
 }
