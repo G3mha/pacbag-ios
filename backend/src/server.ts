@@ -1,8 +1,8 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { CRISIS_MESSAGE, hasCrisisPhrase } from "./crisis.ts";
-import { fillPhoto, fillText, MAX_CATEGORIES, MAX_NAME_CHARS, MAX_NAMES } from "./fill.ts";
+import { type Ask, defaultAsk, fillPhoto, fillText, MAX_CATEGORIES, MAX_NAME_CHARS, MAX_NAMES } from "./fill.ts";
 import { identify } from "./identity.ts";
-import { isPaused, take } from "./quota.ts";
+import { countCall, isPaused, take } from "./quota.ts";
 
 const MAX_BODY_BYTES = 4 * 1024 * 1024;
 
@@ -35,7 +35,11 @@ const isJpeg = (v: unknown): v is string =>
 
 async function fill(req: IncomingMessage): Promise<{ status: number; body?: unknown }> {
   const identity = await identify(req.headers["x-app-transaction"] as string | undefined);
-  if (!identity) return { status: 401 };
+  // Every Claude call counts against the pool this request belongs to.
+  const ask: Ask = (...args) => {
+    countCall(identity);
+    return defaultAsk(...args);
+  };
 
   const raw = await readBody(req);
   if (raw === null) return { status: 413 };
@@ -54,14 +58,14 @@ async function fill(req: IncomingMessage): Promise<{ status: number; body?: unkn
     if (request.items.some(item => hasCrisisPhrase(item.name))) {
       return { status: 200, body: { outcome: "crisis", message: CRISIS_MESSAGE } };
     }
-    if (isPaused() || !take(identity, "names", request.items.length)) return { status: 200, body: { outcome: "paused" } };
-    return { status: 200, body: await fillText({ items: request.items, categories }) };
+    if (isPaused(identity) || !take(identity, "names", request.items.length)) return { status: 200, body: { outcome: "paused" } };
+    return { status: 200, body: await fillText({ items: request.items, categories }, ask) };
   }
   if (request.kind === "photo") {
     if (!isJpeg(request.image)) return { status: 400 };
-    if (isPaused() || !take(identity, "photos", 1)) return { status: 200, body: { outcome: "paused" } };
+    if (isPaused(identity) || !take(identity, "photos", 1)) return { status: 200, body: { outcome: "paused" } };
     const nameLanguage = typeof request.nameLanguage === "string" ? request.nameLanguage.slice(0, 16) : "en";
-    return { status: 200, body: await fillPhoto({ image: request.image, categories, nameLanguage }) };
+    return { status: 200, body: await fillPhoto({ image: request.image, categories, nameLanguage }, ask) };
   }
   return { status: 400 };
 }

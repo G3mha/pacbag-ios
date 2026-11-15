@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { UNVERIFIED } from "./quota.ts";
 import { Environment, SignedDataVerifier, VerificationStatus } from "@apple/app-store-server-library";
 
 const BUNDLE_ID = "enriccogemha.PacBagApp";
@@ -10,13 +11,12 @@ const appAppleId = Number(process.env.APPLE_APP_ID) || undefined;
 const verifiers = [new SignedDataVerifier([root], false, Environment.SANDBOX, BUNDLE_ID, undefined)];
 if (appAppleId) verifiers.unshift(new SignedDataVerifier([root], false, Environment.PRODUCTION, BUNDLE_ID, appAppleId));
 
-export const allowUnsigned = process.env.ALLOW_UNSIGNED_IDENTITY === "1";
-if (process.env.NODE_ENV === "production" && (allowUnsigned || !appAppleId)) {
-  throw new Error("production needs APPLE_APP_ID and can't allow unsigned identities");
+if (process.env.NODE_ENV === "production" && !appAppleId) {
+  throw new Error("production needs APPLE_APP_ID");
 }
 
-/** A hash that changes daily, so counters can't follow anyone. Null means no valid identity. */
-export async function identify(jws: string | undefined): Promise<string | null> {
+/** A hash that changes daily, so counters can't follow anyone. No valid App Store record means the shared unverified pool. */
+export async function identify(jws: string | undefined): Promise<string> {
   const day = new Date().toISOString().slice(0, 10);
   const hash = (id: string) => createHash("sha256").update(`${day}:${id}`).digest("hex");
   const reasons: string[] = [];
@@ -34,9 +34,8 @@ export async function identify(jws: string | undefined): Promise<string | null> 
       }
     }
   }
-  if (allowUnsigned) return hash("dev");
-  console.log("identity rejected:", jws ? `claimed=${claimed(jws)} reasons=${reasons.join(",")}` : "no X-App-Transaction header");
-  return null;
+  console.log("identity unverified:", jws ? `claimed=${claimed(jws)} reasons=${reasons.join(",")}` : "no X-App-Transaction header");
+  return UNVERIFIED;
 }
 
 /** What the unverified payload says about itself, without any id, so a rejection can be explained. */

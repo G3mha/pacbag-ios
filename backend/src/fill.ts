@@ -1,7 +1,6 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { CRISIS_MESSAGE, hasCrisisPhrase } from "./crisis.ts";
 import { PHOTO_SYSTEM, TEXT_SYSTEM } from "./prompts.ts";
-import { countCall } from "./quota.ts";
 
 export const MAX_NAMES = 25;
 export const MAX_CATEGORIES = 40;
@@ -55,7 +54,6 @@ const client = process.env.FAKE_CLAUDE === "1" ? null : new Anthropic({ timeout:
 const MODEL = process.env.CLAUDE_MODEL ?? "claude-opus-5-5";
 
 export const askClaude: Ask = async (system, content, schema) => {
-  countCall();
   const response = await client!.messages.create({
     model: MODEL,
     max_tokens: 4096,

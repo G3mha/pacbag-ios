@@ -3,10 +3,15 @@
 const NAMES_PER_DAY = Number(process.env.NAMES_PER_DAY) || 300;
 const PHOTOS_PER_DAY = Number(process.env.PHOTOS_PER_DAY) || 30;
 const GLOBAL_CALLS_PER_DAY = Number(process.env.GLOBAL_CALLS_PER_DAY) || 2000;
+// Requests with no App Store record (builds from Xcode, or anyone calling directly) share this
+// separate pool, so they can never use up the App Store users' cap. 0 turns them off.
+const UNVERIFIED_CALLS_PER_DAY = Number(process.env.UNVERIFIED_CALLS_PER_DAY ?? 50);
+export const UNVERIFIED = "unverified";
 
 type Counts = { names: number; photos: number };
 let day = "";
 let globalCalls = 0;
+let unverifiedCalls = 0;
 let counts = new Map<string, Counts>();
 
 function roll() {
@@ -14,13 +19,15 @@ function roll() {
   if (today !== day) {
     day = today;
     globalCalls = 0;
+    unverifiedCalls = 0;
     counts = new Map();
   }
 }
 
-export function isPaused(): boolean {
+export function isPaused(identity: string): boolean {
   roll();
-  return process.env.AI_PAUSED === "1" || globalCalls >= GLOBAL_CALLS_PER_DAY;
+  if (process.env.AI_PAUSED === "1") return true;
+  return identity === UNVERIFIED ? unverifiedCalls >= UNVERIFIED_CALLS_PER_DAY : globalCalls >= GLOBAL_CALLS_PER_DAY;
 }
 
 export function take(identity: string, kind: "names" | "photos", amount: number): boolean {
@@ -33,9 +40,10 @@ export function take(identity: string, kind: "names" | "photos", amount: number)
   return true;
 }
 
-export function countCall() {
+export function countCall(identity: string) {
   roll();
-  globalCalls += 1;
+  if (identity === UNVERIFIED) unverifiedCalls += 1;
+  else globalCalls += 1;
 }
 
 export function resetQuotaForTests() {
