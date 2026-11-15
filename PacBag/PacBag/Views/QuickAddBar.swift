@@ -7,6 +7,8 @@ import PhotosUI
 struct QuickAddBar: View {
     @Environment(\.managedObjectContext) private var viewContext
     @ObservedObject var bag: Bag
+    /// Owned by the bag screen, which drops it before opening an item.
+    var isFocused: FocusState<Bool>.Binding
     /// Opens the full item form, for anything a one-line entry can't say.
     var onAddItem: () -> Void
     @ObservedObject private var consent = AIConsent.shared
@@ -16,7 +18,6 @@ struct QuickAddBar: View {
     @State private var lastAdded: [Item] = []
     @State private var showingConsent = false
     @State private var pickedPhoto: PhotosPickerItem?
-    @FocusState private var isFocused: Bool
 
     var body: some View {
         VStack(spacing: 8) {
@@ -26,7 +27,7 @@ struct QuickAddBar: View {
                 HStack(alignment: .bottom, spacing: 10) {
                     TextField("Add an item, like 2 socks", text: $text, axis: .vertical)
                         .lineLimit(1...4)
-                        .focused($isFocused)
+                        .focused(isFocused)
                         .textInputAutocapitalization(.sentences)
                         .accessibilityIdentifier(AccessibilityID.quickAddField)
                         .onChange(of: text) { _, newText in
@@ -187,7 +188,7 @@ struct QuickAddBar: View {
             .filter { !$0.trimmingCharacters(in: .whitespaces).isEmpty }
         text = ""
         guard !lines.isEmpty else {
-            isFocused = false
+            isFocused.wrappedValue = false
             return
         }
         withAnimation {

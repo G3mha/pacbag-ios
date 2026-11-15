@@ -12,6 +12,8 @@ struct BagDetailView: View {
     @State private var showingTemplates = false
     @State private var showingShareView = false
     @State private var showingCreateTemplate = false
+    @State private var openedItem: Item?
+    @FocusState private var quickAddFocused: Bool
 
     private var sortOrder: ItemSortOrder {
         settingsManager.defaultItemSortOrder
@@ -116,7 +118,7 @@ struct BagDetailView: View {
         }
         .listStyle(.plain)
         .safeAreaInset(edge: .bottom) {
-            QuickAddBar(bag: bag) { showingAddItem = true }
+            QuickAddBar(bag: bag, isFocused: $quickAddFocused) { showingAddItem = true }
         }
         .navigationTitle(bag.name.isEmpty ? "Unnamed Bag" : bag.name)
         .navigationBarTitleDisplayMode(.large)
@@ -125,6 +127,9 @@ struct BagDetailView: View {
             ToolbarItem(placement: .navigationBarTrailing) {
                 menu
             }
+        }
+        .navigationDestination(item: $openedItem) { item in
+            ItemDetailView(item: item)
         }
         .sheet(isPresented: $showingAddItem) {
             AddItemView(bag: bag)
@@ -204,7 +209,12 @@ struct BagDetailView: View {
     }
 
     private func itemRow(_ item: Item) -> some View {
-        ItemRowView(item: item) {
+        ItemRowView(item: item, onOpen: {
+            // The keyboard goes away before the push. Pushed with the quick add field focused,
+            // iOS handed the field its focus back on return and left it under the keyboard.
+            quickAddFocused = false
+            openedItem = item
+        }) {
             toggleItemPacked(item)
         }
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
@@ -314,6 +324,7 @@ struct EmptyItemsView: View {
 
 struct ItemRowView: View {
     @ObservedObject var item: Item
+    let onOpen: () -> Void
     let onToggle: () -> Void
     @State private var cachedPhoto: UIImage?
 
@@ -372,13 +383,10 @@ struct ItemRowView: View {
                 .foregroundColor(.secondary)
         }
         .accessibilityIdentifier(AccessibilityID.itemRow(item.name))
-        // A link in the background opens the item without drawing a chevron on every row.
-        .background(
-            NavigationLink(destination: ItemDetailView(item: item)) {
-                EmptyView()
-            }
-            .opacity(0)
-        )
+        // Opens the item without drawing a chevron on every row. The pack button keeps its own taps.
+        .contentShape(Rectangle())
+        .onTapGesture(perform: onOpen)
+        .accessibilityAction(named: "Open", onOpen)
         .onAppear {
             if item.hasPhoto && cachedPhoto == nil {
                 cachedPhoto = item.photo
