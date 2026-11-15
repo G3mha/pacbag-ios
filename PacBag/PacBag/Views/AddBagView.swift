@@ -77,14 +77,14 @@ struct AddBagView: View {
                     }
                 }
 
-                BagWeightSection(bagWeight: $bagWeight, maxWeight: $maxWeight)
-
                 Section {
-                    Button("Use Template") {
+                    ListGlassButton(title: "Use Template", systemImage: "doc.text") {
                         bagToFill = createBag()
                     }
                     .disabled(isNameEmpty)
                 }
+
+                BagWeightSection(bagWeight: $bagWeight, maxWeight: $maxWeight)
             }
             .listStyle(.plain)
             .navigationTitle("New Bag")
