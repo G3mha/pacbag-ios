@@ -301,9 +301,10 @@ struct SubcategoriesSection: View {
                     Text(subcategories[index])
                     Spacer()
                     if isEditable {
-                        Button("Remove") {
+                        Button("Remove", systemImage: "minus.circle.fill") {
                             subcategories.remove(at: index)
                         }
+                        .labelStyle(.iconOnly)
                         .buttonStyle(.borderless)
                         .foregroundColor(.red)
                     }
@@ -315,7 +316,8 @@ struct SubcategoriesSection: View {
                     TextField("Add subcategory", text: $newSubcategory)
                         .onSubmit(add)
 
-                    Button("Add", action: add)
+                    Button("Add", systemImage: "plus.circle.fill", action: add)
+                        .labelStyle(.iconOnly)
                         .buttonStyle(.borderless)
                         .disabled(trimmedNew.isEmpty)
                 }

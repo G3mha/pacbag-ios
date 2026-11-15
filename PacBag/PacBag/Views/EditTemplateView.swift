@@ -66,6 +66,7 @@ struct EditTemplateView: View {
                         Button("Add Item", systemImage: "plus") {
                             showingAddItem = true
                         }
+                        .labelStyle(.iconOnly)
                         .font(.subheadline)
                     }
                     .solidSectionHeader()
