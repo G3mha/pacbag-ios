@@ -45,15 +45,11 @@ struct TripListView: View {
             .navigationTitle("My Trips")
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button(action: { showingSettings = true }) {
-                        Image(systemName: "gearshape")
-                    }
+                    Button("Settings", systemImage: "gearshape") { showingSettings = true }
                 }
 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { showingAddTrip = true }) {
-                        Image(systemName: "plus")
-                    }
+                    Button("Add", systemImage: "plus") { showingAddTrip = true }
                 }
             }
             .sheet(isPresented: $showingAddTrip) {
@@ -91,11 +87,11 @@ struct TripListView: View {
                         TripRowView(trip: trip)
                     }
                     .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                        Button("Delete", role: .destructive) {
+                        Button("Delete", systemImage: "trash", role: .destructive) {
                             tripToDelete = trip
                         }
 
-                        Button("Share") {
+                        Button("Share", systemImage: "square.and.arrow.up") {
                             tripToShare = trip
                         }
                     }

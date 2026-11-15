@@ -215,11 +215,11 @@ struct BagDetailView: View {
             toggleItemPacked(item)
         }
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-            Button("Delete", role: .destructive) {
+            Button("Delete", systemImage: "trash", role: .destructive) {
                 deleteItem(item)
             }
 
-            Button(item.isPacked ? "Unpack" : "Pack") {
+            Button(item.isPacked ? "Unpack" : "Pack", systemImage: item.isPacked ? "circle" : "checkmark.circle") {
                 toggleItemPacked(item)
             }
         }

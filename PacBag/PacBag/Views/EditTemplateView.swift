@@ -63,9 +63,10 @@ struct EditTemplateView: View {
 
                         Spacer()
 
-                        Button("Add Item") {
+                        Button("Add Item", systemImage: "plus") {
                             showingAddItem = true
                         }
+                        .labelStyle(.iconOnly)
                         .font(.subheadline)
                     }
                     .solidSectionHeader()
@@ -76,13 +77,13 @@ struct EditTemplateView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
+                    Button("Cancel", systemImage: "xmark") {
                         dismiss()
                     }
                 }
 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
+                    Button("Save", systemImage: "checkmark") {
                         saveChanges()
                     }
                     .disabled(editedName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
@@ -236,13 +237,13 @@ struct TemplateItemFormView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
+                    Button("Cancel", systemImage: "xmark") {
                         dismiss()
                     }
                 }
 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
+                    Button("Save", systemImage: "checkmark") {
                         save()
                     }
                     .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)

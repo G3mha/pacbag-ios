@@ -87,7 +87,7 @@ struct CategoryManagementView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Done") {
+                    Button("Done", systemImage: "checkmark") {
                         dismiss()
                     }
                 }
@@ -202,12 +202,12 @@ struct CategoryManagementRow: View {
         .buttonStyle(.plain)
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             if !category.isDefault {
-                Button("Delete", role: .destructive) {
+                Button("Delete", systemImage: "trash", role: .destructive) {
                     onDelete()
                 }
             }
             
-            Button("Edit") {
+            Button("Edit", systemImage: "pencil") {
                 onEdit()
             }
             .tint(.blue)
@@ -301,9 +301,10 @@ struct SubcategoriesSection: View {
                     Text(subcategories[index])
                     Spacer()
                     if isEditable {
-                        Button("Remove") {
+                        Button("Remove", systemImage: "minus.circle.fill") {
                             subcategories.remove(at: index)
                         }
+                        .labelStyle(.iconOnly)
                         .buttonStyle(.borderless)
                         .foregroundColor(.red)
                     }
@@ -315,7 +316,8 @@ struct SubcategoriesSection: View {
                     TextField("Add subcategory", text: $newSubcategory)
                         .onSubmit(add)
 
-                    Button("Add", action: add)
+                    Button("Add", systemImage: "plus.circle.fill", action: add)
+                        .labelStyle(.iconOnly)
                         .buttonStyle(.borderless)
                         .disabled(trimmedNew.isEmpty)
                 }
@@ -363,13 +365,13 @@ struct AddCategoryView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
+                    Button("Cancel", systemImage: "xmark") {
                         dismiss()
                     }
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
+                    Button("Save", systemImage: "checkmark") {
                         saveCategory()
                     }
                     .disabled(categoryName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
@@ -466,13 +468,13 @@ struct EditCategoryView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
+                    Button("Cancel", systemImage: "xmark") {
                         dismiss()
                     }
                 }
                 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Save") {
+                    Button("Save", systemImage: "checkmark") {
                         saveChanges()
                     }
                     .disabled(categoryName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)

@@ -48,13 +48,13 @@ struct CategoryAnalyticsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Done") {
+                    Button("Done", systemImage: "checkmark") {
                         dismiss()
                     }
                 }
 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Refresh") {
+                    Button("Refresh", systemImage: "arrow.clockwise") {
                         refreshAnalytics()
                     }
                 }
