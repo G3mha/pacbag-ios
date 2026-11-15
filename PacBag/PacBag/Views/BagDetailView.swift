@@ -323,7 +323,7 @@ struct ItemRowView: View {
 
     private var weightText: String {
         if !item.isWeighed { return "not weighed" }
-        if item.isWeightEstimated { return "about \(item.totalWeight.oneDecimal) kg, estimate" }
+        if item.isWeightEstimated { return "about \(item.totalWeight.oneDecimal)kg" }
         return "\(item.totalWeight.oneDecimal) kg"
     }
 
