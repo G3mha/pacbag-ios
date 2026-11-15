@@ -80,14 +80,10 @@ struct AddBagView: View {
                 BagWeightSection(bagWeight: $bagWeight, maxWeight: $maxWeight)
 
                 Section {
-                    Button("Create with Template") {
+                    Button("Use Template") {
                         bagToFill = createBag()
                     }
                     .disabled(isNameEmpty)
-                } footer: {
-                    Text("Saves the bag, then fills it from a packing template.")
-                        .font(.footnote)
-                        .foregroundColor(.secondary)
                 }
             }
             .listStyle(.plain)

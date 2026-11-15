@@ -69,7 +69,7 @@ final class TemplateTests: XCTestCase {
         type("Carry-on", into: "Bag Name")
         dismissKeyboard()
 
-        tapAfterScrolling(app.buttons["Create with Template"])
+        tapAfterScrolling(app.buttons["Use Template"])
         openTemplateDetail()
         tapAfterScrolling(app.buttons["Apply Selected Items Only"])
 
