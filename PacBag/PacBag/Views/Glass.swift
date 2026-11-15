@@ -13,9 +13,9 @@ extension View {
         }
     }
 
-    /// A glass capsule button, or a bordered one before iOS 26. Color it with `.tint`.
+    /// A glass button, or a bordered one before iOS 26. Color it with `.tint`.
     /// A prominent one is filled with the tint, for the main action on a screen.
-    @ViewBuilder func glassButtonStyle(prominent: Bool = false) -> some View {
+    @ViewBuilder func glassButtonStyle(prominent: Bool = false, shape: ButtonBorderShape = .capsule) -> some View {
         Group {
             if #available(iOS 26, *) {
                 if prominent { buttonStyle(.glassProminent) } else { buttonStyle(.glass) }
@@ -23,6 +23,6 @@ extension View {
                 if prominent { buttonStyle(.borderedProminent) } else { buttonStyle(.bordered) }
             }
         }
-        .buttonBorderShape(.capsule)
+        .buttonBorderShape(shape)
     }
 }
