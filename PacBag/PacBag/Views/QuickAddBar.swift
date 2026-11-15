@@ -7,6 +7,8 @@ import PhotosUI
 struct QuickAddBar: View {
     @Environment(\.managedObjectContext) private var viewContext
     @ObservedObject var bag: Bag
+    /// Opens the full item form, for anything a one-line entry can't say.
+    var onAddItem: () -> Void
     @ObservedObject private var consent = AIConsent.shared
     @ObservedObject private var fill = AIFill.shared
 
@@ -63,6 +65,13 @@ struct QuickAddBar: View {
                     .accessibilityLabel("Add from a photo")
                     .accessibilityIdentifier(AccessibilityID.quickAddPhoto)
                 }
+
+                Button(action: onAddItem) {
+                    Image(systemName: "plus")
+                }
+                .buttonStyle(.borderedProminent)
+                .accessibilityLabel("Add Item")
+                .accessibilityIdentifier(AccessibilityID.bagDetailAddItem)
             }
         }
         .padding(.horizontal)

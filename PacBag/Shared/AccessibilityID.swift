@@ -4,7 +4,7 @@ import Foundation
 /// Docs: `docs/ssot-registry.md` section 2.10. An id lands with its first test, and
 /// rule `a11y-literal` bans string literals in `.accessibilityIdentifier(`.
 enum AccessibilityID {
-    /// The header Add Item button, until every entry points at quick add.
+    /// The + in the quick-add bar that opens the full item form.
     static let bagDetailAddItem = "bagDetail.addItem"
     static let bagDetailTotal = "bagDetail.total"
     static let bagDetailTotalNote = "bagDetail.totalNote"
