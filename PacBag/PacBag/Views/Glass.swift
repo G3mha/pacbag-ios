@@ -26,3 +26,23 @@ extension View {
         .buttonBorderShape(shape)
     }
 }
+
+/// A full-width red glass button for a list's destructive action, set apart from the rows above it.
+struct DestructiveListButton: View {
+    let title: String
+    let systemImage: String
+    let action: () -> Void
+
+    var body: some View {
+        Button(role: .destructive, action: action) {
+            Label(title, systemImage: systemImage)
+                .font(.body.weight(.semibold))
+                .foregroundStyle(.red)
+                .frame(maxWidth: .infinity, minHeight: 36)
+        }
+        .glassButtonStyle()
+        .tint(.red)
+        .listRowSeparator(.hidden)
+        .listRowInsets(EdgeInsets(top: 28, leading: 16, bottom: 16, trailing: 16))
+    }
+}
