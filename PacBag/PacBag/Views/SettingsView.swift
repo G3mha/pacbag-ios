@@ -84,7 +84,7 @@ struct SettingsView: View {
                         }
                     ))
 
-                    Button("Reset All Data", role: .destructive) {
+                    DestructiveListButton(title: "Reset All Data", systemImage: "trash") {
                         showingDeleteConfirmation = true
                     }
                 }
@@ -95,7 +95,7 @@ struct SettingsView: View {
                         showingLandingPage = true
                     }
 
-                    Button("Reset App", role: .destructive) {
+                    DestructiveListButton(title: "Reset App", systemImage: "arrow.counterclockwise") {
                         showingResetConfirmation = true
                     }
                 }
