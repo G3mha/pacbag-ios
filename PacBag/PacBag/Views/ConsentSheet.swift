@@ -5,49 +5,91 @@ struct ConsentSheet: View {
     @Environment(\.dismiss) private var dismiss
     var onAnswer: (Bool) -> Void = { _ in }
 
+    private let points = [
+        Point(
+            title: "What's sent",
+            detail: "Item names you type and photos you pick go to Anthropic's Claude through PacBag's server."
+        ),
+        Point(
+            title: "What's kept",
+            detail: "PacBag's server keeps nothing. Anthropic may keep it for up to 30 days."
+        )
+    ]
+
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
+        List {
+            VStack(alignment: .leading, spacing: 4) {
                 Text("Turn on AI estimates?")
-                    .font(.title2)
+                    .font(.largeTitle)
                     .fontWeight(.bold)
 
-                Text("PacBag can estimate weights and categories for items it doesn't recognize, and fill in an item from a photo.")
-
-                Text("To do that, it sends the item names you type and the photos you choose to PacBag's server, which passes them to Anthropic's Claude. PacBag's server doesn't save them. Anthropic may keep them for up to 30 days.")
-
-                Text("Estimates can be wrong, so check anything that matters, like an airline limit.")
-
-                Text("If you're under 18, ask a parent first. You can turn this off any time in Settings.")
+                Text("Get weights and categories for items PacBag doesn't know, or fill one in from a photo.")
+                    .foregroundColor(.secondary)
             }
-            .padding()
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.vertical, 8)
+            .listRowSeparator(.hidden, edges: .top)
+
+            ForEach(points, id: \.title) { point in
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(point.title)
+                        .fontWeight(.semibold)
+
+                    Text(point.detail)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.vertical, 4)
+            }
+
+            legalRow("Privacy Policy", destination: LegalLinks.privacyPolicy)
+            legalRow("Terms of Use", destination: LegalLinks.termsOfUse)
+
+            Text("Under 18? Ask a parent first. You can turn this off in Settings.")
+                .font(.footnote)
+                .foregroundColor(.secondary)
+                .listRowSeparator(.hidden, edges: .bottom)
         }
+        .listStyle(.plain)
         .safeAreaInset(edge: .bottom) {
             VStack(spacing: 12) {
-                HStack(spacing: 12) {
-                    Button("Not now") { answer(false) }
-                        .buttonStyle(.bordered)
+                Button { answer(true) } label: {
+                    Text("Turn on")
+                        .fontWeight(.semibold)
                         .frame(maxWidth: .infinity)
-                        .accessibilityIdentifier(AccessibilityID.consentDecline)
+                }
+                .buttonStyle(.borderedProminent)
+                .controlSize(.large)
+                .accessibilityIdentifier(AccessibilityID.consentAccept)
 
-                    Button("Turn on") { answer(true) }
-                        .buttonStyle(.borderedProminent)
+                Button { answer(false) } label: {
+                    Text("Not now")
                         .frame(maxWidth: .infinity)
-                        .accessibilityIdentifier(AccessibilityID.consentAccept)
                 }
-
-                HStack(spacing: 16) {
-                    Link("Privacy Policy", destination: URL(string: "https://pacbag.app/privacy")!)
-                    Link("Terms of Use", destination: URL(string: "https://pacbag.app/terms")!)
-                }
-                .font(.footnote)
+                .buttonStyle(.bordered)
+                .controlSize(.large)
+                .accessibilityIdentifier(AccessibilityID.consentDecline)
             }
             .padding()
-            .background(.bar)
+            .background(Color(.systemBackground))
         }
         .interactiveDismissDisabled()
         .presentationDetents([.large])
+        .plainFormSheet()
+    }
+
+    private func legalRow(_ title: String, destination: URL) -> some View {
+        Link(destination: destination) {
+            HStack {
+                Text(title)
+                    .foregroundColor(.primary)
+
+                Spacer()
+
+                Image(systemName: "arrow.up.right")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+        }
     }
 
     private func answer(_ granted: Bool) {
@@ -59,4 +101,13 @@ struct ConsentSheet: View {
         onAnswer(granted)
         dismiss()
     }
+}
+
+private struct Point {
+    let title: String
+    let detail: String
+}
+
+#Preview {
+    ConsentSheet()
 }
