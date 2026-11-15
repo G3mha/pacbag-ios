@@ -132,7 +132,7 @@ final class DeleteTests: XCTestCase {
     /// need to dismiss it before tapping Create or Save.
     private func createTrip(name: String, withBag: Bool = false) {
         let first = app.buttons["Create Your First Trip"].firstMatch
-        tap(first.waitForExistence(timeout: 3) ? first : app.navigationBars.buttons["Add"].firstMatch)
+        tap(first.waitForExistence(timeout: 3) ? first : app.buttons["Add"].firstMatch)
 
         let nameField = app.textFields["Trip Name"].firstMatch
         tap(nameField)

@@ -116,19 +116,12 @@ struct BagDetailView: View {
         }
         .listStyle(.plain)
         .safeAreaInset(edge: .bottom) {
-            QuickAddBar(bag: bag)
+            QuickAddBar(bag: bag) { showingAddItem = true }
         }
         .navigationTitle(bag.name.isEmpty ? "Unnamed Bag" : bag.name)
         .navigationBarTitleDisplayMode(.large)
         .refreshesOnContextChange(bag)
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button(action: { showingAddItem = true }) {
-                    Label("Add Item", systemImage: "plus")
-                }
-                .accessibilityIdentifier(AccessibilityID.bagDetailAddItem)
-            }
-
             ToolbarItem(placement: .navigationBarTrailing) {
                 menu
             }

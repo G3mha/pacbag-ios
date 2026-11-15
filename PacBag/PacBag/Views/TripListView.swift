@@ -48,8 +48,14 @@ struct TripListView: View {
                     Button("Settings", systemImage: "gearshape") { showingSettings = true }
                 }
 
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Add", systemImage: "plus") { showingAddTrip = true }
+                ToolbarItem(placement: .status) {
+                    Button { showingAddTrip = true } label: {
+                        Image(systemName: "plus")
+                            .fontWeight(.semibold)
+                            .foregroundStyle(.white)
+                    }
+                    .accessibilityLabel("Add")
+                    .buttonStyle(.borderedProminent)
                 }
             }
             .sheet(isPresented: $showingAddTrip) {
