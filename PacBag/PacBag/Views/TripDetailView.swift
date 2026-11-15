@@ -73,10 +73,14 @@ struct TripDetailView: View {
         .navigationBarTitleDisplayMode(.large)
         .refreshesOnContextChange(trip)
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarItem(placement: .status) {
                 Button(action: { showingAddBag = true }) {
-                    Label("Add Bag", systemImage: "plus")
+                    Image(systemName: "plus")
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.white)
                 }
+                .accessibilityLabel("Add Bag")
+                .buttonStyle(.borderedProminent)
             }
 
             ToolbarItem(placement: .navigationBarTrailing) {
