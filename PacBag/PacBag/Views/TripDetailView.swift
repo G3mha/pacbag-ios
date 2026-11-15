@@ -15,43 +15,11 @@ struct TripDetailView: View {
     @State private var bagToShare: Bag?
     @State private var bagToDelete: Bag?
 
-    private var statusText: String {
-        switch trip.status {
-        case .upcoming:
-            return "Starts \(trip.startDate.formatted(.relative(presentation: .named)))"
-        case .active:
-            return "Happening now"
-        case .completed:
-            return "Completed"
-        case .past:
-            return "Finished"
-        }
-    }
-
     var body: some View {
         List {
             if !trip.isGone {
                 Section {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(trip.destination)
-                            .font(.headline)
-
-                        Text("\(trip.formattedDateRange) · \(statusText)")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-
-                        if let description = trip.tripDescription, !description.isEmpty {
-                            Text(description)
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-
-                    PackingProgressView(
-                        packed: trip.packedItems,
-                        total: trip.totalItems,
-                        weight: trip.totalWeight
-                    )
+                    TripHeaderView(trip: trip)
                 }
             }
 
