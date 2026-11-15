@@ -186,9 +186,7 @@ struct ItemDetailView: View {
             }
 
             detailRow("Category", item.fullCategory)
-            detailRow("Quantity", "\(item.quantity)")
-            detailRow("Per item", item.isWeighed ? "\(item.weight.oneDecimal)kg" : "not weighed")
-            detailRow("Total", "\(item.totalWeight.oneDecimal)kg")
+            WeightEquation(item: item)
             detailRow("Bag", item.bag.map(bagName) ?? "No bag")
         }
     }
@@ -411,4 +409,62 @@ struct ItemDetailView: View {
         }())
     }
     .environment(\.managedObjectContext, CoreDataManager.shared.context)
+}
+/// Quantity, weight per item and total, laid out as the sum they are: 2 × 0,5kg = 1,0kg.
+private struct WeightEquation: View {
+    @ObservedObject var item: Item
+
+    /// An estimate reads "≈", and a missing weight reads "?" so the sum still has a shape.
+    private func kg(_ value: Double) -> String {
+        guard item.isWeighed else { return "?" }
+        return (item.isWeightEstimated ? "≈" : "") + "\(value.oneDecimal)kg"
+    }
+
+    var body: some View {
+        HStack(spacing: 6) {
+            term("\(item.quantity)", "quantity")
+                .frame(maxWidth: 64)
+            sign("×")
+            term(kg(item.weight), item.isWeighed ? "per item" : "not weighed")
+            sign("=")
+            term(kg(item.totalWeight), item.isWeightEstimated ? "estimated" : "total", isResult: true)
+        }
+        .padding(.vertical, 6)
+        .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(accessibilityText)
+    }
+
+    private func term(_ value: String, _ caption: String, isResult: Bool = false) -> some View {
+        VStack(spacing: 2) {
+            Text(value)
+                .font(.title3.weight(.semibold))
+                .fontDesign(.rounded)
+                .monospacedDigit()
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
+                .foregroundStyle(isResult ? Color.accentColor : .primary)
+            Text(caption)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+        }
+        .frame(maxWidth: .infinity, minHeight: 64)
+        .background(
+            isResult ? Color.accentColor.opacity(0.15) : Color(.secondarySystemBackground),
+            in: RoundedRectangle(cornerRadius: 14, style: .continuous)
+        )
+    }
+
+    private func sign(_ symbol: String) -> some View {
+        Text(symbol)
+            .font(.title3.weight(.medium))
+            .foregroundStyle(.tertiary)
+    }
+
+    private var accessibilityText: String {
+        guard item.isWeighed else { return "Quantity \(item.quantity), not weighed" }
+        let about = item.isWeightEstimated ? "about " : ""
+        return "\(item.quantity) at \(about)\(item.weight.oneDecimal) kilograms each, total \(about)\(item.totalWeight.oneDecimal) kilograms"
+    }
 }
