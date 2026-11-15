@@ -27,21 +27,26 @@ extension View {
     }
 }
 
-/// A full-width red glass button for a list's destructive action, set apart from the rows above it.
-struct DestructiveListButton: View {
+/// A full-width glass button for a list, set apart from the rows above it. A destructive one is red.
+struct ListGlassButton: View {
     let title: String
     let systemImage: String
+    var role: ButtonRole?
     let action: () -> Void
+    @Environment(\.isEnabled) private var isEnabled
+
+    private var tint: Color { role == .destructive ? .red : .accentColor }
 
     var body: some View {
-        Button(role: .destructive, action: action) {
+        Button(role: role, action: action) {
             Label(title, systemImage: systemImage)
                 .font(.body.weight(.semibold))
-                .foregroundStyle(.red)
+                // Set by hand so the icon matches the text, which also means dimming it by hand when disabled.
+                .foregroundStyle(isEnabled ? tint : .secondary)
                 .frame(maxWidth: .infinity, minHeight: 36)
         }
         .glassButtonStyle()
-        .tint(.red)
+        .tint(tint)
         .listRowSeparator(.hidden)
         .listRowInsets(EdgeInsets(top: 28, leading: 16, bottom: 16, trailing: 16))
     }

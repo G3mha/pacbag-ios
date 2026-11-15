@@ -91,7 +91,7 @@ struct ItemDetailView: View {
                 }
 
                 Section {
-                    DestructiveListButton(title: "Delete Item", systemImage: "trash") {
+                    ListGlassButton(title: "Delete Item", systemImage: "trash", role: .destructive) {
                         showingDeleteAlert = true
                     }
                 }
