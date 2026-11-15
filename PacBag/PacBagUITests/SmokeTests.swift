@@ -4,7 +4,7 @@ import XCTest
 @MainActor
 final class SmokeTests: PacBagUITestCase {
     /// U4, the automated guard for the iOS 18.5 crash risk in `CategoryAnalyticsView`.
-    /// It runs with no usage data, because `-PacBagSeed smoke` lands with `DebugSeed`.
+    /// It runs on the default categories with no uses, which is the case TM1 step 4 checks by hand.
     func testCategoryAnalyticsOpensFromSettingsAndScrollsPastTheChart() throws {
         launch()
 
@@ -20,17 +20,23 @@ final class SmokeTests: PacBagUITestCase {
         XCTAssertTrue(analytics.exists, "Settings should offer Category Analytics")
         analytics.tap()
 
-        let chartTitle = app.staticTexts["Usage Distribution"].firstMatch
         XCTAssertTrue(app.navigationBars["Category Analytics"].waitForExistence(timeout: 10), "the analytics sheet never opened")
-        for _ in 0..<4 where !chartTitle.isHittable {
+
+        // The pages sit behind a segmented picker at the top of the list. Switch
+        // before scrolling, so the test never swipes down on the sheet and closes it.
+        app.buttons["Trends"].firstMatch.tap()
+        // Each launch seeds the default categories fresh, so they all count as recently created.
+        XCTAssertTrue(app.staticTexts["Recently Created"].waitForExistence(timeout: 5), "the Trends page never showed")
+        app.buttons["Usage"].firstMatch.tap()
+
+        // The chart sits above Top Categories, and is left out when nothing has been used.
+        let belowChart = app.staticTexts["Top Categories"].firstMatch
+        XCTAssertTrue(belowChart.waitForExistence(timeout: 5), "the Usage page never came back")
+        for _ in 0..<4 where !belowChart.isHittable {
             app.swipeUp()
         }
-        XCTAssertTrue(chartTitle.isHittable, "the chart should scroll into view")
+        XCTAssertTrue(belowChart.isHittable, "the Usage page should scroll past the chart")
         app.swipeUp()
-
-        // The page TabView, by swipe.
-        app.swipeLeft()
-        XCTAssertTrue(app.buttons["Trends"].firstMatch.waitForExistence(timeout: 5))
         XCTAssertTrue(app.wait(for: .runningForeground, timeout: 5), "the app should still be up")
     }
 }
