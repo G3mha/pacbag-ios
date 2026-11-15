@@ -54,7 +54,7 @@ struct QuickAddBar: View {
                         .font(.body.weight(.semibold))
                         .foregroundStyle(.white)
                         .frame(width: Self.height, height: Self.height)
-                        .background(Color.accentColor, in: Circle())
+                        .surface(in: Circle(), tint: .accentColor)
                         .contentTransition(.symbolEffect(.replace))
                 }
                 .buttonStyle(.plain)

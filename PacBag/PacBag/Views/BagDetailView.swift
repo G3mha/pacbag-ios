@@ -308,12 +308,12 @@ struct EmptyItemsView: View {
                 Button("Use Template") {
                     onUseTemplate()
                 }
-                .buttonStyle(.borderedProminent)
+                .glassButtonStyle(prominent: true)
 
                 Button("Add Manually") {
                     onAddManually()
                 }
-                .buttonStyle(.bordered)
+                .glassButtonStyle()
             }
             .padding(.top, 4)
         }
