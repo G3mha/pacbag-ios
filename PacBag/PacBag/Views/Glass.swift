@@ -2,22 +2,25 @@ import SwiftUI
 
 /// Liquid Glass on iOS 26, to match the system's navigation buttons, with a fallback before it.
 extension View {
-    /// A glass background in `shape`, or a material before iOS 26.
-    @ViewBuilder func surface<S: Shape>(in shape: S) -> some View {
+    /// A glass background in `shape`, tinted when `tint` is given. Before iOS 26 it's a material, or the tint as a fill.
+    @ViewBuilder func surface<S: Shape>(in shape: S, tint: Color? = nil) -> some View {
         if #available(iOS 26, *) {
-            glassEffect(.regular.interactive(), in: shape)
+            glassEffect(.regular.tint(tint).interactive(), in: shape)
+        } else if let tint {
+            background(tint, in: shape)
         } else {
             background(.regularMaterial, in: shape)
         }
     }
 
     /// A glass capsule button, or a bordered one before iOS 26. Color it with `.tint`.
-    @ViewBuilder func glassButtonStyle() -> some View {
+    /// A prominent one is filled with the tint, for the main action on a screen.
+    @ViewBuilder func glassButtonStyle(prominent: Bool = false) -> some View {
         Group {
             if #available(iOS 26, *) {
-                buttonStyle(.glass)
+                if prominent { buttonStyle(.glassProminent) } else { buttonStyle(.glass) }
             } else {
-                buttonStyle(.bordered)
+                if prominent { buttonStyle(.borderedProminent) } else { buttonStyle(.bordered) }
             }
         }
         .buttonBorderShape(.capsule)
