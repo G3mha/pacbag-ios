@@ -412,45 +412,13 @@ private struct WeightEquation: View {
     }
 
     var body: some View {
-        HStack(spacing: 6) {
-            term("\(item.quantity)", "quantity")
-                .frame(maxWidth: 64)
-            sign("×")
-            term(kg(item.weight), item.isWeighed ? "per item" : "not weighed")
-            sign("=")
-            term(kg(item.totalWeight), item.isWeightEstimated ? "estimated" : "total", isResult: true)
-        }
-        .padding(.vertical, 6)
-        .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(accessibilityText)
-    }
-
-    private func term(_ value: String, _ caption: String, isResult: Bool = false) -> some View {
-        VStack(spacing: 2) {
-            Text(value)
-                .font(.title3.weight(.semibold))
-                .fontDesign(.rounded)
-                .monospacedDigit()
-                .lineLimit(1)
-                .minimumScaleFactor(0.6)
-                .foregroundStyle(isResult ? Color.accentColor : .primary)
-            Text(caption)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-        }
-        .frame(maxWidth: .infinity, minHeight: 64)
-        .background(
-            isResult ? Color.accentColor.opacity(0.15) : Color(.secondarySystemBackground),
-            in: RoundedRectangle(cornerRadius: 14, style: .continuous)
+        Equation(
+            left: .init(value: "\(item.quantity)", caption: "quantity", maxWidth: 64),
+            sign: "×",
+            right: .init(value: kg(item.weight), caption: item.isWeighed ? "per item" : "not weighed"),
+            result: .init(value: kg(item.totalWeight), caption: item.isWeightEstimated ? "estimated" : "total"),
+            spokenText: accessibilityText
         )
-    }
-
-    private func sign(_ symbol: String) -> some View {
-        Text(symbol)
-            .font(.title3.weight(.medium))
-            .foregroundStyle(.tertiary)
     }
 
     private var accessibilityText: String {
