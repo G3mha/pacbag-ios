@@ -205,15 +205,6 @@ struct QuickAddBar: View {
 }
 
 private extension View {
-    /// The system's glass on iOS 26, to match the navigation buttons, and a material before it.
-    @ViewBuilder func surface<S: Shape>(in shape: S) -> some View {
-        if #available(iOS 26, *) {
-            glassEffect(.regular.interactive(), in: shape)
-        } else {
-            background(.regularMaterial, in: shape)
-        }
-    }
-
     func pill() -> some View {
         font(.footnote)
             .padding(.horizontal, 14)
