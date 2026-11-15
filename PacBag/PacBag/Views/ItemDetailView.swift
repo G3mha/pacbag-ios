@@ -91,9 +91,19 @@ struct ItemDetailView: View {
                 }
 
                 Section {
-                    Button("Delete Item", role: .destructive) {
+                    Button(role: .destructive) {
                         showingDeleteAlert = true
+                    } label: {
+                        Label("Delete Item", systemImage: "trash")
+                            .font(.body.weight(.semibold))
+                            .foregroundStyle(.red)
+                            .frame(maxWidth: .infinity, minHeight: 36)
                     }
+                    .buttonStyle(.bordered)
+                    .buttonBorderShape(.capsule)
+                    .tint(.red)
+                    .listRowSeparator(.hidden)
+                    .listRowInsets(EdgeInsets(top: 28, leading: 16, bottom: 16, trailing: 16))
                 }
             }
         }
