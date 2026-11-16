@@ -22,6 +22,7 @@ extension Trip {
     @NSManaged public var isCompleted: Bool
     // No longer read, since reminders are an app setting. It stays because CloudKit fields can't be removed.
     @NSManaged public var remindersEnabled: Bool
+    @NSManaged public var photoData: Data?
     @NSManaged public var bags: NSSet?
 }
 
@@ -42,6 +43,10 @@ extension Trip {
 
 // MARK: - Computed Properties
 extension Trip {
+    var photo: UIImage? {
+        photoData.flatMap(UIImage.init(data:))
+    }
+
     var bagsArray: [Bag] {
         let set = bags as? Set<Bag> ?? []
         return set.sorted { $0.name < $1.name }

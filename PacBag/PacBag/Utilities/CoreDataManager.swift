@@ -125,7 +125,14 @@ class CoreDataManager {
         tripRemindersEnabled.isOptional = false
         tripRemindersEnabled.defaultValue = true
         
-        tripEntity.properties = [tripId, tripName, tripStartDate, tripEndDate, tripDestination, tripDescription, tripIsCompleted, tripRemindersEnabled]
+        // A photo the user picked for the trip. Without one, the trip page shows Wikipedia's.
+        let tripPhotoData = NSAttributeDescription()
+        tripPhotoData.name = "photoData"
+        tripPhotoData.type = .binaryData
+        tripPhotoData.isOptional = true
+        tripPhotoData.allowsExternalBinaryDataStorage = true
+
+        tripEntity.properties = [tripId, tripName, tripStartDate, tripEndDate, tripDestination, tripDescription, tripIsCompleted, tripRemindersEnabled, tripPhotoData]
         
         // Bag Entity
         let bagEntity = NSEntityDescription()
