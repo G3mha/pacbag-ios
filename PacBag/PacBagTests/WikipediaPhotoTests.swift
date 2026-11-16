@@ -17,6 +17,10 @@ final class WikipediaPhotoTests: XCTestCase {
         XCTAssertNil(WikipediaPhoto.leadImage(from: search, for: "Grandma's house"))
     }
 
+    func testMatchesADestinationEndingInAFlag() {
+        XCTAssertNotNil(WikipediaPhoto.leadImage(from: search, for: "Kyoto 🇯🇵"))
+    }
+
     func testMatchesIgnoringCaseAndAccents() {
         XCTAssertNotNil(WikipediaPhoto.leadImage(from: search, for: "kyóto"))
     }
