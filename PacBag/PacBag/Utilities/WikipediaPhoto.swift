@@ -21,7 +21,7 @@ enum WikipediaPhoto {
 
         do {
             var photo: PlacePhoto?
-            let page = try await get(["generator": "search", "gsrsearch": destination, "gsrlimit": "1",
+            let page = try await get(["generator": "search", "gsrsearch": CountryFlag.withNames(destination), "gsrlimit": "1",
                                       "prop": "pageimages", "piprop": "thumbnail|name", "pithumbsize": "1200"])
             if let image = leadImage(from: page, for: destination) {
                 let info = try await get(["titles": "File:\(image.fileName)", "prop": "imageinfo",
@@ -51,7 +51,7 @@ enum WikipediaPhoto {
     // MARK: Parsing, kept apart so tests can feed it saved responses
 
     /// Free text like "Grandma's" still finds some article, so the article has to be about the place:
-    /// its title starts with the destination's first part ("Austin, TX" finds "Austin, Texas").
+    /// its title starts with the destination's first part ("Austin, TX" finds "Austin, Texas", "Lisbon 🇵🇹" finds "Lisbon").
     static func leadImage(from data: Data, for destination: String) -> (fileName: String, url: URL)? {
         struct Response: Decodable {
             struct Query: Decodable { let pages: [Page] }
@@ -65,7 +65,7 @@ enum WikipediaPhoto {
         }
         guard let page = (try? JSONDecoder().decode(Response.self, from: data))?.query?.pages.first,
               let fileName = page.pageimage, let url = page.thumbnail?.source else { return nil }
-        let place = destination.split(separator: ",").first.map(String.init) ?? destination
+        let place = CountryFlag.removed(destination.split(separator: ",").first.map(String.init) ?? destination)
         let fold = { (text: String) in text.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil) }
         guard fold(page.title).hasPrefix(fold(place.trimmingCharacters(in: .whitespaces))) else { return nil }
         return (fileName, url)
