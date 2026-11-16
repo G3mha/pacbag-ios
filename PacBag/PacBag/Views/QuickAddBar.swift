@@ -52,12 +52,11 @@ struct QuickAddBar: View {
                 Button(action: hasText ? { commit(text) } : onAddItem) {
                     Image(systemName: hasText ? "arrow.up" : "plus")
                         .font(.body.weight(.semibold))
-                        .foregroundStyle(.white)
-                        .frame(width: Self.height, height: Self.height)
-                        .surface(in: Circle(), tint: .accentColor)
+                        .frame(width: Self.height - 14, height: Self.height - 14)
                         .contentTransition(.symbolEffect(.replace))
                 }
-                .buttonStyle(.plain)
+                // A glass button style, not interactive glass on the label, which swallowed the tap.
+                .glassButtonStyle(prominent: true, shape: .circle)
                 .accessibilityLabel(hasText ? "Add" : "Add Item")
                 .accessibilityIdentifier(AccessibilityID.bagDetailAddItem)
             }

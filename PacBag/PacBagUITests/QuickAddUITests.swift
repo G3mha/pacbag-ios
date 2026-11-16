@@ -35,6 +35,13 @@ final class QuickAddUITests: PacBagUITestCase {
         XCTAssertEqual(XCTWaiter().wait(for: [expectation(for: gone, evaluatedWith: app.staticTexts["not weighed"].firstMatch)], timeout: 20), .completed, "Undo should remove the row")
         XCTAssertEqual(app.state, .runningForeground, "the app should still be up after Undo")
 
+        // Interactive glass on the arrow's label used to swallow the tap.
+        field.tap()
+        field.typeText("flip-flops")
+        app.buttons[AccessibilityID.bagDetailAddItem].firstMatch.tap()
+        let added = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'Added flip-flops'")).firstMatch
+        XCTAssertTrue(added.waitForExistence(timeout: 20), "the arrow should add what's typed")
+
         // Opening an item with the field focused, then coming back, used to leave the keyboard up
         // with the field hidden under it.
         field.tap()
