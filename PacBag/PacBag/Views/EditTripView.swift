@@ -1,5 +1,6 @@
 import SwiftUI
 import CoreData
+import PhotosUI
 
 struct EditTripView: View {
     @Environment(\.managedObjectContext) private var viewContext
@@ -13,6 +14,8 @@ struct EditTripView: View {
     @State private var endDate: Date
     @State private var tripDescription: String
     @State private var isCompleted: Bool
+    @State private var photoData: Data?
+    @State private var pickedPhoto: PhotosPickerItem?
     
     init(trip: Trip) {
         self.trip = trip
@@ -22,6 +25,7 @@ struct EditTripView: View {
         self._endDate = State(initialValue: trip.endDate)
         self._tripDescription = State(initialValue: trip.tripDescription ?? "")
         self._isCompleted = State(initialValue: trip.isCompleted)
+        self._photoData = State(initialValue: trip.photoData)
     }
     
     var body: some View {
@@ -37,6 +41,28 @@ struct EditTripView: View {
                 }
 
                 TripDatesSection(startDate: $startDate, endDate: $endDate)
+
+                // Without a photo of their own, the trip page shows Wikipedia's.
+                Section(header: Text("Photo").solidSectionHeader()) {
+                    if let photo = photoData.flatMap(UIImage.init(data:)) {
+                        Image(uiImage: photo)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(height: 160)
+                            .frame(maxWidth: .infinity)
+                            .clipShape(RoundedRectangle(cornerRadius: 12))
+                            .accessibilityLabel("Your trip photo")
+                    }
+
+                    PhotosPicker(photoData == nil ? "Add Your Own Photo" : "Change Photo", selection: $pickedPhoto, matching: .images)
+
+                    if photoData != nil {
+                        Button("Remove Photo", role: .destructive) {
+                            photoData = nil
+                            pickedPhoto = nil
+                        }
+                    }
+                }
 
                 Section {
                     Toggle("Mark as Completed", isOn: $isCompleted)
@@ -69,6 +95,13 @@ struct EditTripView: View {
             }
         }
         .plainFormSheet()
+        .onChange(of: pickedPhoto) { _, item in
+            Task {
+                if let data = try? await item?.loadTransferable(type: Data.self) {
+                    photoData = data
+                }
+            }
+        }
     }
     
     private var isFormValid: Bool {
@@ -85,6 +118,10 @@ struct EditTripView: View {
             trip.endDate = endDate
             trip.tripDescription = tripDescription.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : tripDescription.trimmingCharacters(in: .whitespacesAndNewlines)
             trip.isCompleted = isCompleted
+            // Only written when it changed, so editing the name leaves the synced photo alone.
+            if trip.photoData != photoData {
+                trip.photoData = photoData
+            }
             
             do {
                 try viewContext.save()
