@@ -17,7 +17,7 @@ struct AddTripView: View {
                 Section {
                     TextField("Trip Name", text: $tripName)
 
-                    TextField("Destination", text: $destination)
+                    DestinationField(destination: $destination)
 
                     TextField("Description (optional)", text: $tripDescription, axis: .vertical)
                         .lineLimit(2...4)

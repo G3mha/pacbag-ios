@@ -19,6 +19,7 @@ struct TripDetailView: View {
         List {
             if !trip.isGone {
                 Section {
+                    TripPhotoView(trip: trip)
                     TripHeaderView(trip: trip)
                 }
             }
