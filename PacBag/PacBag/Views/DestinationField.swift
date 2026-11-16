@@ -161,14 +161,23 @@ final class CitySearch: NSObject, ObservableObject, MKLocalSearchCompleterDelega
         state = .idle
     }
 
-    /// "Austin" and "TX, United States" become "Austin, TX, United States".
+    /// "Lisbon" and "Portugal" become "Lisbon 🇵🇹", and "Austin" and "TX, United States" become "Austin, TX 🇺🇸".
     /// Maps repeats a city as its own region ("Kyoto" in "Kyoto, Japan"), so a repeat is dropped.
+    /// A country without a known flag stays written out.
     static func destinationText(title: String, subtitle: String) -> String {
         let title = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        let places = subtitle.split(separator: ",")
+        var places = subtitle.split(separator: ",")
             .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
             .filter { !$0.isEmpty && $0.localizedCaseInsensitiveCompare(title) != .orderedSame }
-        return ([title] + places).joined(separator: ", ")
+        let flag: String?
+        if let country = places.last {
+            flag = CountryFlag.flag(for: country)
+            if flag != nil { places.removeLast() }
+        } else {
+            flag = CountryFlag.flag(for: title) // A city-state, like "Singapore".
+        }
+        let name = ([title] + places).joined(separator: ", ")
+        return flag.map { "\(name) \($0)" } ?? name
     }
 
     /// The flag of the country Maps names last, or of the place itself when it's a city-state. A pin otherwise.

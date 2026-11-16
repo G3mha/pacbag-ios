@@ -2,21 +2,22 @@ import XCTest
 @testable import PacBag
 
 final class DestinationTextTests: XCTestCase {
-    func testJoinsCityAndPlace() {
-        XCTAssertEqual(CitySearch.destinationText(title: "Austin", subtitle: "TX, United States"), "Austin, TX, United States")
+    func testEndsWithTheCountrysFlag() {
+        XCTAssertEqual(CitySearch.destinationText(title: "Lisbon", subtitle: "Portugal"), "Lisbon 🇵🇹")
+        XCTAssertEqual(CitySearch.destinationText(title: "Austin", subtitle: "TX, United States"), "Austin, TX 🇺🇸")
     }
 
     func testDropsARegionThatRepeatsTheCity() {
-        XCTAssertEqual(CitySearch.destinationText(title: "Kyoto", subtitle: "Kyoto, Japan"), "Kyoto, Japan")
+        XCTAssertEqual(CitySearch.destinationText(title: "Kyoto", subtitle: "Kyoto, Japan"), "Kyoto 🇯🇵")
     }
 
-    func testDropsAnEmptySubtitle() {
-        XCTAssertEqual(CitySearch.destinationText(title: "Singapore", subtitle: " "), "Singapore")
-    }
-
-    func testShowsTheCountrysFlag() {
-        XCTAssertEqual(CitySearch.flag(title: "Lisbon", subtitle: "Portugal"), "🇵🇹")
+    func testFlagsACityStateByItsOwnName() {
+        XCTAssertEqual(CitySearch.destinationText(title: "Singapore", subtitle: " "), "Singapore 🇸🇬")
         XCTAssertEqual(CitySearch.flag(title: "Singapore", subtitle: ""), "🇸🇬")
+    }
+
+    func testWritesOutACountryWithoutAFlag() {
+        XCTAssertEqual(CitySearch.destinationText(title: "Somewhere", subtitle: "Atlantis"), "Somewhere, Atlantis")
         XCTAssertEqual(CitySearch.flag(title: "Somewhere", subtitle: "Atlantis"), "📍")
     }
 
