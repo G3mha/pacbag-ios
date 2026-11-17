@@ -64,7 +64,9 @@ enum WikipediaPhoto {
             let query: Query?
         }
         guard let page = (try? JSONDecoder().decode(Response.self, from: data))?.query?.pages.first,
-              let fileName = page.pageimage, let url = page.thumbnail?.source else { return nil }
+              let fileName = page.pageimage, let url = page.thumbnail?.source,
+              // A country's or region's lead image is its flag or a map, always an SVG. Photos aren't.
+              !fileName.lowercased().hasSuffix(".svg") else { return nil }
         let place = CountryFlag.removed(destination.split(separator: ",").first.map(String.init) ?? destination)
         let fold = { (text: String) in text.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil) }
         guard fold(page.title).hasPrefix(fold(place.trimmingCharacters(in: .whitespaces))) else { return nil }
