@@ -15,7 +15,6 @@ struct EditTripView: View {
     @State private var tripDescription: String
     @State private var isCompleted: Bool
     @State private var photoData: Data?
-    @State private var pickedPhoto: PhotosPickerItem?
     
     init(trip: Trip) {
         self.trip = trip
@@ -42,29 +41,12 @@ struct EditTripView: View {
 
                 TripDatesSection(startDate: $startDate, endDate: $endDate)
 
-                // Without a photo of their own, the trip page shows Wikipedia's.
-                Section(header: Text("Photo").solidSectionHeader()) {
-                    if let photo = photoData.flatMap(UIImage.init(data:)) {
-                        Image(uiImage: photo)
-                            .resizable()
-                            .scaledToFill()
-                            .frame(height: 160)
-                            .frame(maxWidth: .infinity)
-                            .clipShape(RoundedRectangle(cornerRadius: 12))
-                            .accessibilityLabel("Your trip photo")
-                    }
-
-                    PhotosPicker(photoData == nil ? "Add Your Own Photo" : "Change Photo", selection: $pickedPhoto, matching: .images)
-
-                    if photoData != nil {
-                        Button("Remove Photo", role: .destructive) {
-                            photoData = nil
-                            pickedPhoto = nil
-                        }
-                    }
+                Section(header: Text("Cover Photo").solidSectionHeader()) {
+                    CoverPhotoPicker(photoData: $photoData, destination: destination)
                 }
+                .listRowSeparator(.hidden)
 
-                Section {
+                Section(header: Text("Status").solidSectionHeader()) {
                     Toggle("Mark as Completed", isOn: $isCompleted)
                 }
 
@@ -95,13 +77,6 @@ struct EditTripView: View {
             }
         }
         .plainFormSheet()
-        .onChange(of: pickedPhoto) { _, item in
-            Task {
-                if let data = try? await item?.loadTransferable(type: Data.self) {
-                    photoData = data
-                }
-            }
-        }
     }
     
     private var isFormValid: Bool {
@@ -139,6 +114,128 @@ struct EditTripView: View {
             } catch {
                 print("Failed to save trip: \(error)")
             }
+        }
+    }
+}
+
+/// The cover as the trip page will show it, with the one button that changes it.
+/// Without a photo of the user's own, that's Wikipedia's photo of the destination being typed.
+private struct CoverPhotoPicker: View {
+    @Binding var photoData: Data?
+    let destination: String
+
+    @State private var picked: PhotosPickerItem?
+    @State private var isLoading = false
+    @State private var wikipedia: PlacePhoto?
+    /// The destination `wikipedia` belongs to. While it differs, the card shows a placeholder.
+    @State private var lookedUp: String?
+
+    private var ownPhoto: UIImage? { photoData.flatMap(UIImage.init(data:)) }
+
+    var body: some View {
+        cover
+            .frame(height: 180)
+            .frame(maxWidth: .infinity)
+            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .overlay(alignment: .bottom) {
+                HStack(alignment: .bottom) {
+                    if let caption {
+                        Text(caption)
+                            .font(.caption.weight(.medium))
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .surface(in: Capsule())
+                    }
+                    Spacer()
+                    control
+                }
+                .padding(10)
+            }
+            .overlay {
+                if isLoading { ProgressView().controlSize(.large) }
+            }
+            .animation(.snappy, value: photoData)
+            .task(id: destination) {
+                // Waits for the typing to stop, so each letter isn't its own lookup.
+                guard (try? await Task.sleep(for: .milliseconds(600))) != nil else { return }
+                wikipedia = await WikipediaPhoto.photo(for: destination)
+                if !Task.isCancelled { lookedUp = destination }
+            }
+            .onChange(of: picked) { _, item in
+                guard let item else { return }
+                isLoading = true
+                Task {
+                    if let data = try? await item.loadTransferable(type: Data.self) { photoData = data }
+                    isLoading = false
+                    picked = nil
+                }
+            }
+    }
+
+    @ViewBuilder private var cover: some View {
+        if let ownPhoto {
+            Image(uiImage: ownPhoto).resizable().scaledToFill()
+                .accessibilityLabel("Your cover photo")
+        } else if lookedUp != destination {
+            skeleton
+        } else if let wikipedia {
+            AsyncImage(url: wikipedia.imageURL) { phase in
+                if let image = phase.image {
+                    image.resizable().scaledToFill()
+                } else {
+                    skeleton
+                }
+            }
+            .accessibilityLabel("Cover photo from Wikipedia")
+        } else {
+            Color(.secondarySystemFill)
+                .overlay(alignment: .top) {
+                    Image(systemName: "photo")
+                        .font(.largeTitle)
+                        .foregroundStyle(.tertiary)
+                        .padding(.top, 44)
+                }
+                .accessibilityHidden(true)
+        }
+    }
+
+    private var skeleton: some View {
+        Color(.secondarySystemFill).accessibilityHidden(true)
+    }
+
+    private var caption: String? {
+        if ownPhoto != nil { return "Your photo" }
+        guard lookedUp == destination else { return nil }
+        return wikipedia == nil ? "No photo for this place yet" : "From Wikipedia"
+    }
+
+    @ViewBuilder private var control: some View {
+        if ownPhoto != nil {
+            Menu {
+                PhotosPicker(selection: $picked, matching: .images) {
+                    Label("Replace Photo", systemImage: "photo.on.rectangle")
+                }
+                // Going back to Wikipedia's loses nothing, so only a plain remove is red.
+                if wikipedia != nil {
+                    Button("Use Wikipedia Photo", systemImage: "arrow.uturn.backward") { photoData = nil }
+                } else {
+                    Button("Remove Photo", systemImage: "trash", role: .destructive) { photoData = nil }
+                }
+            } label: {
+                Label("Change", systemImage: "photo.on.rectangle")
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(.primary)
+            }
+            .glassButtonStyle()
+        } else {
+            PhotosPicker(selection: $picked, matching: .images) {
+                Label("Choose Photo", systemImage: "photo.badge.plus")
+                    .labelStyle(.iconOnly) // The name stays for VoiceOver.
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(.white) // The picker draws its icon in the tint, the same blue as the button.
+                    .frame(width: 30, height: 30)
+            }
+            .glassButtonStyle(prominent: true, shape: .circle)
         }
     }
 }
