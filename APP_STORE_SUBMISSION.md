@@ -1,6 +1,6 @@
 # App Store listing
 
-What's published, and what to check when submitting an update. Live since 24 July 2025.
+Submission notes for the current source. Confirm the live version and review status in App Store Connect before submitting.
 
 **Listing:** [PacBag - Digital Luggage](https://apps.apple.com/br/app/pacbag-digital-luggage/id6749021887)
 
@@ -13,7 +13,7 @@ What's published, and what to check when submitting an update. Live since 24 Jul
 | Bundle ID | `enriccogemha.PacBagApp` |
 | Apple ID | 6749021887 |
 | SKU | PACBAG001 |
-| Version | 1.0 live; 1.0.1 waiting for review (build 3) |
+| Current source | 2.0.0 (build 4); App Store status must be checked separately |
 | Price | Free, no in-app purchases |
 | Category | Travel, then Productivity |
 | Age rating | 4+ |
@@ -27,16 +27,14 @@ What's published, and what to check when submitting an update. Live since 24 Jul
 
 - Marketing: https://pacbag.app
 - Support: https://pacbag.app/support
-- Privacy policy: https://pacbag.app/privacy-policy
+- Privacy policy: https://pacbag.app/privacy
 - Labels and markings (EU DSA): https://pacbag.app/labels-markings
 
 ## Description and promotional text
 
 Both live under [`fastlane/metadata/en-US/`](fastlane/metadata/en-US/) and are pushed from there. See [Updating the listing](#updating-the-listing).
 
-Promotional text is live on 1.0. The description and release notes are on
-1.0.1, which sits in Prepare for Submission — Apple refuses a description edit
-on a version that is already on sale.
+The files under `fastlane/metadata/` are release copy, not a record of what is currently live. Check them against the build being submitted before uploading. Source changes alone do not publish App Store metadata.
 
 ## What's new — 1.0
 
@@ -73,7 +71,7 @@ Two things to know before changing the test: it passes
 `-PacBagDisableCloudKit`, without which the app cannot launch in a simulator at
 all; and the simulator must be `en_US`, or weights render as "3,0 kg".
 
-## Review notes
+## Review notes for the current source
 
 ```
 PacBag is a packing list app. No account or test credentials needed — install and use.
@@ -81,9 +79,13 @@ PacBag is a packing list app. No account or test credentials needed — install 
 To try the main flow: create a trip, add a bag, add items to it, then check items off.
 Templates under the Templates tab fill a trip with a starting list.
 
-Data syncs through the user's own iCloud account. There is no server and no login.
-Reminders are local notifications; nothing is pushed from outside the device.
-Every feature works offline.
+Packing data syncs through the user's own iCloud account. No PacBag account is required.
+Manual packing and local reminders work offline.
+
+Optional AI estimates require consent and a connection. Item names, category names,
+or chosen photos are sent through PacBag's server to Anthropic's Claude.
+Photo requests also include the preferred language. Apple's signed App Store record
+is sent to PacBag's server for request limits. AI can be turned off in Settings.
 
 Contact: me@enriccogemha.dev
 ```
@@ -93,6 +95,8 @@ Contact: me@enriccogemha.dev
 - [ ] `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` bumped
 - [ ] Tested on a real device, not just the simulator
 - [ ] iCloud sync checked across two devices
+- [ ] AI consent, estimates, and turning AI off checked against the submitted build
+- [ ] Listing copy, review notes, and App Privacy answers match that build
 - [ ] No debug prints left in
 - [ ] Build has no warnings
 - [ ] Screenshots still match the UI
@@ -108,10 +112,7 @@ Text fields are managed with fastlane. What Apple accepts depends on the
 version's state, and it is stricter than fastlane's own list of "live editable"
 fields suggests.
 
-On PacBag today -- one version, 1.0, READY_FOR_SALE, nothing in Prepare for
-Submission -- **promotional text** goes through. **Description** comes back as
-`Attribute 'description' cannot be edited at this time` and needs a new app
-version, as do the name, keywords, screenshots and category.
+In the recorded 1.0 release workflow, promotional text could be updated while the version was on sale, but the description needed a new version. Confirm what App Store Connect allows for the version you are editing.
 
 The lane sends each field separately and prints what was refused, so a rejected
 field does not block the rest.

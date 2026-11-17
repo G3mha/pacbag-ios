@@ -15,11 +15,11 @@ Notes for working on the app. The [README](README.md) covers what PacBag does an
 | Deployment target | iOS 18.5 |
 | Devices | iPhone and iPad |
 
-No third-party dependencies. No package manager.
+The iOS target uses Apple frameworks. The optional Node server in `backend/` uses npm packages for Anthropic and App Store transaction verification.
 
 ## Data model
 
-The model is built in code, in `CoreDataManager.managedObjectModel`. There is no `.xcdatamodeld` file, so adding an attribute means editing that method — see `bagWeight` for the shape of it. Entities:
+The runtime model is built in `CoreDataManager.makeModel()` and shared through `CoreDataManager.model`. Edit that model when adding attributes. Entities:
 
 **Trip** — `name`, `destination`, `startDate`, `endDate`, `tripDescription`, `isCompleted`, `remindersEnabled`. Has many bags.
 
@@ -59,7 +59,15 @@ xcodebuild -project PacBag/PacBag.xcodeproj -scheme PacBag \
   -destination 'platform=iOS Simulator,name=iPhone 16' test
 ```
 
-Tests are in `PacBagTests/` and `PacBagUITests/`. Both are close to empty — the templates in them are still the Xcode defaults.
+App and UI tests are under `PacBag/PacBagTests/` and `PacBag/PacBagUITests/`. Backend tests are under `backend/test/`.
+
+## AI estimates
+
+`AIConsent` controls whether the app can send AI requests. `AIFill` sends item names and category names, or a resized photo, through `AIClient` to the Node server. The server calls Anthropic's Claude. Photo requests also include the preferred language.
+
+The app sends Apple's signed App Store record to the server for request limits. Counters use a daily hash in memory. Packing data still uses Core Data and iCloud; the AI server is not a sync service.
+
+See [backend/README.md](backend/README.md) for local setup. In Debug builds, `PACBAG_API_URL` overrides `https://api.pacbag.app` through the Xcode scheme environment.
 
 ## Working on sync
 
