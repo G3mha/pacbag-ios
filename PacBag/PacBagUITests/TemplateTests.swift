@@ -77,8 +77,9 @@ final class TemplateTests: XCTestCase {
                       "applying should close the template list")
         XCTAssertTrue(app.navigationBars["New Bag"].waitForNonExistence(timeout: 5),
                       "the new bag's form should close with the template list")
-        XCTAssertTrue(app.staticTexts[essentialItems].firstMatch.waitForExistence(timeout: 5),
-                      "the trip should count the template's items")
+        // The trip header reads out as one element, so match the count inside its label.
+        let header = app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", "0 of 10 items packed")).firstMatch
+        XCTAssertTrue(header.waitForExistence(timeout: 5), "the trip should count the template's items")
     }
 
     // MARK: - Steps

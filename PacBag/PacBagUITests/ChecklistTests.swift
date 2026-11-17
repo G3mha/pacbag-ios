@@ -35,8 +35,9 @@ final class ChecklistTests: XCTestCase {
                       "the bag should count the packed item")
 
         goBack()
-        XCTAssertTrue(app.staticTexts["1 of 1 packed"].firstMatch.waitForExistence(timeout: 5),
-                      "the trip should count the packed item")
+        // The trip header reads out as one element, so match the count inside its label.
+        let header = app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", "1 of 1 items packed")).firstMatch
+        XCTAssertTrue(header.waitForExistence(timeout: 5), "the trip should count the packed item")
 
         goBack()
         let row = app.cells.containing(.staticText, identifier: trip).firstMatch
