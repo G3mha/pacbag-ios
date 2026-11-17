@@ -50,11 +50,14 @@ class CoreDataManager {
         }
         
         if LaunchOption.initializesCloudKitSchema {
-            do {
-                try container.initializeCloudKitSchema(options: [])
-                print("CloudKit schema initialized")
-            } catch {
-                print("CloudKit schema failed: \(error)")
+            // Off the main thread: it waits on CloudKit, and on a device the launch watchdog kills the app.
+            DispatchQueue.global(qos: .userInitiated).async {
+                do {
+                    try container.initializeCloudKitSchema(options: [])
+                    print("CloudKit schema initialized")
+                } catch {
+                    print("CloudKit schema failed: \(error)")
+                }
             }
         }
         
