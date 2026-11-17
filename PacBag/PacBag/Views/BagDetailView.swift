@@ -69,12 +69,20 @@ struct BagDetailView: View {
     var body: some View {
         List {
             Section {
-                PackingProgressView(
-                    packed: bag.packedItemsCount,
-                    total: bag.totalItemsCount,
-                    weight: bag.totalWeight,
-                    maxWeight: bag.maxWeight
-                )
+                VStack(alignment: .leading, spacing: 12) {
+                    if bag.totalItemsCount > 0 {
+                        HStack(spacing: 10) {
+                            ProgressRing(packed: bag.packedItemsCount, total: bag.totalItemsCount, lineWidth: 4, showsLabel: false)
+                                .frame(width: 22, height: 22)
+                            Text("\(bag.packedItemsCount) of \(bag.totalItemsCount) packed")
+                                .font(.subheadline)
+                                .monospacedDigit()
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    WeightGauge(bagWeight: bag.bagWeight, itemsWeight: bag.itemsWeight, maxWeight: bag.maxWeight)
+                }
+                .padding(.vertical, 4)
 
                 if let totalNote {
                     Text(totalNote)
