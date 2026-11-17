@@ -21,6 +21,15 @@ final class DestinationTextTests: XCTestCase {
         XCTAssertEqual(CitySearch.flag(title: "Somewhere", subtitle: "Atlantis"), "📍")
     }
 
+    func testFlagsACountryNamedTheWayMapsNamesIt() {
+        XCTAssertEqual(CitySearch.destinationText(title: "Saint Vincent and the Grenadines", subtitle: ""),
+                       "Saint Vincent and the Grenadines 🇻🇨")
+        XCTAssertEqual(CitySearch.flag(title: "Trinidad and Tobago", subtitle: ""), "🇹🇹")
+        XCTAssertEqual(CitySearch.flag(title: "Kingstown", subtitle: "Saint Vincent and the Grenadines"), "🇻🇨")
+        XCTAssertEqual(CitySearch.flag(title: "Yangon", subtitle: "Myanmar"), "🇲🇲")
+        XCTAssertEqual(CitySearch.flag(title: "Nassau", subtitle: "The Bahamas"), "🇧🇸")
+    }
+
     func testFlagsMatchIgnoringAccents() {
         XCTAssertEqual(CitySearch.flag(title: "São Paulo", subtitle: "São Paulo, Brazil"), "🇧🇷")
     }

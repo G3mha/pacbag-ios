@@ -49,7 +49,14 @@ enum CountryFlag {
         return codes
     }()
 
+    /// Maps says "Saint Vincent and the Grenadines" where Apple's region names say "St. Vincent & Grenadines",
+    /// and "Myanmar" for "Myanmar (Burma)", so both fold to "saint vincent and grenadines" and "myanmar".
     private static func fold(_ text: String) -> String {
-        text.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil)
+        text.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil).lowercased()
+            .replacingOccurrences(of: "&", with: " and ")
+            .replacingOccurrences(of: #"\(.*\)"#, with: " ", options: .regularExpression)
+            .replacingOccurrences(of: #"\bst\b\.?"#, with: "saint", options: .regularExpression)
+            .replacingOccurrences(of: #"\bthe\b"#, with: " ", options: .regularExpression)
+            .split(whereSeparator: \.isWhitespace).joined(separator: " ")
     }
 }
