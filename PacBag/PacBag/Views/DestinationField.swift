@@ -38,7 +38,7 @@ struct DestinationField: View {
                 }
                 .accessibilityHidden(true)
             case .noMatch:
-                Text("No cities match. You can keep what you typed.")
+                Text("No places match. You can keep what you typed.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -118,7 +118,8 @@ final class CitySearch: NSObject, ObservableObject, MKLocalSearchCompleterDelega
         super.init()
         completer.delegate = self
         completer.resultTypes = .address
-        completer.addressFilter = MKAddressFilter(including: .locality)
+        // Countries and regions too, for a trip to "Saint Vincent and the Grenadines" or "Bali".
+        completer.addressFilter = MKAddressFilter(including: [.locality, .administrativeArea, .country])
     }
 
     func query(_ text: String) {

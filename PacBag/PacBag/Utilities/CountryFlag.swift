@@ -11,8 +11,10 @@ enum CountryFlag {
     }
 
     /// "Lisbon 🇵🇹" becomes "Lisbon Portugal", for searching.
+    /// A flag after its own country, like "Saint Vincent and the Grenadines 🇻🇨", just goes: naming it twice throws search off.
     static func withNames(_ text: String) -> String {
-        replacingFlags(in: text) { " \($0) " }
+        let place = fold(removed(text))
+        return replacingFlags(in: text) { place.contains(fold($0)) ? " " : " \($0) " }
     }
 
     /// "Lisbon 🇵🇹" becomes "Lisbon".
@@ -49,7 +51,14 @@ enum CountryFlag {
         return codes
     }()
 
+    /// Maps says "Saint Vincent and the Grenadines" where Apple's region names say "St. Vincent & Grenadines",
+    /// and "Myanmar" for "Myanmar (Burma)", so both fold to "saint vincent and grenadines" and "myanmar".
     private static func fold(_ text: String) -> String {
-        text.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil)
+        text.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: nil).lowercased()
+            .replacingOccurrences(of: "&", with: " and ")
+            .replacingOccurrences(of: #"\(.*\)"#, with: " ", options: .regularExpression)
+            .replacingOccurrences(of: #"\bst\b\.?"#, with: "saint", options: .regularExpression)
+            .replacingOccurrences(of: #"\bthe\b"#, with: " ", options: .regularExpression)
+            .split(whereSeparator: \.isWhitespace).joined(separator: " ")
     }
 }

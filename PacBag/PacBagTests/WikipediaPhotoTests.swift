@@ -25,6 +25,11 @@ final class WikipediaPhotoTests: XCTestCase {
         XCTAssertNotNil(WikipediaPhoto.leadImage(from: search, for: "kyóto"))
     }
 
+    func testSkipsAFlagLeadImage() {
+        let data = Data(#"{"query":{"pages":[{"title":"Saint Vincent and the Grenadines","thumbnail":{"source":"https://upload.wikimedia.org/flag.png"},"pageimage":"Flag_of_Saint_Vincent_and_the_Grenadines.svg"}]}}"#.utf8)
+        XCTAssertNil(WikipediaPhoto.leadImage(from: data, for: "Saint Vincent and the Grenadines 🇻🇨"))
+    }
+
     func testAnArticleWithoutAnImageHasNoPhoto() {
         let data = Data(#"{"query":{"pages":[{"title":"Kyoto"}]}}"#.utf8)
         XCTAssertNil(WikipediaPhoto.leadImage(from: data, for: "Kyoto"))
