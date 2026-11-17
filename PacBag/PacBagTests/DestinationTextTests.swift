@@ -38,6 +38,8 @@ final class DestinationTextTests: XCTestCase {
         XCTAssertEqual(CountryFlag.withNames("Lisbon 🇵🇹"), "Lisbon Portugal")
         XCTAssertEqual(CountryFlag.removed("Lisbon 🇵🇹"), "Lisbon")
         XCTAssertEqual(CountryFlag.withNames("Grandma's house"), "Grandma's house")
+        XCTAssertEqual(CountryFlag.withNames("Saint Vincent and the Grenadines 🇻🇨"), "Saint Vincent and the Grenadines")
+        XCTAssertEqual(CountryFlag.withNames("Kingstown 🇻🇨"), "Kingstown St. Vincent & Grenadines")
     }
 
     func testBoldsOnlyTheMatchedLetters() {

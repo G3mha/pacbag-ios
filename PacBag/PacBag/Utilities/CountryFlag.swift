@@ -11,8 +11,10 @@ enum CountryFlag {
     }
 
     /// "Lisbon 🇵🇹" becomes "Lisbon Portugal", for searching.
+    /// A flag after its own country, like "Saint Vincent and the Grenadines 🇻🇨", just goes: naming it twice throws search off.
     static func withNames(_ text: String) -> String {
-        replacingFlags(in: text) { " \($0) " }
+        let place = fold(removed(text))
+        return replacingFlags(in: text) { place.contains(fold($0)) ? " " : " \($0) " }
     }
 
     /// "Lisbon 🇵🇹" becomes "Lisbon".
