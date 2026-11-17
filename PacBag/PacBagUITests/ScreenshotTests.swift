@@ -39,12 +39,12 @@ final class ScreenshotTests: XCTestCase {
 
     // MARK: - Steps
 
-    /// Not every keyboard has this key, and swiping down instead would close the sheet.
+    /// Swiping down instead would close the sheet.
     /// Any keyboard left up goes with the sheet, before the next screen is captured.
     private func dismissKeyboard() {
-        let returnKey = app.keyboards.buttons["return"].firstMatch
-        if returnKey.exists {
-            returnKey.tap()
+        if app.keyboards.element.exists {
+            // Typing it, because tapping the key can fail with "scroll to visible" when the key sits off screen.
+            app.typeText("\n")
         }
     }
 
