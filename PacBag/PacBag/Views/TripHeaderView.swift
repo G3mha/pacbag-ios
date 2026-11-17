@@ -5,37 +5,40 @@ struct TripHeaderView: View {
     @ObservedObject var trip: Trip
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            // Not a Label: a list row gives a Label's icon a wide column of its own.
-            HStack(spacing: 6) {
-                Image(systemName: "mappin.and.ellipse")
-                    .foregroundStyle(.secondary)
-                Text(trip.destination)
-            }
-            .font(.headline)
-
-            HStack(spacing: 20) {
-                ProgressRing(packed: trip.packedItems, total: trip.totalItems)
-                    .frame(width: 112, height: 112)
-
-                VStack(alignment: .leading, spacing: 10) {
-                    fact(countdown.value, countdown.caption)
-                    fact(dates, nights)
-                    fact("\(trip.totalWeight.oneDecimal)kg", trip.totalBags == 1 ? "in 1 bag" : "in \(trip.totalBags) bags")
+        // The header watches the trip on its own, so it redraws once more after the trip is deleted.
+        if !trip.isGone {
+            VStack(alignment: .leading, spacing: 14) {
+                // Not a Label: a list row gives a Label's icon a wide column of its own.
+                HStack(spacing: 6) {
+                    Image(systemName: "mappin.and.ellipse")
+                        .foregroundStyle(.secondary)
+                    Text(trip.destination)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            }
+                .font(.headline)
 
-            if let description = trip.tripDescription, !description.isEmpty {
-                Text(description)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                HStack(spacing: 20) {
+                    ProgressRing(packed: trip.packedItems, total: trip.totalItems)
+                        .frame(width: 112, height: 112)
+
+                    VStack(alignment: .leading, spacing: 10) {
+                        fact(countdown.value, countdown.caption)
+                        fact(dates, nights)
+                        fact("\(trip.totalWeight.oneDecimal)kg", trip.totalBags == 1 ? "in 1 bag" : "in \(trip.totalBags) bags")
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+
+                if let description = trip.tripDescription, !description.isEmpty {
+                    Text(description)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
             }
+            .padding(.vertical, 8)
+            .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(spokenText)
         }
-        .padding(.vertical, 8)
-        .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(spokenText)
     }
 
     private func fact(_ value: String, _ caption: String) -> some View {
