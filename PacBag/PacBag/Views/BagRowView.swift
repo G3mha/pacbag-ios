@@ -4,8 +4,35 @@ import SwiftUI
 /// Trips use it for their bags and bags for their sub-bags. Give the row `.cardRow()`.
 struct BagRowView: View {
     @ObservedObject var bag: Bag
+    @State private var showingTemplates = false
+    @State private var showingAddItem = false
 
     var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            summary
+
+            if categories.isEmpty {
+                HStack(spacing: 10) {
+                    // Bordered styles keep their own taps inside a NavigationLink row, so these don't open the bag.
+                    Button("Use Template") { showingTemplates = true }
+                        .glassButtonStyle(prominent: true)
+                    Button("Add Item") { showingAddItem = true }
+                        .glassButtonStyle()
+                }
+                .font(.subheadline.weight(.semibold))
+            }
+        }
+        .padding(.vertical, 6)
+        .sheet(isPresented: $showingTemplates) {
+            PackingTemplatesView(bag: bag)
+        }
+        .sheet(isPresented: $showingAddItem) {
+            AddItemView(bag: bag)
+        }
+    }
+
+    /// Everything but the buttons, read as one element so VoiceOver can still reach the buttons on their own.
+    private var summary: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 10) {
                 ProgressRing(packed: bag.packedItemsCount, total: bag.totalItemsCount, lineWidth: 4, showsLabel: false)
@@ -24,11 +51,7 @@ struct BagRowView: View {
 
             WeightGauge(bagWeight: bag.bagWeight, itemsWeight: bag.itemsWeight, maxWeight: bag.maxWeight)
 
-            if categories.isEmpty {
-                Text("No items yet")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-            } else {
+            if !categories.isEmpty {
                 HStack(spacing: 6) {
                     ForEach(categories.prefix(Self.maxChips), id: \.name) { category in
                         chip(Image(systemName: category.icon), "\(category.count)")
@@ -39,7 +62,6 @@ struct BagRowView: View {
                 }
             }
         }
-        .padding(.vertical, 6)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(spokenText)
     }
