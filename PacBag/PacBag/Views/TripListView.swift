@@ -150,18 +150,23 @@ struct TripRowView: View {
 
     var body: some View {
         if !trip.isGone {
-            VStack(alignment: .leading, spacing: 2) {
-                Text(trip.name)
-                    .font(.headline)
-                    .lineLimit(1)
+            HStack(spacing: 14) {
+                ProgressRing(packed: trip.packedItems, total: trip.totalItems, lineWidth: 4, showsLabel: false)
+                    .frame(width: 28, height: 28)
 
-                Text(trip.formattedDateRange)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(trip.name)
+                        .font(.headline)
+                        .lineLimit(1)
 
-                Text(packedText)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+                    Text(trip.formattedDateRange)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+
+                    Text(packedText)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
             }
             .padding(.vertical, 2)
             .refreshesOnContextChange(trip)
